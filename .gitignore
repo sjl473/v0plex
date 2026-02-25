@@ -1,0 +1,47 @@
+# --- dependencies ---
+node_modules/
+.pnpm-store/
+.pnp.*
+.yarn/
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Next.js / build output ---
+.next/
+out/
+dist/
+build/
+.turbo/
+.vercel/
+coverage/
+
+# omit /app/out folder contents
+app/out/
+
+# omit generated public assets
+public/vmdcode/
+public/vmdimage/
+public/vmdjson/
+
+# optional: if these are generated build artifacts in your repo
+gh-page-output/
+
+# --- env files ---
+.env
+.env.*
+!.env.example
+
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+
+# --- TypeScript build info ---
+*.tsbuildinfo
+
+# --- misc ---
+*.log

@@ -1,0 +1,23 @@
+.editThisPageLink {
+    display: block;
+    text-align: left;
+    margin-top: 2rem; /* Give it some space from content */
+    margin-bottom: 0.5rem; /* Small space before pagination */
+    padding: 4px 0;
+    font-size: 11px;
+}
+.editThisPageLink a {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.editThisPageLink a:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+    .editThisPageLink {
+        margin-bottom: 0.5rem;
+    }
+}

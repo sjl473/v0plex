@@ -1,0 +1,209 @@
+@media (max-width: 768px) {
+    .syntaxHighlighter {
+        font-size: 0.6rem !important;
+    }
+
+    .syntaxHighlighter pre {
+        white-space: pre !important;
+    }
+}
+
+.syntaxHighlighter {
+    margin: 0 !important;
+    padding: 1rem !important;
+    border-radius: 0 !important;
+    font-family: "IBM Plex Mono", monospace !important;
+    font-size: 0.675rem !important;
+    line-height: 1.5 !important;
+    border: none !important;
+    display: block !important;
+    overflow-x: auto !important;
+    white-space: pre !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: thin !important;
+}
+
+.syntaxHighlighter :global(.linenumber),
+.syntaxHighlighter :global(.react-syntax-highlighter-line-number) {
+    margin-right: 1.5rem !important;
+    min-width: 2.5rem !important;
+    text-align: right !important;
+    color: #6c6c6c !important;
+    opacity: 0.8 !important;
+    white-space: nowrap !important;
+}
+
+.syntaxHighlighter code,
+.syntaxHighlighter pre {
+    font-family: "IBM Plex Mono", monospace !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-style: normal !important;
+    white-space: pre !important;
+    word-break: keep-all !important;
+    word-wrap: normal !important;
+}
+
+
+.codeBlockContainer {
+    margin-bottom: 1.5rem;
+    position: relative;
+    padding: 0;
+    font-size: 0;
+    line-height: 0;
+}
+
+.codeBlockWrapper {
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0;
+    line-height: 0;
+}
+
+.codeBlockHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+}
+
+.codeBlockLanguage {
+    font-size: 0.65rem;
+    font-weight: 600;
+    font-family: "IBM Plex Mono", monospace;
+}
+
+.copyButton {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s ease;
+}
+
+
+.lightTheme .codeBlockWrapper {
+    border: 1px solid #393939;
+}
+
+.lightTheme .codeBlockHeader {
+    background: #21272a;
+    border-bottom: 1px solid #393939;
+}
+
+.lightTheme .codeBlockLanguage {
+    color: #c6c6c6;
+}
+
+.lightTheme .copyButton {
+    color: #c6c6c6;
+}
+
+.lightTheme .copyButton:hover {
+    color: #f4f4f4;
+}
+
+.darkTheme .codeBlockWrapper {
+    border: 1px solid #393939;
+}
+
+.darkTheme .codeBlockHeader {
+    background: #21272a;
+    border-bottom: 1px solid #393939;
+}
+
+.darkTheme .codeBlockLanguage {
+    color: #c6c6c6;
+}
+
+.darkTheme .copyButton {
+    color: #c6c6c6;
+}
+
+.darkTheme .copyButton:hover {
+    color: #f4f4f4;
+}
+
+.inlineCode {
+    padding: 0.125rem 0.25rem;
+    border-radius: 4px;
+    font-size: 0.675rem;
+    font-family: "IBM Plex Mono", monospace;
+    display: inline-block;
+    margin: 0 0.25rem;
+    line-height: 1.4;
+}
+
+.lightTheme .inlineCode {
+    background: #21272a;
+    color: #ffffff;
+    border: 1px solid #393939;
+}
+
+.darkTheme .inlineCode {
+    background: #21272a;
+    color: #ffffff;
+    border: 1px solid #393939;
+}
+
+
+.syntaxHighlighter * {
+    font-style: normal !important;
+}
+
+
+.syntaxHighlighter pre {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-style: normal !important;
+}
+
+.syntaxHighlighter code,
+.syntaxHighlighter pre {
+    font-family: "IBM Plex Mono", monospace !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-style: normal !important;
+}
+
+.syntaxHighlighter [class*="line-numbers"] > span {
+    padding-left: 3.5rem !important;
+}
+
+.lightTheme .syntaxHighlighter {
+    background: #161616 !important;
+}
+
+.darkTheme .syntaxHighlighter {
+    background: #161616 !important;
+}
+
+.loadingContainer {
+    padding: 2rem;
+    text-align: center;
+    background: #21272a;
+    color: #c6c6c6;
+    font-family: "IBM Plex Mono", monospace;
+    font-style: normal;
+}
+
+.errorContainer {
+    padding: 1rem;
+    background: #500;
+    color: #f88;
+    border: 1px solid #800;
+    border-radius: 4px;
+    font-family: "IBM Plex Mono", monospace;
+    font-style: normal;
+}
+
+.filePath {
+    font-size: 0.7rem;
+    opacity: 0.7;
+    margin-left: 0.5rem;
+    font-style: normal;
+}

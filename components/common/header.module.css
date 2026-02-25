@@ -1,0 +1,128 @@
+.header {
+    height: 48px;
+    min-height: 48px;
+    max-height: 48px;
+    background: #262626;
+    border-bottom: 1px solid #393939;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+}
+
+.leftSection {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: 48px;
+}
+
+.mobileMenuBtn {
+    display: none;
+    background: transparent;
+    border: none;
+    color: #f4f4f4;
+    cursor: pointer;
+    padding: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+    width: 32px;
+    min-height: 32px;
+    min-width: 32px;
+}
+
+.logoLink {
+    text-decoration: none;
+    color: #f4f4f4;
+    font-weight: 600;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    height: 48px;
+    white-space: nowrap;
+}
+
+.rightSection {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: 48px;
+}
+
+.themeToggle {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #c6c6c6;
+    transition: all 0.2s ease;
+    height: 32px;
+    width: 32px;
+    min-height: 32px;
+    min-width: 32px;
+}
+
+.themeToggle:hover {
+    background: #393939;
+    color: #f4f4f4;
+}
+
+@media (max-width: 600px) {
+    .header {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        padding: 0 0.5rem !important;
+        height: 48px !important;
+        min-height: 48px !important;
+        max-height: 48px !important;
+    }
+
+    .mobileMenuBtn {
+        display: flex !important;
+    }
+
+    .leftSection {
+        gap: 0.5rem;
+        height: 48px;
+    }
+
+    .rightSection {
+        gap: 0.5rem;
+        height: 48px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header {
+        padding: 0 0.25rem !important;
+        height: 48px !important;
+        min-height: 48px !important;
+        max-height: 48px !important;
+    }
+
+    .leftSection {
+        gap: 0.25rem;
+        height: 48px;
+    }
+
+    .rightSection {
+        gap: 0.25rem;
+        height: 48px;
+    }
+
+    .logoLink {
+        font-size: 0.875rem;
+    }
+}

@@ -1,0 +1,32 @@
+.blockquote {
+    font-weight: bold !important;
+    font-style: italic !important;
+    margin: 1.5rem 0 !important;
+    /* Increased padding-left significantly to move sentence more to the right */
+    padding: 0.5rem 0.1rem 0.5rem 0.5rem !important;
+    border-left: 4px solid currentColor !important;
+    /* Default background, overridden by themes below */
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Light Theme */
+:global(html[v0plex-theme="white"]) .blockquote {
+    background-color: #f4f4f4; /* Gray 10 - Dim background for white theme */
+}
+
+:global(html[v0plex-theme="white"]) .blockquote h5 {
+    font-size: 0.7rem;
+    font-family: 'IBM Plex Mono', serif;
+    color: #00539a;
+}
+
+/* Dark Theme */
+:global(html[v0plex-theme="g100"]) .blockquote {
+    background-color: #262626; /* Gray 90 - Dim background for g100 theme (if bg is g100 #161616) */
+}
+
+:global(html[v0plex-theme="g100"]) .blockquote h5 {
+    font-size: 0.7rem;
+    font-family: 'IBM Plex Mono', serif;
+    color: #82cfff;
+}

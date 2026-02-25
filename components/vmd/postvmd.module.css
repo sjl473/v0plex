@@ -1,0 +1,284 @@
+.container {
+    display: grid;
+    grid-template-columns: 4fr 1fr;
+    gap: 1.5rem;
+    width: 100%;
+    margin-bottom: 2rem;
+    align-items: start;
+}
+
+.leftColumn {
+    /* Occupies the left column */
+    min-width: 0;
+}
+
+.rightColumn {
+    /* Occupies the right column */
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* Image Wrapper - Inline */
+.imageWrapper {
+    position: relative;
+    width: 100%;
+    /* Reduced min-height to avoid excessive blank space for landscape images */
+    min-height: 150px;
+    background-color: var(--v0plex-background-hover, #f4f4f4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    overflow: hidden;
+    border: 1px solid var(--v0plex-border-subtle, #e0e0e0);
+}
+
+.activeImage {
+    max-width: 100%;
+    /* Reduced max-height to keep it short as requested */
+    max-height: 300px;
+    width: auto;
+    height: auto;
+    display: block;
+    object-fit: contain;
+}
+
+/* Navigation Overlays - Inline */
+.navOverlay {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Removed gradient background */
+    background: transparent;
+    transition: opacity 0.2s ease;
+    z-index: 10;
+    cursor: pointer;
+    /* Use theme variable for icon color */
+    color: var(--v0plex-icon-primary, #161616);
+    opacity: 0;
+}
+
+/* Show arrows on hover of the wrapper */
+.imageWrapper:hover .navOverlay {
+    opacity: 1;
+}
+
+.navOverlay:hover {
+    /* Slight background on hover for feedback, optional, kept minimal */
+    background-color: rgba(128, 128, 128, 0.1);
+}
+
+.navLeft {
+    left: 0;
+}
+
+.navRight {
+    right: 0;
+}
+
+.arrow {
+    width: 32px;
+    height: 32px;
+    /* Default shadow (assuming light theme/dark icon -> light glow) */
+    filter: drop-shadow(0 0 2px rgba(255,255,255,0.8));
+}
+
+/* Adjust shadow for dark theme (where icon is white) */
+/* We can detect theme via body attribute in global context, but css modules are scoped. 
+   However, :global() selector allows us to reach out. */
+:global(html[v0plex-theme="g100"]) .arrow,
+:global(body[v0plex-theme="g100"]) .arrow {
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8));
+}
+
+/* Image Counter */
+.imageCounter {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.5rem;
+    /* Keep counter visible but minimal */
+    background-color: rgba(0, 0, 0, 0.4);
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-family: 'IBM Plex Sans', sans-serif;
+    z-index: 15;
+    pointer-events: none;
+}
+
+/* Zoom Icon - REMOVED */
+
+/* Caption */
+.caption {
+    margin-top: 0.5rem;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.75rem;
+    line-height: 1.3;
+    color: var(--v0plex-text-secondary, #525252);
+    border-top: 1px solid var(--v0plex-border-subtle, #e0e0e0);
+    padding-top: 0.4rem;
+    /* Limit lines if caption is too long, though user asked for short captions */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Modal / Lightbox */
+.modalOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(22, 22, 22, 0.98);
+    z-index: 9000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modalContent {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    box-sizing: border-box;
+}
+
+.modalImage {
+    max-width: 90%;
+    max-height: 85vh;
+    object-fit: contain;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+}
+
+.modalCloseBtn {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Transparent background */
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    /* White for modal (dark background) */
+    color: #ffffff;
+    z-index: 9010;
+    transition: transform 0.2s;
+    box-shadow: none;
+}
+
+.modalCloseBtn:hover {
+    background-color: transparent;
+    transform: scale(1.1);
+}
+
+.modalNavBtn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Transparent background */
+    background: transparent;
+    border-radius: 0;
+    border: none;
+    cursor: pointer;
+    /* White for modal */
+    color: #ffffff;
+    z-index: 9010;
+    transition: transform 0.2s;
+    backdrop-filter: none;
+}
+
+.modalNavBtn:hover {
+    background-color: transparent;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.modalPrev {
+    left: 1rem;
+}
+
+.modalNext {
+    right: 1rem;
+}
+
+.modalIcon {
+    width: 32px;
+    height: 32px;
+}
+
+.modalCaption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 1rem;
+    background: rgba(89, 89, 89, 0.8);
+    color: #f4f4f4;
+    text-align: center;
+    font-size: 0.875rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.modalCounter {
+    font-size: 0.75rem;
+    opacity: 0.8;
+    margin-bottom: 0.25rem;
+    background: rgba(255,255,255,0.1);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Mobile Layout */
+@media (max-width: 768px) {
+    .container {
+        grid-template-columns: 1fr;
+    }
+
+    .rightColumn {
+        margin-top: 1rem;
+    }
+
+    .modalNavBtn {
+        width: 48px;
+        height: 48px;
+    }
+
+    .modalPrev {
+        left: 0;
+    }
+
+    .modalNext {
+        right: 0;
+    }
+}

@@ -1,0 +1,70 @@
+.highlightBox {
+    background: var(--v0plex-background-hover); /* Carbon: $layer-01 or $ui-02 depending on context, using existing var for consistency */
+    padding: 1rem !important; /* Carbon: $spacing-05 (16px/1rem) */
+    margin: 1.5rem 0 !important; /* Carbon: $spacing-07 (24px/1.5rem) */
+    width: 100% !important;
+    border: 1px solid transparent; /* To match box model if needed */
+}
+
+/* Carbon Notification/Callout styles typically use these colors for the left border */
+.highlightBoxInfo {
+    border-left: 4px solid #0f62fe; /* Carbon: $support-info (Blue 60) */
+}
+
+:global(html[v0plex-theme="g100"]) .highlightBoxInfo {
+    border-left: 4px solid #4589ff; /* Carbon Dark: $support-info (Blue 50) */
+}
+
+.highlightBoxWarning {
+    border-left: 4px solid #f1c21b; /* Carbon: $support-warning (Yellow 20) */
+}
+
+:global(html[v0plex-theme="g100"]) .highlightBoxWarning {
+    border-left: 4px solid #f1c21b; /* Carbon Dark: $support-warning (Yellow 20) is often same or Yellow 30 */
+}
+
+.highlightBoxSuccess {
+    border-left: 4px solid #24a148; /* Carbon: $support-success (Green 50) */
+}
+
+:global(html[v0plex-theme="g100"]) .highlightBoxSuccess {
+    border-left: 4px solid #42be65; /* Carbon Dark: $support-success (Green 40) */
+}
+
+.highlightTitle {
+    margin: 0 0 0.5rem 0 !important; /* Carbon: $spacing-03 */
+    color: var(--v0plex-text-primary);
+    font-size: 0.875rem !important; /* Carbon: $body-short-01 or $label-01 (14px) */
+    font-weight: 600 !important; /* Carbon: $font-weight-semibold */
+    font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif !important;
+    text-indent: 0 !important;
+    line-height: 1.29 !important;
+}
+
+.highlightContent {
+    color: var(--v0plex-text-primary);
+    font-size: 0.875rem !important; /* Carbon: $body-long-01 (14px) */
+    line-height: 1.5 !important;
+    margin: 0 !important;
+    text-indent: 0 !important;
+    font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif !important;
+    font-weight: 400 !important;
+}
+
+
+.highlightBox * {
+    text-indent: 0 !important;
+}
+
+.highlightContent * {
+    text-indent: 0 !important;
+}
+
+.highlightContent p {
+    text-indent: 0 !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.highlightContent p:last-child {
+    margin-bottom: 0 !important;
+}

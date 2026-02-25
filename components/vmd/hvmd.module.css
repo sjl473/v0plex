@@ -1,0 +1,96 @@
+.header {
+    font-family: 'IBM Plex Sans', sans-serif;
+    /* Request: "bold enough" -> using 900 (Black) and !important to override any global conflicts */
+    font-weight: 400 !important;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    line-height: 1.25;
+}
+
+/* Override weights for specific headers */
+.h1 {
+    font-size: 2.625rem;
+    font-weight: 400 !important;
+}
+
+.h2 {
+    font-size: 2rem;
+    font-weight: 400 !important;
+}
+
+.h3 {
+    font-size: 1.5rem;
+    font-weight: 400 !important;
+}
+
+.h4 {
+    font-size: 1.25rem;
+    font-weight: 400 !important;
+}
+
+.h5 {
+    font-size: 1rem;
+    font-weight: 400 !important;
+}
+
+.h6 {
+    font-size: 0.875rem;
+    font-weight: 400 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/*
+   IBM Carbon Inspired Palette
+   Light Theme: Use '60' or '70' values for text contrast.
+   Dark Theme: Use '40' or '50' values for text contrast.
+*/
+
+.navItem.active:not(.hasChildren) {
+    background: var(--sidebar-item-selected-bg);
+    color: var(--v0plex-text-primary);
+    border-left: 3px solid #0f62fe; /* Ensure this color is visible */
+    font-weight: 600;
+}
+
+/* Ensure specificity */
+div.navItem.active:not(.hasChildren) {
+    background-color: var(--sidebar-item-selected-bg) !important;
+    border-left-color: var(--v0plex-link-primary) !important;
+}
+
+/* 0: Purple */
+.headerColor0 {
+    color: #0F62FE !important;
+}
+
+:global([v0plex-theme="g100"]) .headerColor0 {
+    color: #4589ff !important;
+}
+
+/* 1: Blue */
+.headerColor1 {
+    color: #0F62FE !important;
+}
+
+:global([v0plex-theme="g100"]) .headerColor1 {
+    color: #4589ff !important;
+}
+
+/*!* 2: Yellow/Orange/Gold *!*/
+.headerColor2 {
+    color: #0F62FE !important;
+}
+
+:global([v0plex-theme="g100"]) .headerColor2 {
+    color: #4589ff !important;
+}
+
+/* 3: Green */
+.headerColor3 {
+    color: #0F62FE !important;
+}
+
+:global([v0plex-theme="g100"]) .headerColor3 {
+    color: #4589ff !important;
+}
