@@ -3,7 +3,7 @@ import './globals.css'
 import ClientLayout from './client-layout'
 
 export const metadata: Metadata = {
-    title: '信贷业务管理操作手册', description: 'Commercial Loan Platform Management Handbooks', icons: {
+    title: 'v0plex', description: 'Commercial Loan Platform Management Handbooks', icons: {
         icon: '/v0plex_avatar.svg', // Eximbank logo as favicon
     },
 }
