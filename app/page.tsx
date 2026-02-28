@@ -83,6 +83,10 @@ export default function HomePage() {
                                 static pages on Github / Gitlab, go
                                 <CodeBlock inline>{"vmd_parser/config.ts"}</CodeBlock> edit corresponding link.
                             </Livmd>
+
+                            <Livmd>
+                                You may need to install Python (the lastest version and jieba) in venv for completing the global search.
+                            </Livmd>
                         </Ulvmd>
 
                         <br></br>
