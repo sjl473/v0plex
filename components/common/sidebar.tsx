@@ -306,7 +306,7 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
 
             <div className={styles.navigationContent}>
                 {searchQuery ? (<div className={styles.searchResults}>
-                    <div className={styles.searchResultsHeader}>搜索结果({searchResults.length})</div>
+                    <div className={styles.searchResultsHeader}>Searched Results({searchResults.length})</div>
                     <div className={styles.searchResultsList}>
                         {searchResults.length > 0 ? (searchResults.map((item) => (<div
                             key={item.path || item.title}
@@ -325,7 +325,7 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
                                     </div>
                                 </Link>) : (
                                 <div className={styles.searchResultTitle}>{item.title}</div>)}
-                        </div>))) : (<div className={styles.noResults}>暂无搜索结果</div>)}
+                        </div>))) : (<div className={styles.noResults}>No Searched Result</div>)}
                     </div>
                 </div>) : null}
 
