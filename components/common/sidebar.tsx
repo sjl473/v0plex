@@ -15,9 +15,29 @@ interface NavItem {
     children?: NavItem[]
 }
 
+interface LexemePageRef {
+    h: string;
+    c: number;
+}
+
+interface LexemeWordData {
+    t: number;
+    df: number;
+    dfr: number;
+    H: number;
+    p: LexemePageRef[];
+}
+
+interface LexemeStats {
+    pageIndex: Record<string, { title: string; path: string }>;
+    byWord: Record<string, LexemeWordData>;
+    selectedWords: string[];
+}
+
 interface SiteData {
     navigation: NavItem[];
     images: any[];
+    lexemeStats?: LexemeStats;
 }
 
 interface CarbonSidebarProps {
@@ -27,39 +47,22 @@ interface CarbonSidebarProps {
     onResize: (width: number) => void
 }
 
-const loadNavigationStructure = async (): Promise<NavItem[]> => {
+const loadSiteData = async (): Promise<SiteData | null> => {
     try {
         const response = await fetch('/vmdjson/site-data.json');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const data: SiteData = await response.json();
-        return data.navigation || [];
+        return await response.json();
     } catch (error) {
-        console.error('Failed to load navigation structure:', error);
-        return [];
+        console.error('Failed to load site data:', error);
+        return null;
     }
 };
 
 function generateUniqueId(item: NavItem, parentId: string = ""): string {
     const baseId = item.path || item.title;
     return parentId ? `${parentId}/${baseId}` : baseId;
-}
-
-function flattenNavigation(items: NavItem[]): NavItem[] {
-    const result: NavItem[] = []
-
-    function traverse(items: NavItem[]) {
-        for (const item of items) {
-            result.push(item)
-            if (item.children) {
-                traverse(item.children)
-            }
-        }
-    }
-
-    traverse(items)
-    return result
 }
 
 function isActivePage(pathname: string, item: NavItem): boolean {
@@ -101,18 +104,22 @@ function shouldExpand(pathname: string, item: NavItem, itemId: string, manuallyE
     return hasActiveChild(pathname, item)
 }
 
-export default ({isMobileOpen, onCloseMobile, width, onResize}: CarbonSidebarProps) => {
+export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: CarbonSidebarProps) {
     const [searchQuery, setSearchQuery] = useState("")
     const [manuallyExpandedItems, setManuallyExpandedItems] = useState<Set<string>>(new Set())
     const [manuallyCollapsedItems, setManuallyCollapsedItems] = useState<Set<string>>(new Set())
     const [isResizing, setIsResizing] = useState(false)
     const [navStructure, setNavStructure] = useState<NavItem[]>([])
+    const [siteData, setSiteData] = useState<SiteData | null>(null)
     const sidebarRef = useRef<HTMLDivElement>(null)
     const pathname = usePathname()
 
     useEffect(() => {
-        loadNavigationStructure().then(data => {
-            setNavStructure(data);
+        loadSiteData().then(data => {
+            if (data) {
+                setSiteData(data);
+                setNavStructure(data.navigation || []);
+            }
         });
     }, []);
 
@@ -137,8 +144,46 @@ export default ({isMobileOpen, onCloseMobile, width, onResize}: CarbonSidebarPro
         })
     }, [pathname, navStructure])
 
-    const allItems = flattenNavigation(navStructure)
-    const filteredItems = allItems.filter((item) => item.title.toLowerCase().includes(searchQuery.toLowerCase()) || (item.path && item.path.toLowerCase().includes(searchQuery.toLowerCase())),)
+    const normalizedQuery = searchQuery.trim().toLowerCase()
+
+    interface SearchResult {
+        title: string;
+        path?: string;
+        hits?: number;
+    }
+
+    const searchResults: SearchResult[] = [];
+
+    // Only search lexeme words, ignoring standard title match
+    if (normalizedQuery) {
+        if (siteData?.lexemeStats?.byWord && siteData?.lexemeStats?.pageIndex) {
+            const matchedWords = Object.keys(siteData.lexemeStats.byWord).filter(w => w.toLowerCase().includes(normalizedQuery));
+
+            const pageHits: Record<string, number> = {};
+            for (const word of matchedWords) {
+                const wordData = siteData.lexemeStats.byWord[word];
+                if (wordData && wordData.p) {
+                    for (const pageRef of wordData.p) {
+                        pageHits[pageRef.h] = (pageHits[pageRef.h] || 0) + pageRef.c;
+                    }
+                }
+            }
+
+            for (const [hash, hits] of Object.entries(pageHits)) {
+                const pageMeta = siteData.lexemeStats.pageIndex[hash];
+                if (pageMeta) {
+                    searchResults.push({
+                        title: pageMeta.title,
+                        path: pageMeta.path,
+                        hits: hits
+                    });
+                }
+            }
+
+            // Sort by hits (highest first)
+            searchResults.sort((a, b) => (b.hits || 0) - (a.hits || 0));
+        }
+    }
 
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
         e.preventDefault()
@@ -157,7 +202,7 @@ export default ({isMobileOpen, onCloseMobile, width, onResize}: CarbonSidebarPro
 
         document.addEventListener("mousemove", handleMouseMove)
         document.addEventListener("mouseup", handleMouseUp)
-    }, [onResize],)
+    }, [onResize])
 
     const toggleExpanded = (itemId: string, e: React.MouseEvent) => {
         e.preventDefault();
@@ -247,7 +292,7 @@ export default ({isMobileOpen, onCloseMobile, width, onResize}: CarbonSidebarPro
                     <Search className={styles.searchIcon}/>
                     <input
                         type="text"
-                        placeholder="Search Contents (Not Implted Yet)..."
+                        placeholder="Search Contents..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className={styles.searchInput}
@@ -261,17 +306,23 @@ export default ({isMobileOpen, onCloseMobile, width, onResize}: CarbonSidebarPro
 
             <div className={styles.navigationContent}>
                 {searchQuery ? (<div className={styles.searchResults}>
-                    <div className={styles.searchResultsHeader}>搜索结果({filteredItems.length})</div>
+                    <div className={styles.searchResultsHeader}>搜索结果({searchResults.length})</div>
                     <div className={styles.searchResultsList}>
-                        {filteredItems.length > 0 ? (filteredItems.map((item) => (<div
+                        {searchResults.length > 0 ? (searchResults.map((item) => (<div
                             key={item.path || item.title}
-                            className={`${styles.searchResultItem} ${isActivePage(pathname, item) ? styles.active : ""}`}
+                            className={`${styles.searchResultItem} ${item.path && isActivePage(pathname, { title: item.title, path: item.path }) ? styles.active : ""}`}
                         >
                             {item.path ? (
                                 <Link href={`/out${item.path}`} className={styles.searchResultLink}
                                       onClick={onCloseMobile}>
-                                    <div className={styles.searchResultTitle}>{item.title}</div>
-                                    <div className={styles.searchResultPath}>{item.path}</div>
+                                    <div className={styles.searchResultTitle}>
+                                        {item.title}
+                                        {item.hits ? (
+                                            <span style={{marginLeft: '8px', fontSize: '0.65rem', color: 'var(--v0plex-text-secondary)'}}>
+                                                ({item.hits} hits)
+                                            </span>
+                                        ) : null}
+                                    </div>
                                 </Link>) : (
                                 <div className={styles.searchResultTitle}>{item.title}</div>)}
                         </div>))) : (<div className={styles.noResults}>暂无搜索结果</div>)}

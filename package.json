@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "vmd:gen": "tsx vmd_parser/main.ts dev",
-    "dev": "pnpm vmd:gen && next dev -H 0.0.0.0",
-    "build": "pnpm vmd:gen && next build",
+    "lex:gen": "bash -lc 'set -e; if [ -n \"${VIRTUAL_ENV:-}\" ]; then echo \"Error: already in a Python venv (${VIRTUAL_ENV}). Please deactivate first.\"; exit 1; fi; if [ ! -d .venv ]; then python3 -m venv .venv; fi; source .venv/bin/activate; python -c \"import jieba\" >/dev/null 2>&1 || python -m pip install jieba; python public/lex.py; deactivate'",
+    "dev": "pnpm vmd:gen && pnpm lex:gen && next dev -H 0.0.0.0",
+    "build": "pnpm vmd:gen && pnpm lex:gen && next build",
     "start": "next start"
   },
   "dependencies": {
