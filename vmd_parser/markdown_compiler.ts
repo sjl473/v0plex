@@ -5,32 +5,95 @@ import { AssetProcessor } from './asset_processor';
 import { CONFIG } from './config';
 import { escapeHtml, capitalize } from './utils';
 import { ProcessedMarkdown, ImageReference, FrontMatterAttributes } from './types';
-import { createPostBlock, createCustomBlock, smallImgExtension, boldItalicExtension, blockMathExtension, inlineMathExtension } from './markdown_extentions';
+import { createPostBlock, createCustomBlock, smallImgExtension, boldItalicExtension, blockMathExtension, inlineMathExtension, setFullSource, clearFullSource } from './markdown_extentions';
+import { VmdErrorCode, createVmdError, ErrorLocation, VmdError } from './errors';
 
 export class MarkdownCompiler {
     private assetProcessor: AssetProcessor;
     private generatedFiles: string[] = [];
     private usedImages: ImageReference[] = [];
+    private currentFile: string = '';
+    private currentMarkdownBody: string = '';
 
     constructor(assetProcessor: AssetProcessor) {
         this.assetProcessor = assetProcessor;
     }
 
-    public compile(markdownBody: string, attributes: FrontMatterAttributes): ProcessedMarkdown {
+    private getLineNumberByContent(content: string): number {
+        if (!this.currentMarkdownBody) return 1;
+        const index = this.currentMarkdownBody.indexOf(content);
+        if (index === -1) return 1;
+        const textBefore = this.currentMarkdownBody.substring(0, index);
+        return (textBefore.match(/\n/g) || []).length + 1;
+    }
+
+    public compile(markdownBody: string, attributes: FrontMatterAttributes, filePath?: string): ProcessedMarkdown {
+        this.currentFile = filePath || '';
+        this.currentMarkdownBody = markdownBody;
         this.resetState();
-        this.configureMarked();
 
-        const rawHtml = marked.parse(markdownBody) as string;
-        let vmdHtml = this.transformHtml(rawHtml);
+        const location: ErrorLocation = filePath ? { file: filePath } : {};
 
-        // Inject Metadata Component
-        vmdHtml = this.injectMetaComponent(vmdHtml, attributes);
+        try {
+            // Pre-validation: check for nested code blocks
+            this.detectNestedCodeBlocks(markdownBody);
+            
+            // Pre-validation: check for single backtick code blocks (only inside other blocks)
+            this.detectSingleBacktickCodeBlocks(markdownBody);
+            
+            // Pre-validation: check for invalid tag nesting in custom blocks
+            this.detectInvalidTagNesting(markdownBody);
 
-        return {
-            html: vmdHtml,
-            generatedFiles: [...this.generatedFiles],
-            usedImages: [...this.usedImages]
-        };
+            // Store full source for extensions to calculate line numbers
+            if (filePath) {
+                setFullSource(filePath, markdownBody);
+            }
+
+            this.configureMarked();
+
+            const rawHtml = marked.parse(markdownBody) as string;
+            let vmdHtml = this.transformHtml(rawHtml);
+            
+            // Post-validation: check for empty markup elements
+            this.detectEmptyMarkup(vmdHtml);
+            
+            vmdHtml = this.injectMetaComponent(vmdHtml, attributes);
+
+            // Clean up full source storage
+            if (filePath) {
+                clearFullSource(filePath);
+            }
+
+            return {
+                html: vmdHtml,
+                generatedFiles: [...this.generatedFiles],
+                usedImages: [...this.usedImages]
+            };
+        } catch (err) {
+            // Clean up full source storage on error too
+            if (filePath) {
+                clearFullSource(filePath);
+            }
+            
+            if (err instanceof VmdError) {
+                throw err;
+            }
+            
+            // Sanitize error message - remove marked's "report to" text and replace with v0plex's
+            let errorMessage = err instanceof Error ? err.message : String(err);
+            errorMessage = errorMessage.replace(
+                /please report this to https:\/\/github\.com\/markedjs\/marked\.?/gi,
+                'If you have questions, please report to https://github.com/sjl473/v0plex'
+            );
+            
+            throw createVmdError(
+                VmdErrorCode.MARKDOWN_COMPILE_ERROR,
+                { details: errorMessage },
+                location,
+                undefined,
+                err instanceof Error ? err : undefined
+            );
+        }
     }
 
     private resetState() {
@@ -38,10 +101,13 @@ export class MarkdownCompiler {
         this.usedImages = [];
     }
 
-    private configureMarked() {
-        const self = this; // Capture class instance for use inside renderer
+    private getLocation(): ErrorLocation {
+        return this.currentFile ? { file: this.currentFile } : {};
+    }
 
-        // Custom Renderer
+    private configureMarked() {
+        const self = this;
+
         const renderer = {
             strong(this: any, token: any) {
                 return `<bold>${this.parser.parseInline(token.tokens)}</bold>`;
@@ -58,8 +124,10 @@ export class MarkdownCompiler {
                 const title = token.title;
                 const text = token.text;
 
+                // Validate image exists
+                self.assetProcessor.validateImageExists(href, self.getLocation());
+
                 let src = href;
-                // Fix: decodeURIComponent handles filenames with spaces (e.g. "pasted%20file.png" -> "pasted file.png")
                 const originalName = decodeURIComponent(path.basename(href));
                 const hashName = self.assetProcessor.getHashedImageName(originalName);
 
@@ -78,31 +146,53 @@ export class MarkdownCompiler {
                 let body = '';
                 for (let i = 0; i < token.items.length; i++) {
                     const item = token.items[i];
-                    const itemContent = this.parser.parse(item.tokens); // Use internal parser
+                    const itemContent = this.parser.parse(item.tokens);
                     body += `<Livmd>${itemContent}</Livmd>\n`;
                 }
                 return token.ordered ? `<Olvmd>${body}</Olvmd>\n` : `<Ulvmd>${body}</Ulvmd>\n`;
             },
 
             codespan(this: any, token: any) {
-                const text = (typeof token === 'string') ? token : token.text;
-                const hash = crypto.createHash('sha256').update(text).digest('hex');
+                try {
+                    const text = (typeof token === 'string') ? token : token.text;
+                    const hash = crypto.createHash('sha256').update(text).digest('hex');
 
-                self.assetProcessor.writeCodeFile(text, hash);
-                self.generatedFiles.push(`${hash}.txt`);
+                    self.assetProcessor.writeCodeFile(text, hash);
+                    self.generatedFiles.push(`${hash}.txt`);
 
-                return `<Inlinecodevmd filePath="${hash}"></Inlinecodevmd>`;
+                    return `<Inlinecodevmd filePath="${hash}"></Inlinecodevmd>`;
+                } catch (err) {
+                    if (err instanceof VmdError) {
+                        throw err;
+                    }
+                    throw createVmdError(
+                        VmdErrorCode.CODE_FILE_WRITE_ERROR,
+                        { details: err instanceof Error ? err.message : String(err) },
+                        self.getLocation()
+                    );
+                }
             },
 
             code(this: any, token: any) {
-                const text = (typeof token === 'string') ? token : token.text;
-                const lang = (typeof token === 'string') ? null : token.lang;
-                const hash = crypto.createHash('sha256').update(text).digest('hex');
+                try {
+                    const text = (typeof token === 'string') ? token : token.text;
+                    const lang = (typeof token === 'string') ? null : token.lang;
+                    const hash = crypto.createHash('sha256').update(text).digest('hex');
 
-                self.assetProcessor.writeCodeFile(text, hash);
-                self.generatedFiles.push(`${hash}.txt`);
+                    self.assetProcessor.writeCodeFile(text, hash);
+                    self.generatedFiles.push(`${hash}.txt`);
 
-                return `<Blockcodevmd language="${escapeHtml(lang || 'text')}" filePath="${hash}"></Blockcodevmd>\n`;
+                    return `<Blockcodevmd language="${escapeHtml(lang || 'text')}" filePath="${hash}"></Blockcodevmd>\n`;
+                } catch (err) {
+                    if (err instanceof VmdError) {
+                        throw err;
+                    }
+                    throw createVmdError(
+                        VmdErrorCode.CODE_FILE_WRITE_ERROR,
+                        { details: err instanceof Error ? err.message : String(err) },
+                        self.getLocation()
+                    );
+                }
             },
 
             paragraph(this: any, token: any) {
@@ -118,14 +208,13 @@ export class MarkdownCompiler {
         };
 
         marked.use({
-            // @ts-ignore
             renderer,
             extensions: [
                 createCustomBlock('info'),
                 createCustomBlock('warning'),
                 createCustomBlock('success'),
-                createPostBlock(),
-                smallImgExtension(this.assetProcessor, CONFIG.IMAGE_WEB_PREFIX),
+                createPostBlock(this.assetProcessor, CONFIG.IMAGE_WEB_PREFIX, this.currentFile),
+                smallImgExtension(this.assetProcessor, CONFIG.IMAGE_WEB_PREFIX, this.currentFile),
                 boldItalicExtension,
                 blockMathExtension,
                 inlineMathExtension
@@ -135,8 +224,54 @@ export class MarkdownCompiler {
 
     private transformHtml(html: string): string {
         let vmdHtml = this.addVmdSuffix(html);
+        vmdHtml = this.fixLinkedImages(vmdHtml);
         vmdHtml = this.unwrapInvalidNesting(vmdHtml);
         return vmdHtml;
+    }
+
+    /**
+     * Fix the order of linked images
+     * When Markdown has [![alt](img)](url), marked produces <a><img></a>
+     * After addVmdSuffix, this becomes <Avmd><Imgvmd></Imgvmd></Avmd>
+     * But the parsing order can be wrong, so we need to fix it
+     */
+    private fixLinkedImages(html: string): string {
+        // Pattern to match incorrectly ordered tags: <Pvmd></Avmd><Imgvmd>...</Imgvmd><Pvmd><Avmd...>
+        // This happens when the link renderer splits the content incorrectly
+        const brokenPattern = /<Pvmd><\/Avmd><Imgvmd([^>]*)><\/Imgvmd><\/Pvmd><Pvmd><Avmd([^>]*)>/g;
+        
+        html = html.replace(brokenPattern, (match, imgAttrs, linkAttrs) => {
+            return `<Avmd${linkAttrs}><Imgvmd${imgAttrs}></Imgvmd></Avmd>`;
+        });
+
+        // Also fix cases where Imgvmd appears outside of Avmd when it should be inside
+        // Pattern: <Avmd...></Avmd>...<Imgvmd...></Imgvmd> (when they should be nested)
+        const imgPattern = /<Imgvmd([^>]*)><\/Imgvmd>/g;
+        const imgMatches: Array<{ full: string; attrs: string; index: number }> = [];
+        let imgMatch;
+        while ((imgMatch = imgPattern.exec(html)) !== null) {
+            imgMatches.push({ full: imgMatch[0], attrs: imgMatch[1], index: imgMatch.index });
+        }
+
+        // Check each image to see if it should be inside a preceding link
+        for (const img of imgMatches.reverse()) { // Process from end to avoid index shifting
+            // Look backwards for a link that might contain this image
+            const beforeImg = html.substring(0, img.index);
+            const afterImg = html.substring(img.index + img.full.length);
+            
+            // Pattern to find <Avmd...></Avmd> immediately before the image
+            const linkPattern = /<Avmd([^>]*)><\/Avmd>\s*$/;
+            const linkMatch = beforeImg.match(linkPattern);
+            
+            if (linkMatch) {
+                // The image should be inside this link
+                const linkAttrs = linkMatch[1];
+                const beforeLink = beforeImg.substring(0, beforeImg.length - linkMatch[0].length);
+                html = beforeLink + `<Avmd${linkAttrs}>${img.full}</Avmd>` + afterImg;
+            }
+        }
+
+        return html;
     }
 
     private addVmdSuffix(html: string): string {
@@ -147,8 +282,7 @@ export class MarkdownCompiler {
             const tagLower = tagName.toLowerCase();
 
             if (tagLower === 'img' || tagLower === 'imgvmd') {
-                // @ts-ignore
-                rest = rest.replace(/src=(["'])(.*?)\1/, (srcMatch, quote, srcValue) => {
+                rest = rest.replace(/src=(["'])(.*?)\1/, (srcMatch: string, quote: string, srcValue: string) => {
                     const originalName = decodeURIComponent(path.basename(srcValue));
                     const hashName = this.assetProcessor.getHashedImageName(originalName);
                     if (hashName) {
@@ -198,7 +332,6 @@ export class MarkdownCompiler {
             if (!hasBlock) return match;
 
             const tagRegex = new RegExp(`(<(${blockPattern})\\b[^>]*>([\\s\\S]*?<\\/\\2>))`, 'gi');
-            // Fix 1: Added explicit type ': string' for blockMatch
             const newContent = content.replace(tagRegex, (blockMatch: string) => {
                 return `</Pvmd>${blockMatch}<Pvmd>`;
             });
@@ -219,7 +352,6 @@ export class MarkdownCompiler {
 
         const metaComponent = `<PageDates${published}${updated}${author} />\n`;
 
-        // Fix 2: Replaced /s flag with [\s\S] pattern for ES6 compatibility
         const h1Regex = /<H1vmd[^>]*>[\s\S]*?<\/H1vmd>/;
         const match = html.match(h1Regex);
 
@@ -228,6 +360,225 @@ export class MarkdownCompiler {
             return html.slice(0, splitIndex) + '\n' + metaComponent + html.slice(splitIndex);
         } else {
             return metaComponent + html;
+        }
+    }
+
+    private detectNestedCodeBlocks(body: string): void {
+        const lines = body.split('\n');
+        let inCodeBlock = false;
+        let codeBlockStartLine = 0;
+        let backtickCount = 0;
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            const codeFenceMatch = line.match(/^(```+)(\w*)/);
+
+            if (codeFenceMatch) {
+                const ticks = codeFenceMatch[1].length;
+
+                if (!inCodeBlock) {
+                    inCodeBlock = true;
+                    codeBlockStartLine = i + 1;
+                    backtickCount = ticks;
+                } else if (ticks === backtickCount) {
+                    inCodeBlock = false;
+                    backtickCount = 0;
+                } else if (ticks >= 3) {
+                    throw createVmdError(
+                        VmdErrorCode.MARKDOWN_NESTED_CODE_BLOCK,
+                        { line: i + 1, expected: backtickCount, found: ticks },
+                        { ...this.getLocation(), line: i + 1 }
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * Detect single backtick code blocks inside custom markup blocks
+     * Only triple backticks (```) are allowed for code blocks in VMD
+     * Single ` inside code blocks (```...```) is allowed, but not as a code block delimiter
+     */
+    private detectSingleBacktickCodeBlocks(body: string): void {
+        const lines = body.split('\n');
+        let inCodeBlock = false;
+        
+        // Track the hierarchy of custom blocks
+        const blockStack: Array<{ tag: string; line: number }> = [];
+        
+        // Custom block tags that trigger validation
+        const customBlockTags = ['post', 'lft', 'rt', 'info', 'warning', 'success', 'smallimg'];
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            const trimmedLine = line.trim();
+            
+            // Check for code block boundaries (triple backticks)
+            const codeBlockMatch = line.match(/^(```+)(\w*)/);
+            if (codeBlockMatch) {
+                const ticks = codeBlockMatch[1].length;
+                if (ticks >= 3) {
+                    inCodeBlock = !inCodeBlock;
+                    continue;
+                }
+            }
+
+            // Skip content inside code blocks (allowed to have anything)
+            if (inCodeBlock) {
+                continue;
+            }
+
+            // Track custom block hierarchy
+            for (const tag of customBlockTags) {
+                const openRegex = new RegExp(`^\\s*<${tag}\\b[^>]*>`, 'i');
+                const closeRegex = new RegExp(`^\\s*</${tag}>`, 'i');
+                
+                if (openRegex.test(trimmedLine)) {
+                    blockStack.push({ tag: tag.toLowerCase(), line: i + 1 });
+                }
+                
+                if (closeRegex.test(trimmedLine)) {
+                    // Pop from stack until we find matching tag
+                    for (let j = blockStack.length - 1; j >= 0; j--) {
+                        if (blockStack[j].tag === tag.toLowerCase()) {
+                            blockStack.splice(j, blockStack.length - j);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Check for single backtick used as code block delimiter (not inline)
+            // Only check if we're inside any custom block
+            // Pattern: line starts with ` followed by non-whitespace, non-backtick content
+            if (blockStack.length > 0 && /^`[^\s`]/.test(trimmedLine)) {
+                throw createVmdError(
+                    VmdErrorCode.MARKDOWN_SINGLE_BACKTICK_CODEBLOCK,
+                    { line: i + 1 },
+                    { ...this.getLocation(), line: i + 1 }
+                );
+            }
+        }
+    }
+
+    /**
+     * Detect invalid tag nesting: <post>, <lft>, <rt> cannot be nested inside other custom blocks
+     * Also checks that these tags are not nested inside each other incorrectly
+     */
+    private detectInvalidTagNesting(body: string): void {
+        const lines = body.split('\n');
+        let inCodeBlock = false;
+        
+        // Track the hierarchy of custom blocks
+        const blockStack: Array<{ tag: string; line: number }> = [];
+        
+        // Tags that cannot contain <post>, <lft>, or <rt>
+        const containerTags = ['info', 'warning', 'success', 'smallimg'];
+        // Tags that are protected (cannot be nested inside other custom blocks except post)
+        const protectedTags = ['post', 'lft', 'rt'];
+        // Tags that can only be inside <post>
+        const postOnlyTags = ['lft', 'rt'];
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            const trimmedLine = line.trim();
+            
+            // Check for code block boundaries (triple backticks)
+            const codeBlockMatch = line.match(/^(```+)(\w*)/);
+            if (codeBlockMatch) {
+                const ticks = codeBlockMatch[1].length;
+                if (ticks >= 3) {
+                    inCodeBlock = !inCodeBlock;
+                    continue;
+                }
+            }
+
+            // Skip content inside code blocks (allowed to have anything)
+            if (inCodeBlock) {
+                continue;
+            }
+
+            // Check for opening tags
+            const openTagMatch = trimmedLine.match(/^<([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>/);
+            
+            if (openTagMatch) {
+                const tagName = openTagMatch[1].toLowerCase();
+                
+                // Check if this is a protected tag being nested inside a container
+                if (protectedTags.includes(tagName)) {
+                    // Check if we're inside a container block (not post)
+                    for (const block of blockStack) {
+                        if (containerTags.includes(block.tag)) {
+                            throw createVmdError(
+                                VmdErrorCode.MARKDOWN_INVALID_TAG_NESTING,
+                                {
+                                    outerTag: block.tag,
+                                    innerTag: tagName,
+                                    line: i + 1
+                                },
+                                { ...this.getLocation(), line: i + 1 }
+                            );
+                        }
+                    }
+                    
+                    // lft and rt can only be inside post
+                    if (postOnlyTags.includes(tagName)) {
+                        const isInsidePost = blockStack.some(b => b.tag === 'post');
+                        if (!isInsidePost) {
+                            throw createVmdError(
+                                VmdErrorCode.MARKDOWN_INVALID_TAG_NESTING,
+                                {
+                                    outerTag: 'none (root level)',
+                                    innerTag: tagName,
+                                    line: i + 1
+                                },
+                                { ...this.getLocation(), line: i + 1 }
+                            );
+                        }
+                    }
+                }
+                
+                // Check if this is a self-closing tag or inline tag (opening and closing on same line)
+                // If so, don't push to stack as it doesn't create a nesting context
+                const closeTagPattern = new RegExp(`<\\/${tagName}>`, 'i');
+                const isSelfClosing = trimmedLine.includes('/>') || closeTagPattern.test(trimmedLine);
+                
+                if (!isSelfClosing) {
+                    blockStack.push({ tag: tagName, line: i + 1 });
+                }
+            }
+            
+            // Check for closing tags at line start (for multi-line blocks)
+            const closeTagMatch = trimmedLine.match(/^<\/([a-zA-Z][a-zA-Z0-9]*)>/);
+            if (closeTagMatch) {
+                const tagName = closeTagMatch[1].toLowerCase();
+                // Pop from stack until we find matching tag
+                while (blockStack.length > 0) {
+                    const popped = blockStack.pop();
+                    if (popped && popped.tag === tagName) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private detectEmptyMarkup(html: string): void {
+        const emptyPatterns = [
+            { tag: 'bold', pattern: /<bold>\s*<\/bold>/g },
+            { tag: 'italic', pattern: /<italic>\s*<\/italic>/g },
+            { tag: 'strike', pattern: /<strike>\s*<\/strike>/g },
+            { tag: 'inlinecode', pattern: /<inlinecode>\s*<\/inlinecode>/g },
+            { tag: 'boldit', pattern: /<boldit>\s*<\/boldit>/g },
+        ];
+
+        for (const { tag, pattern } of emptyPatterns) {
+            const matches = html.match(pattern);
+            if (matches && matches.length > 0) {
+                console.warn(
+                    `[WARNING] Empty ${tag} element detected (${matches.length} occurrence${matches.length > 1 ? 's' : ''})`
+                );
+            }
         }
     }
 }

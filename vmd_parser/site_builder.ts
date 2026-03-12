@@ -6,6 +6,14 @@ import { AssetProcessor } from './asset_processor';
 import { FrontMatterParser } from './frontmatter';
 import { MarkdownCompiler } from './markdown_compiler';
 import { NavigationNode, SiteData } from './types';
+import {
+  VmdErrorCode,
+  createVmdError,
+  ErrorLocation,
+  VmdError,
+  VmdErrorSeverity,
+  ErrorReporter
+} from './errors';
 
 export class SiteBuilder {
   private projectRoot: string;
@@ -13,83 +21,135 @@ export class SiteBuilder {
   private markdownCompiler: MarkdownCompiler;
   private generatedTsxFiles = new Set<string>();
   private navigation: NavigationNode[] = [];
+  private errorReporter: ErrorReporter;
+  private currentFile: string = '';
 
   constructor(projectRoot: string) {
     this.projectRoot = projectRoot;
     this.assetProcessor = new AssetProcessor(projectRoot);
     this.markdownCompiler = new MarkdownCompiler(this.assetProcessor);
+    this.errorReporter = new ErrorReporter();
   }
 
-  public build(inputPath: string): void {
+  public build(inputPath: string): boolean {
     console.log(`Building site from: ${inputPath}`);
 
-    const stats = fs.statSync(inputPath);
-    if (stats.isDirectory()) {
-      this.scanDirectoryForImages(inputPath);
-      this.traverseDirectory(inputPath, this.navigation);
-    } else if (stats.isFile()) {
-      this.processFile(inputPath, this.navigation);
+    if (!fs.existsSync(inputPath)) {
+      this.errorReporter.createError(
+        VmdErrorCode.BUILD_INVALID_PATH,
+        { path: inputPath }
+      );
+      this.errorReporter.printReports();
+      return false;
     }
 
-    this.writeSiteData();
-    console.log("Build Complete.");
+    try {
+      const stats = fs.statSync(inputPath);
+      if (stats.isDirectory()) {
+        this.scanDirectoryForImages(inputPath);
+        this.traverseDirectory(inputPath, this.navigation);
+      } else if (stats.isFile()) {
+        this.processFile(inputPath, this.navigation);
+      }
+
+      this.writeSiteData();
+
+      this.errorReporter.printReports();
+      const summary = this.errorReporter.getSummary();
+
+      if (summary.errors > 0) {
+        console.error(`Build failed with ${summary.errors} error(s) and ${summary.warnings} warning(s)`);
+        return false;
+      } else if (summary.warnings > 0) {
+        console.warn(`Build completed with ${summary.warnings} warning(s)`);
+      } else {
+        console.log('Build completed successfully');
+      }
+
+      return true;
+    } catch (err) {
+      if (err instanceof VmdError) {
+        this.errorReporter.report(err);
+      } else {
+        this.errorReporter.createError(
+          VmdErrorCode.BUILD_ERROR,
+          { details: err instanceof Error ? err.message : String(err) },
+          { file: inputPath }
+        );
+      }
+      this.errorReporter.printReports();
+      return false;
+    }
   }
 
   private scanDirectoryForImages(dir: string): void {
     if (!fs.existsSync(dir)) return;
+
     const items = fs.readdirSync(dir);
     items.forEach(item => {
-        if (item.startsWith('.') || item === 'node_modules' || CONFIG.EXCLUDED_DIRS.includes(item)) return;
-        const srcPath = path.join(dir, item);
-        const stats = fs.statSync(srcPath);
-        
-        if (stats.isDirectory()) {
-            this.scanDirectoryForImages(srcPath);
-        } else if (stats.isFile()) {
-             const ext = path.extname(item).toLowerCase();
-             if (['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp'].includes(ext)) {
-                 this.assetProcessor.processImage(srcPath);
-             }
+      if (item.startsWith('.') || item === 'node_modules' || CONFIG.EXCLUDED_DIRS.includes(item)) return;
+
+      const srcPath = path.join(dir, item);
+      const stats = fs.statSync(srcPath);
+
+      if (stats.isDirectory()) {
+        this.scanDirectoryForImages(srcPath);
+      } else if (stats.isFile()) {
+        const ext = path.extname(item).toLowerCase();
+        if (['.jpg', '.jpeg', '.png', '.gif', '.svg', '.webp'].includes(ext)) {
+          try {
+            this.assetProcessor.processImage(srcPath);
+          } catch (err) {
+            if (err instanceof VmdError) {
+              this.errorReporter.report(err);
+            }
+          }
         }
+      }
     });
   }
 
   private traverseDirectory(dir: string, navContainer: NavigationNode[]): void {
     const items = fs.readdirSync(dir);
-    
-    // Sort items
+
     items.sort((a, b) => {
-        const getNum = (s: string) => {
-            const match = s.match(/^_(\d+)_/);
-            return match ? parseInt(match[1], 10) : null;
-        };
-        const numA = getNum(a);
-        const numB = getNum(b);
-        if (numA !== null && numB !== null) return numA - numB;
-        return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+      const getNum = (s: string) => {
+        const match = s.match(/^(\d+)_/);
+        return match ? parseInt(match[1], 10) : null;
+      };
+      const numA = getNum(a);
+      const numB = getNum(b);
+      if (numA !== null && numB !== null) return numA - numB;
+      return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
     });
 
     items.forEach(item => {
-        if (item.startsWith('.') || CONFIG.EXCLUDED_DIRS.includes(item)) return;
-        
-        const srcPath = path.join(dir, item);
-        const stats = fs.statSync(srcPath);
+      if (item.startsWith('.') || CONFIG.EXCLUDED_DIRS.includes(item)) return;
 
-        if (stats.isDirectory()) {
-            if (/^_0\d/.test(item)) {
-                const folderTitle = cleanTitle(item, true);
-                const newNavGroup: NavigationNode = {
-                    title: folderTitle,
-                    type: 'folder',
-                    path: "", hash: "", hasCustomTsx: false, mdPath: "", tsxPath: "",
-                    codeFiles: [], images: [], children: []
-                };
-                navContainer.push(newNavGroup);
-                this.traverseDirectory(srcPath, newNavGroup.children);
-            }
-        } else if (stats.isFile()) {
-            this.processFile(srcPath, navContainer);
+      const srcPath = path.join(dir, item);
+      const stats = fs.statSync(srcPath);
+
+      if (stats.isDirectory()) {
+        if (/^_(\d+)/.test(item)) {
+          const folderTitle = cleanTitle(item, true);
+          const newNavGroup: NavigationNode = {
+            title: folderTitle,
+            type: 'folder',
+            path: "",
+            hash: "",
+            hasCustomTsx: false,
+            mdPath: "",
+            tsxPath: "",
+            codeFiles: [],
+            images: [],
+            children: []
+          };
+          navContainer.push(newNavGroup);
+          this.traverseDirectory(srcPath, newNavGroup.children);
         }
+      } else if (stats.isFile()) {
+        this.processFile(srcPath, navContainer);
+      }
     });
   }
 
@@ -97,63 +157,94 @@ export class SiteBuilder {
     const ext = path.extname(srcPath).toLowerCase();
     const relativePath = path.relative(this.projectRoot, srcPath);
     const item = path.basename(srcPath);
+    const location: ErrorLocation = { file: relativePath };
+
+    this.currentFile = relativePath;
 
     if (ext === '.md' || ext === '.mdx') {
-        console.log(`Processing MD/MDX: ${srcPath}`);
-        const mdContent = fs.readFileSync(srcPath, 'utf8');
-        const hash = calculatePathHash(relativePath);
-        const pageOutDir = path.join(this.projectRoot, CONFIG.APP_DIR, CONFIG.OUT_DIR, hash);
+      console.log(`Processing MD/MDX: ${srcPath}`);
+
+      let mdContent: string;
+      try {
+        mdContent = fs.readFileSync(srcPath, 'utf8');
+      } catch (err) {
+        this.errorReporter.createError(
+          VmdErrorCode.FILE_SYSTEM_ERROR,
+          { message: `Cannot read file: ${err instanceof Error ? err.message : String(err)}` },
+          location
+        );
+        return;
+      }
+
+      const hash = calculatePathHash(relativePath);
+      const pageOutDir = path.join(this.projectRoot, CONFIG.APP_DIR, CONFIG.OUT_DIR, hash);
+
+      try {
         fs.mkdirSync(pageOutDir, { recursive: true });
-        
-        const destFile = path.join(pageOutDir, 'page.tsx');
+      } catch (err) {
+        this.errorReporter.createError(
+          VmdErrorCode.FILE_SYSTEM_ERROR,
+          { message: `Cannot create directory: ${err instanceof Error ? err.message : String(err)}` },
+          location
+        );
+        return;
+      }
 
-        try {
-            const { attributes, body } = FrontMatterParser.parse(mdContent);
-            FrontMatterParser.validate(attributes, srcPath);
+      const destFile = path.join(pageOutDir, 'page.tsx');
 
-            const pageTitle = attributes.title || cleanTitle(item);
-            const hasCustomTsx = attributes.has_custom_tsx === 'true' || attributes.has_custom_tsx === true;
+      try {
+        const { attributes, body } = FrontMatterParser.parse(mdContent, relativePath);
+        FrontMatterParser.validate(attributes, relativePath);
 
-            if (hasCustomTsx) {
-                const mdBaseName = path.basename(srcPath, ext);
-                const expectedTsxPath = path.join(path.dirname(srcPath), `${mdBaseName}.tsx`);
+        const pageTitle = attributes.title || cleanTitle(item);
+        const hasCustomTsx = FrontMatterParser.hasCustomTsx(attributes);
 
-                if (!fs.existsSync(expectedTsxPath)) {
-                    throw new Error(`has_custom_tsx=true but missing TSX: ${expectedTsxPath}`);
-                }
+        if (hasCustomTsx) {
+          const mdBaseName = path.basename(srcPath, ext);
+          const expectedTsxPath = path.join(path.dirname(srcPath), `${mdBaseName}.tsx`);
 
-                const tsxContent = fs.readFileSync(expectedTsxPath, 'utf8');
-                fs.writeFileSync(destFile, tsxContent);
+          if (!fs.existsSync(expectedTsxPath)) {
+            throw createVmdError(
+              VmdErrorCode.BUILD_MISSING_CUSTOM_TSX,
+              { expectedPath: expectedTsxPath },
+              location
+            );
+          }
 
-                navContainer.push({
-                    title: pageTitle,
-                    type: 'page',
-                    path: `/${hash}`,
-                    hash: hash,
-                    hasCustomTsx: true,
-                    mdPath: relativePath,
-                    tsxPath: path.relative(this.projectRoot, destFile),
-                    codeFiles: [],
-                    images: [],
-                    children: []
-                });
+          const tsxContent = fs.readFileSync(expectedTsxPath, 'utf8');
+          fs.writeFileSync(destFile, tsxContent);
 
-                // Prevent the matching TSX from also being processed in the ".tsx" branch
-                this.generatedTsxFiles.add(path.basename(expectedTsxPath));
-                return;
-            }
+          navContainer.push({
+            title: pageTitle,
+            type: 'page',
+            path: `/${hash}`,
+            hash: hash,
+            hasCustomTsx: true,
+            mdPath: relativePath,
+            tsxPath: path.relative(this.projectRoot, destFile),
+            codeFiles: [],
+            images: [],
+            children: []
+          });
 
-            if (!body.trim().startsWith('# ')) {
-                throw new Error(`File ${srcPath} is missing a markdown H1 ('# Title').`);
-            }
+          this.generatedTsxFiles.add(path.basename(expectedTsxPath));
+          return;
+        }
 
-            const { html, generatedFiles, usedImages } = this.markdownCompiler.compile(body, attributes);
+        if (!body.trim().startsWith('# ')) {
+          throw createVmdError(
+            VmdErrorCode.BUILD_MISSING_H1,
+            {},
+            location
+          );
+        }
 
-            // Generate React Component
-            const reactSafeHtml = html.replace(/class="/g, 'className="');
-            const editUrl = `${CONFIG.GITHUB_REPO_BASE_URL}/out/${hash}`;
-            
-            const tsxContent = `
+        const { html, generatedFiles, usedImages } = this.markdownCompiler.compile(body, attributes, relativePath);
+
+        const reactSafeHtml = html.replace(/class="/g, 'className="');
+        const editUrl = `${CONFIG.GITHUB_REPO_BASE_URL}/out/${hash}`;
+
+        const tsxContent = `
 "use client"
 
 import React from 'react';
@@ -189,59 +280,120 @@ ${reactSafeHtml}
   );
 }
 `;
-            fs.writeFileSync(destFile, tsxContent.trim());
+        fs.writeFileSync(destFile, tsxContent.trim());
 
-            navContainer.push({
-                title: pageTitle,
-                type: 'page',
-                path: `/${hash}`,
-                hash: hash,
-                hasCustomTsx: hasCustomTsx,
-                mdPath: relativePath,
-                tsxPath: path.relative(this.projectRoot, destFile),
-                codeFiles: generatedFiles.map(f => ({ originalPath: "", hashPath: path.join(CONFIG.VMD_CODE_DIR, f) })),
-                images: usedImages.map(img => ({ originalName: img.originalName, hashPath: path.join(CONFIG.VMD_IMAGE_DIR, img.hashName) })),
-                children: []
-            });
-            
-            this.generatedTsxFiles.add(path.basename(srcPath, ext) + '.tsx');
+        navContainer.push({
+          title: pageTitle,
+          type: 'page',
+          path: `/${hash}`,
+          hash: hash,
+          hasCustomTsx: hasCustomTsx,
+          mdPath: relativePath,
+          tsxPath: path.relative(this.projectRoot, destFile),
+          codeFiles: generatedFiles.map(f => ({ originalPath: "", hashPath: path.join(CONFIG.VMD_CODE_DIR, f) })),
+          images: usedImages.map(img => ({ originalName: img.originalName, hashPath: path.join(CONFIG.VMD_IMAGE_DIR, img.hashName) })),
+          children: []
+        });
 
-        } catch (err: any) {
-            console.error(`Failed to convert ${srcPath}:`, err.message);
+        this.generatedTsxFiles.add(path.basename(srcPath, ext) + '.tsx');
+
+      } catch (err) {
+        if (err instanceof VmdError) {
+          this.errorReporter.report(err);
+        } else {
+          this.errorReporter.createError(
+            VmdErrorCode.BUILD_ERROR,
+            { details: err instanceof Error ? err.message : String(err) },
+            location
+          );
         }
+      }
 
     } else if (ext === '.tsx') {
-        const basename = path.basename(item);
-        if (!this.generatedTsxFiles.has(basename)) {
-            console.log(`Processing Custom TSX: ${srcPath}`);
-            const content = fs.readFileSync(srcPath, 'utf8');
-            const hash = calculatePathHash(relativePath);
-            const pageOutDir = path.join(this.projectRoot, CONFIG.APP_DIR, CONFIG.OUT_DIR, hash);
-            fs.mkdirSync(pageOutDir, { recursive: true });
-            const destFile = path.join(pageOutDir, 'page.tsx');
-            fs.writeFileSync(destFile, content);
+      const basename = path.basename(item);
+      if (!this.generatedTsxFiles.has(basename)) {
+        console.log(`Processing Custom TSX: ${srcPath}`);
 
-            navContainer.push({
-                title: cleanTitle(item),
-                type: 'page',
-                path: `/${hash}`,
-                hash: hash,
-                hasCustomTsx: true,
-                mdPath: "",
-                tsxPath: path.relative(this.projectRoot, destFile),
-                codeFiles: [], images: [], children: []
-            });
+        let content: string;
+        try {
+          content = fs.readFileSync(srcPath, 'utf8');
+        } catch (err) {
+          this.errorReporter.createError(
+            VmdErrorCode.FILE_SYSTEM_ERROR,
+            { message: `Cannot read TSX file: ${err instanceof Error ? err.message : String(err)}` },
+            location
+          );
+          return;
         }
+
+        const hash = calculatePathHash(relativePath);
+        const pageOutDir = path.join(this.projectRoot, CONFIG.APP_DIR, CONFIG.OUT_DIR, hash);
+
+        try {
+          fs.mkdirSync(pageOutDir, { recursive: true });
+        } catch (err) {
+          this.errorReporter.createError(
+            VmdErrorCode.FILE_SYSTEM_ERROR,
+            { message: `Cannot create directory: ${err instanceof Error ? err.message : String(err)}` },
+            location
+          );
+          return;
+        }
+
+        const destFile = path.join(pageOutDir, 'page.tsx');
+
+        try {
+          fs.writeFileSync(destFile, content);
+        } catch (err) {
+          this.errorReporter.createError(
+            VmdErrorCode.FILE_SYSTEM_ERROR,
+            { message: `Cannot write TSX file: ${err instanceof Error ? err.message : String(err)}` },
+            location
+          );
+          return;
+        }
+
+        navContainer.push({
+          title: cleanTitle(item),
+          type: 'page',
+          path: `/${hash}`,
+          hash: hash,
+          hasCustomTsx: true,
+          mdPath: "",
+          tsxPath: path.relative(this.projectRoot, destFile),
+          codeFiles: [],
+          images: [],
+          children: []
+        });
+      }
     }
   }
 
   private writeSiteData(): void {
     const siteData: SiteData = {
-        navigation: this.navigation,
-        images: this.assetProcessor.getSiteImages()
+      navigation: this.navigation,
+      images: this.assetProcessor.getSiteImages()
     };
-    const jsonPath = path.join(this.projectRoot, CONFIG.PUBLIC_DIR, CONFIG.VMD_JSON_DIR, CONFIG.SITE_DATA_JSON);
-    fs.writeFileSync(jsonPath, JSON.stringify(siteData, null, 2));
-    console.log(`Generated unified ${CONFIG.SITE_DATA_JSON}`);
+
+    const jsonDir = path.join(this.projectRoot, CONFIG.PUBLIC_DIR, CONFIG.VMD_JSON_DIR);
+    const jsonPath = path.join(jsonDir, CONFIG.SITE_DATA_JSON);
+
+    try {
+      if (!fs.existsSync(jsonDir)) {
+        fs.mkdirSync(jsonDir, { recursive: true });
+      }
+      fs.writeFileSync(jsonPath, JSON.stringify(siteData, null, 2));
+      console.log(`Generated unified ${CONFIG.SITE_DATA_JSON}`);
+    } catch (err) {
+      this.errorReporter.createError(
+        VmdErrorCode.FILE_SYSTEM_ERROR,
+        { message: `Cannot write site data: ${err instanceof Error ? err.message : String(err)}` },
+        { file: jsonPath }
+      );
+    }
+  }
+
+  public getErrorReporter(): ErrorReporter {
+    return this.errorReporter;
   }
 }

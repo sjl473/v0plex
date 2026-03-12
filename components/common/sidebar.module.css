@@ -1,11 +1,11 @@
 .sidebar {
     position: fixed;
-    top: 48px;
+    top: 40px;
     left: 0;
     z-index: 100;
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 48px);
+    height: calc(100vh - 40px);
     background: var(--v0plex-background);
     border-right: 1px solid var(--v0plex-border-subtle);
     overflow-y: auto;

@@ -56,6 +56,19 @@
     text-indent: 0 !important;
 }
 
+/* Make ALL elements inside highlight boxes use the same background color */
+.highlightBox * {
+    background-color: var(--v0plex-background-hover) !important;
+}
+
+/* Override Carbon Design System list styles */
+.highlightBox :global(.cds--list--unordered),
+.highlightBox :global(.cds--list--ordered),
+.highlightBox :global(.cds--list-item),
+.highlightBox :global(.cds--list--nested) {
+    background-color: var(--v0plex-background-hover) !important;
+}
+
 .highlightContent * {
     text-indent: 0 !important;
 }

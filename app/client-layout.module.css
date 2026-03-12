@@ -34,7 +34,7 @@
     max-width: 100%;
     overflow: auto;
     /* Changed bottom padding to 0 to bring pagination closer */
-    padding: 2rem 2rem 0 2rem;
+    padding: 2rem 2rem 0 1.25rem;
     word-wrap: break-word;
     overflow-wrap: break-word;
     box-sizing: border-box;
@@ -82,7 +82,7 @@
 
     .contentWrapper {
         /* Changed bottom padding to 0 for mobile as well */
-        padding: 1rem 1rem 0 1rem;
+        padding: 1rem 1rem 0 0.5rem;
         width: 100%;
         max-width: 100%;
         box-sizing: border-box;
@@ -91,6 +91,6 @@
 
 @media (max-width: 480px) {
     .contentWrapper {
-        padding: 0.5rem 0.5rem 0 0.5rem;
+        padding: 0.5rem 0.5rem 0 0.25rem;
     }
 }
