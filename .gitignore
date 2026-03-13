@@ -24,7 +24,7 @@ app/out/
 public/vmdcode/
 public/vmdimage/
 public/vmdjson/
-
+public/vmdtoken/
 # optional: if these are generated build artifacts in your repo
 gh-page-output/
 

@@ -4,13 +4,21 @@ import { VmdErrorCode, createVmdError, ErrorLocation } from './errors';
 
 // Global store for full source per file
 const fullSourceStore: Map<string, string> = new Map();
+// Global store for frontmatter line offset per file
+const frontmatterOffsetStore: Map<string, number> = new Map();
 
-export function setFullSource(filePath: string, source: string): void {
+export function setFullSource(filePath: string, source: string, frontmatterLineCount: number = 0): void {
   fullSourceStore.set(filePath, source);
+  frontmatterOffsetStore.set(filePath, frontmatterLineCount);
 }
 
 export function clearFullSource(filePath: string): void {
   fullSourceStore.delete(filePath);
+  frontmatterOffsetStore.delete(filePath);
+}
+
+function getFrontmatterOffset(filePath: string): number {
+  return frontmatterOffsetStore.get(filePath) || 0;
 }
 
 function getFileLocation(context: any): ErrorLocation {
@@ -91,9 +99,17 @@ const POST_ONLY_TAGS = ['lft', 'rt'];
 const CONTAINER_TAGS = ['info', 'warning', 'success', 'smallimg'];
 
 // Calculate line number by counting newlines in text before a position
-function getLineAtPosition(fullSource: string, position: number): number {
+// Returns the actual line number in the full markdown file (including frontmatter)
+function getLineAtPosition(fullSource: string, position: number, filePath?: string): number {
   const textBefore = fullSource.substring(0, position);
-  return (textBefore.match(/\n/g) || []).length + 1;
+  const bodyLineNumber = (textBefore.match(/\n/g) || []).length + 1;
+  
+  // Add frontmatter offset to get the actual line number
+  if (filePath) {
+    const offset = getFrontmatterOffset(filePath);
+    return bodyLineNumber + offset;
+  }
+  return bodyLineNumber;
 }
 
 /**
@@ -279,7 +295,7 @@ export const createPostBlock = (assetProcessor?: any, imageWebPrefix?: string, f
             const matchText = match[0];
             postBlockStartPos = fullSource.indexOf(matchText);
             if (postBlockStartPos !== -1) {
-              location.line = getLineAtPosition(fullSource, postBlockStartPos);
+              location.line = getLineAtPosition(fullSource, postBlockStartPos, location.file);
             }
           }
         }
@@ -342,7 +358,7 @@ export const createPostBlock = (assetProcessor?: any, imageWebPrefix?: string, f
             const lftRelativePos = match[0].indexOf('<lft>');
             if (lftRelativePos !== -1) {
               const lftAbsolutePos = postBlockStartPos + lftRelativePos;
-              lftLineNumber = getLineAtPosition(fullSource, lftAbsolutePos);
+              lftLineNumber = getLineAtPosition(fullSource, lftAbsolutePos, location.file);
             }
           }
         }
@@ -351,11 +367,17 @@ export const createPostBlock = (assetProcessor?: any, imageWebPrefix?: string, f
         // Validate lft content:
         // 1. Check for code blocks (```)
         const codeBlockRegex = /```[\s\S]*?```/g;
-        if (codeBlockRegex.test(lftContent)) {
+        const codeBlockMatch = codeBlockRegex.exec(lftContent);
+        if (codeBlockMatch) {
+          // Calculate the line number of the code block within lftContent
+          const codeBlockStartInLft = codeBlockMatch.index;
+          const linesBeforeCodeBlock = (lftContent.substring(0, codeBlockStartInLft).match(/\n/g) || []).length;
+          const actualCodeBlockLine = lftLineNumber + linesBeforeCodeBlock;
+          const codeBlockLocation: ErrorLocation = { ...location, line: actualCodeBlockLine };
           throw createVmdError(
             VmdErrorCode.EXTENSION_POST_LFT_CODE_BLOCK,
-            { line: lftLineNumber },
-            lftLocation
+            { line: actualCodeBlockLine },
+            codeBlockLocation
           );
         }
 
@@ -435,7 +457,7 @@ export const createPostBlock = (assetProcessor?: any, imageWebPrefix?: string, f
             const rtRelativePos = match[0].indexOf('<rt>');
             if (rtRelativePos !== -1) {
               const rtAbsolutePos = postBlockStartPos + rtRelativePos;
-              rtLineNumber = getLineAtPosition(fullSource, rtAbsolutePos);
+              rtLineNumber = getLineAtPosition(fullSource, rtAbsolutePos, location.file);
             }
           }
         }
@@ -675,10 +697,10 @@ export const createCustomBlock = (name: string) => {
         
         // Check for empty content (only for blocks NOT in code blocks)
         if (!contentStr && !inCodeBlock) {
-          // Calculate line number from the match position
+          // Calculate line number from the match position with frontmatter offset
           let line = location.line || 1;
           if (fullSource && matchPos !== -1) {
-            line = getLineAtPosition(fullSource, matchPos);
+            line = getLineAtPosition(fullSource, matchPos, location.file);
           }
           throw createVmdError(
             VmdErrorCode.EXTENSION_EMPTY_CUSTOM_BLOCK,

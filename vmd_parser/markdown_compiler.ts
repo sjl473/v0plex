@@ -1,5 +1,6 @@
 import { marked } from 'marked';
 import path from 'path';
+import fs from 'fs';
 import crypto from 'crypto';
 import { AssetProcessor } from './asset_processor';
 import { CONFIG } from './config';
@@ -10,26 +11,39 @@ import { VmdErrorCode, createVmdError, ErrorLocation, VmdError } from './errors'
 
 export class MarkdownCompiler {
     private assetProcessor: AssetProcessor;
+    private projectRoot: string;
     private generatedFiles: string[] = [];
     private usedImages: ImageReference[] = [];
     private currentFile: string = '';
     private currentMarkdownBody: string = '';
+    private frontmatterLineOffset: number = 0;
 
-    constructor(assetProcessor: AssetProcessor) {
+    constructor(assetProcessor: AssetProcessor, projectRoot: string) {
         this.assetProcessor = assetProcessor;
+        this.projectRoot = projectRoot;
     }
 
     private getLineNumberByContent(content: string): number {
-        if (!this.currentMarkdownBody) return 1;
+        if (!this.currentMarkdownBody) return 1 + this.frontmatterLineOffset;
         const index = this.currentMarkdownBody.indexOf(content);
-        if (index === -1) return 1;
+        if (index === -1) return 1 + this.frontmatterLineOffset;
         const textBefore = this.currentMarkdownBody.substring(0, index);
-        return (textBefore.match(/\n/g) || []).length + 1;
+        return (textBefore.match(/\n/g) || []).length + 1 + this.frontmatterLineOffset;
     }
 
-    public compile(markdownBody: string, attributes: FrontMatterAttributes, filePath?: string): ProcessedMarkdown {
+    /**
+     * Get the actual line number in the full markdown file (including frontmatter)
+     */
+    private getActualLineNumber(bodyLineNumber: number): number {
+        return bodyLineNumber + this.frontmatterLineOffset;
+    }
+
+    public compile(markdownBody: string, attributes: FrontMatterAttributes, filePath?: string, frontmatterLineCount?: number): ProcessedMarkdown {
         this.currentFile = filePath || '';
         this.currentMarkdownBody = markdownBody;
+        // Calculate frontmatter line offset: frontmatter lines + 1 (for the closing --- line)
+        // The body starts after the frontmatter block
+        this.frontmatterLineOffset = frontmatterLineCount || 0;
         this.resetState();
 
         const location: ErrorLocation = filePath ? { file: filePath } : {};
@@ -45,9 +59,13 @@ export class MarkdownCompiler {
             this.detectInvalidTagNesting(markdownBody);
 
             // Store full source for extensions to calculate line numbers
+            // Pass the full source with frontmatter for accurate line number calculation
             if (filePath) {
-                setFullSource(filePath, markdownBody);
+                setFullSource(filePath, markdownBody, this.frontmatterLineOffset);
             }
+
+            // Save tokens for debugging (before any processing that might fail)
+            this.saveTokens(markdownBody, filePath);
 
             this.configureMarked();
 
@@ -99,6 +117,86 @@ export class MarkdownCompiler {
     private resetState() {
         this.generatedFiles = [];
         this.usedImages = [];
+    }
+
+    /**
+     * Save marked lexer tokens to public/vmdtoken for debugging
+     * Only enabled when CONFIG.ENABLE_TOKEN_GENERATION is true
+     * Adds line numbers to each token based on frontmatter offset
+     */
+    private saveTokens(markdownBody: string, filePath?: string): void {
+        if (!filePath || !CONFIG.ENABLE_TOKEN_GENERATION) return;
+        
+        try {
+            // Get tokens from marked lexer
+            const tokens = marked.lexer(markdownBody);
+            
+            // Add line numbers to tokens
+            const tokensWithLineNumbers = this.addLineNumbersToTokens(tokens, markdownBody);
+            
+            // Create vmdtoken directory
+            const tokenDir = path.join(this.projectRoot, CONFIG.PUBLIC_DIR, CONFIG.VMD_TOKEN_DIR);
+            if (!fs.existsSync(tokenDir)) {
+                fs.mkdirSync(tokenDir, { recursive: true });
+            }
+            
+            // Generate filename based on input file
+            const baseName = path.basename(filePath, path.extname(filePath));
+            const tokenFileName = `${baseName}.tokens.json`;
+            const tokenFilePath = path.join(tokenDir, tokenFileName);
+            
+            // Write tokens as formatted JSON
+            fs.writeFileSync(tokenFilePath, JSON.stringify(tokensWithLineNumbers, null, 2), 'utf-8');
+        } catch (err) {
+            // Silently fail - this is for debugging only
+            console.warn(`Warning: Could not save tokens for ${filePath}: ${err instanceof Error ? err.message : String(err)}`);
+        }
+    }
+
+    /**
+     * Add line numbers to tokens based on their position in the source
+     */
+    private addLineNumbersToTokens(tokens: any[], source: string): any[] {
+        let currentPos = 0;
+        
+        return tokens.map(token => {
+            // Find the position of this token's raw text in the source
+            const tokenStartPos = source.indexOf(token.raw, currentPos);
+            if (tokenStartPos !== -1) {
+                currentPos = tokenStartPos + token.raw.length;
+                
+                // Calculate line number
+                const textBefore = source.substring(0, tokenStartPos);
+                const bodyLineNumber = (textBefore.match(/\n/g) || []).length + 1;
+                const actualLineNumber = bodyLineNumber + this.frontmatterLineOffset;
+                
+                // Create enhanced token with line number
+                const enhancedToken = {
+                    ...token,
+                    lineNumber: actualLineNumber,
+                    bodyLineNumber: bodyLineNumber
+                };
+                
+                // Recursively add line numbers to nested tokens
+                if (token.tokens && Array.isArray(token.tokens)) {
+                    enhancedToken.tokens = this.addLineNumbersToTokens(token.tokens, source);
+                }
+                if (token.items && Array.isArray(token.items)) {
+                    enhancedToken.items = token.items.map((item: any) => {
+                        if (item.tokens && Array.isArray(item.tokens)) {
+                            return {
+                                ...item,
+                                tokens: this.addLineNumbersToTokens(item.tokens, source)
+                            };
+                        }
+                        return item;
+                    });
+                }
+                
+                return enhancedToken;
+            }
+            return token;
+        });
     }
 
     private getLocation(): ErrorLocation {
@@ -384,10 +482,11 @@ export class MarkdownCompiler {
                     inCodeBlock = false;
                     backtickCount = 0;
                 } else if (ticks >= 3) {
+                    const actualLine = this.getActualLineNumber(i + 1);
                     throw createVmdError(
                         VmdErrorCode.MARKDOWN_NESTED_CODE_BLOCK,
-                        { line: i + 1, expected: backtickCount, found: ticks },
-                        { ...this.getLocation(), line: i + 1 }
+                        { line: actualLine, expected: backtickCount, found: ticks },
+                        { ...this.getLocation(), line: actualLine }
                     );
                 }
             }
@@ -452,10 +551,11 @@ export class MarkdownCompiler {
             // Only check if we're inside any custom block
             // Pattern: line starts with ` followed by non-whitespace, non-backtick content
             if (blockStack.length > 0 && /^`[^\s`]/.test(trimmedLine)) {
+                const actualLine = this.getActualLineNumber(i + 1);
                 throw createVmdError(
                     VmdErrorCode.MARKDOWN_SINGLE_BACKTICK_CODEBLOCK,
-                    { line: i + 1 },
-                    { ...this.getLocation(), line: i + 1 }
+                    { line: actualLine },
+                    { ...this.getLocation(), line: actualLine }
                 );
             }
         }
@@ -509,14 +609,15 @@ export class MarkdownCompiler {
                     // Check if we're inside a container block (not post)
                     for (const block of blockStack) {
                         if (containerTags.includes(block.tag)) {
+                            const actualLine = this.getActualLineNumber(i + 1);
                             throw createVmdError(
                                 VmdErrorCode.MARKDOWN_INVALID_TAG_NESTING,
                                 {
                                     outerTag: block.tag,
                                     innerTag: tagName,
-                                    line: i + 1
+                                    line: actualLine
                                 },
-                                { ...this.getLocation(), line: i + 1 }
+                                { ...this.getLocation(), line: actualLine }
                             );
                         }
                     }
@@ -525,14 +626,15 @@ export class MarkdownCompiler {
                     if (postOnlyTags.includes(tagName)) {
                         const isInsidePost = blockStack.some(b => b.tag === 'post');
                         if (!isInsidePost) {
+                            const actualLine = this.getActualLineNumber(i + 1);
                             throw createVmdError(
                                 VmdErrorCode.MARKDOWN_INVALID_TAG_NESTING,
                                 {
                                     outerTag: 'none (root level)',
                                     innerTag: tagName,
-                                    line: i + 1
+                                    line: actualLine
                                 },
-                                { ...this.getLocation(), line: i + 1 }
+                                { ...this.getLocation(), line: actualLine }
                             );
                         }
                     }

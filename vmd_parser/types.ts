@@ -10,6 +10,7 @@ export interface FrontMatterAttributes {
 export interface ParseResult {
   attributes: FrontMatterAttributes;
   body: string;
+  frontmatterLineCount: number;
 }
 
 export interface ImageReference {

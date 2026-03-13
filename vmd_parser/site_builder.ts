@@ -27,7 +27,7 @@ export class SiteBuilder {
   constructor(projectRoot: string) {
     this.projectRoot = projectRoot;
     this.assetProcessor = new AssetProcessor(projectRoot);
-    this.markdownCompiler = new MarkdownCompiler(this.assetProcessor);
+    this.markdownCompiler = new MarkdownCompiler(this.assetProcessor, projectRoot);
     this.errorReporter = new ErrorReporter();
   }
 
@@ -193,7 +193,7 @@ export class SiteBuilder {
       const destFile = path.join(pageOutDir, 'page.tsx');
 
       try {
-        const { attributes, body } = FrontMatterParser.parse(mdContent, relativePath);
+        const { attributes, body, frontmatterLineCount } = FrontMatterParser.parse(mdContent, relativePath);
         FrontMatterParser.validate(attributes, relativePath);
 
         const pageTitle = attributes.title || cleanTitle(item);
@@ -239,7 +239,7 @@ export class SiteBuilder {
           );
         }
 
-        const { html, generatedFiles, usedImages } = this.markdownCompiler.compile(body, attributes, relativePath);
+        const { html, generatedFiles, usedImages } = this.markdownCompiler.compile(body, attributes, relativePath, frontmatterLineCount);
 
         const reactSafeHtml = html.replace(/class="/g, 'className="');
         const editUrl = `${CONFIG.GITHUB_REPO_BASE_URL}/out/${hash}`;

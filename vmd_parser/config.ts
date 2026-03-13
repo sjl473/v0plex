@@ -7,6 +7,10 @@ export const CONFIG = {
   VMD_CODE_DIR: 'vmdcode',
   VMD_IMAGE_DIR: 'vmdimage',
   VMD_JSON_DIR: 'vmdjson',
+  VMD_TOKEN_DIR: 'vmdtoken',
+  
+  // Feature flags
+  ENABLE_TOKEN_GENERATION: process.env.VMD_ENABLE_TOKENS === 'true',
   
   EXCLUDED_DIRS: ['node_modules', 'libs', 'vmd', 'dist', 'build', '.git', '.idea', 'out'],
   

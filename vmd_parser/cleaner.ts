@@ -20,6 +20,7 @@ export class Cleaner {
       this.resetDirectory(path.join(publicPath, CONFIG.VMD_CODE_DIR));
       this.resetDirectory(path.join(publicPath, CONFIG.VMD_IMAGE_DIR));
       this.resetDirectory(path.join(publicPath, CONFIG.VMD_JSON_DIR));
+      this.resetDirectory(path.join(publicPath, CONFIG.VMD_TOKEN_DIR));
       this.resetDirectory(path.join(appPath, CONFIG.OUT_DIR));
 
       console.log("Clean Done.");

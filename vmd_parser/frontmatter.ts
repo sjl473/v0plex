@@ -8,7 +8,7 @@ export class FrontMatterParser {
     try {
       const match = content.match(/^---\s*[\r\n]+([\s\S]*?)[\r\n]+---/);
       if (!match) {
-        return { attributes: {}, body: content };
+        return { attributes: {}, body: content, frontmatterLineCount: 0 };
       }
 
       const frontMatterBlock = match[1];
@@ -28,7 +28,10 @@ export class FrontMatterParser {
         }
       });
 
-      return { attributes, body };
+      // Calculate frontmatter line count: the entire frontmatter block including both --- lines
+      const frontmatterLineCount = match[0].split('\n').length;
+
+      return { attributes, body, frontmatterLineCount };
     } catch (err) {
       throw createVmdError(
         VmdErrorCode.FRONTMATTER_PARSE_ERROR,
