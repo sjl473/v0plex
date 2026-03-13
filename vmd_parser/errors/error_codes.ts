@@ -1,0 +1,77 @@
+/**
+ * VMD Error Codes
+ * Defines all possible error types in the VMD parser
+ */
+
+/**
+ * Error Code Enum - defines all possible error types
+ */
+export enum VmdErrorCode {
+  // System errors (1xxx)
+  UNKNOWN_ERROR = 'E1000',
+  CONFIG_ERROR = 'E1001',
+  FILE_SYSTEM_ERROR = 'E1002',
+
+  // Frontmatter errors (2xxx)
+  FRONTMATTER_PARSE_ERROR = 'E2000',
+  FRONTMATTER_MISSING_REQUIRED = 'E2001',
+  FRONTMATTER_INVALID_VALUE = 'E2002',
+  FRONTMATTER_INVALID_FORMAT = 'E2003',
+
+  // Markdown compilation errors (3xxx)
+  MARKDOWN_COMPILE_ERROR = 'E3000',
+  MARKDOWN_SYNTAX_ERROR = 'E3001',
+  MARKDOWN_NESTED_CODE_BLOCK = 'E3002',
+  MARKDOWN_XSS_DETECTED = 'E3003',
+  MARKDOWN_EMPTY_MARKUP = 'E3004',
+  MARKDOWN_SINGLE_BACKTICK_CODEBLOCK = 'E3005',
+  MARKDOWN_INVALID_TAG_NESTING = 'E3006',
+
+  // Extension syntax errors (4xxx)
+  EXTENSION_POST_MISSING_TAGS = 'E4000',
+  EXTENSION_POST_INVALID_CONTENT = 'E4001',
+  EXTENSION_POST_MISSING_IMAGE = 'E4002',
+  EXTENSION_POST_MISSING_ALT = 'E4003',
+  EXTENSION_CUSTOM_BLOCK_ERROR = 'E4004',
+  EXTENSION_POST_INVALID_FORMAT = 'E4005',
+  EXTENSION_POST_LFT_INVALID_TAG = 'E4006',
+  EXTENSION_POST_RT_INVALID_SPACING = 'E4007',
+  EXTENSION_POST_LFT_CODE_BLOCK = 'E4008',
+  EXTENSION_POST_LFT_DISALLOWED_TAG = 'E4009',
+  EXTENSION_POST_LFT_BLOCK_MATH = 'E4010',
+  EXTENSION_POST_LFT_IMAGE = 'E4011',
+  EXTENSION_POST_LFT_BLOCKQUOTE = 'E4012',
+  EXTENSION_POST_LFT_INVALID_SPACING = 'E4013',
+  EXTENSION_EMPTY_CUSTOM_BLOCK = 'E4014',
+
+  // Asset processing errors (5xxx)
+  ASSET_PROCESS_ERROR = 'E5000',
+  IMAGE_NOT_FOUND = 'E5001',
+  IMAGE_PROCESS_FAILED = 'E5002',
+  CODE_FILE_WRITE_ERROR = 'E5003',
+
+  // Site build errors (6xxx)
+  BUILD_ERROR = 'E6000',
+  BUILD_MISSING_H1 = 'E6001',
+  BUILD_MISSING_CUSTOM_TSX = 'E6002',
+  BUILD_INVALID_PATH = 'E6003',
+}
+
+/**
+ * Error Severity Level
+ */
+export enum VmdErrorSeverity {
+  FATAL = 'fatal',
+  ERROR = 'error',
+  WARNING = 'warning',
+  INFO = 'info',
+}
+
+/**
+ * Error Location Information
+ */
+export interface ErrorLocation {
+  file?: string;
+  line?: number;
+  column?: number;
+}

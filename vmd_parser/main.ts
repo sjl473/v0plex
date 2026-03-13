@@ -1,6 +1,6 @@
 import path from 'path';
 import fs from 'fs';
-import { SiteBuilder } from './site_builder';
+import { SiteBuilder } from './builder';
 import { Cleaner } from './cleaner';
 import { VmdErrorCode, createVmdError, ErrorReporter, VmdErrorSeverity, VmdError } from './errors';
 
