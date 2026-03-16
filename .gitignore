@@ -17,8 +17,8 @@ build/
 .vercel/
 coverage/
 
-# omit /app/out folder contents
-app/out/
+# omit /app/page folder contents (generated markdown pages)
+app/page/
 
 # omit generated public assets
 public/vmdcode/

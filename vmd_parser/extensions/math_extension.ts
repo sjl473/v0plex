@@ -5,7 +5,7 @@
 
 import { escapeHtml } from '../utils';
 import { VmdErrorCode, createVmdError, ErrorLocation } from '../errors';
-import { getFileLocation } from './utils';
+import { getFileLocation } from './validation_helpers';
 
 // XSS detection for math formulas
 const dangerousPatterns = [

@@ -6,8 +6,8 @@
 import path from 'path';
 import { escapeHtml } from '../utils';
 import { VmdErrorCode, createVmdError, ErrorLocation } from '../errors';
-import { getFullSource, getFrontmatterOffset } from './source_store';
-import { getFileLocation, getLineAtPosition, isPositionInCode } from './utils';
+import { getMarkdownSource, getFrontmatterLineCount } from './compilation_context';
+import { getFileLocation, getLineAtPosition, isPositionInCode } from './validation_helpers';
 
 export const createPostBlock = (assetProcessor?: any, imageWebPrefix?: string, filePath?: string) => {
   return {
@@ -43,7 +43,7 @@ export const createPostBlock = (assetProcessor?: any, imageWebPrefix?: string, f
 
         // First check using the full source if available
         if (location.file) {
-          const fullSource = getFullSource(location.file);
+          const fullSource = getMarkdownSource(location.file);
           if (fullSource) {
             // Find position of this match in full source
             const matchText = match[0];
@@ -71,7 +71,7 @@ export const createPostBlock = (assetProcessor?: any, imageWebPrefix?: string, f
         // Calculate base position of this post block in the full source
         let postBlockStartPos = 0;
         if (location.file) {
-          const fullSource = getFullSource(location.file);
+          const fullSource = getMarkdownSource(location.file);
           if (fullSource) {
             // Find where this specific match starts in the full source
             // We need to search for the exact match text
@@ -136,7 +136,7 @@ export const createPostBlock = (assetProcessor?: any, imageWebPrefix?: string, f
         // Calculate line number for lft content
         let lftLineNumber = location.line || 1;
         if (location.file && postBlockStartPos !== -1) {
-          const fullSource = getFullSource(location.file);
+          const fullSource = getMarkdownSource(location.file);
           if (fullSource) {
             const lftRelativePos = match[0].indexOf('<lft>');
             if (lftRelativePos !== -1) {
@@ -234,7 +234,7 @@ export const createPostBlock = (assetProcessor?: any, imageWebPrefix?: string, f
         // Calculate exact line number for <rt> tag
         let rtLineNumber = location.line || 1;
         if (location.file && postBlockStartPos !== -1) {
-          const fullSource = getFullSource(location.file);
+          const fullSource = getMarkdownSource(location.file);
           if (fullSource) {
             // Find position of <rt> within the post block
             const rtRelativePos = match[0].indexOf('<rt>');

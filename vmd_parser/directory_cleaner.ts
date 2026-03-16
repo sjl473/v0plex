@@ -3,7 +3,7 @@ import path from 'path';
 import { CONFIG } from './config';
 import { VmdErrorCode, createVmdError, VmdError, VmdErrorSeverity } from './errors';
 
-export class Cleaner {
+export class DirectoryCleaner {
   private projectRoot: string;
 
   constructor(projectRoot: string) {

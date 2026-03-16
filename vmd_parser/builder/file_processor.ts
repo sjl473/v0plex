@@ -133,7 +133,7 @@ function processMarkdownFile(
     const { html, generatedFiles, usedImages } = markdownCompiler.compile(body, attributes, relativePath, frontmatterLineCount);
 
     const reactSafeHtml = html.replace(/class="/g, 'className="');
-    const editUrl = `${CONFIG.GITHUB_REPO_BASE_URL}/out/${hash}`;
+    const editUrl = `${CONFIG.GITHUB_REPO_BASE_URL}${CONFIG.URL_PREFIX}/${hash}`;
 
     const tsxContent = generatePageComponent(reactSafeHtml, editUrl);
     fs.writeFileSync(destFile, tsxContent.trim());

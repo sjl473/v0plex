@@ -1,8 +1,9 @@
 /**
- * Utility functions for markdown extensions
+ * Validation and helper functions for markdown block extensions
+ * Contains validation logic for custom blocks, post blocks, and nesting rules
  */
 
-import { getFullSource, getFrontmatterOffset } from './source_store';
+import { getMarkdownSource, getFrontmatterLineCount } from './compilation_context';
 
 // Tags that are protected and cannot be nested inside other custom blocks
 export const PROTECTED_TAGS = ['post', 'lft', 'rt'];
@@ -81,7 +82,7 @@ export function getLineAtPosition(fullSource: string, position: number, filePath
 
   // Add frontmatter offset to get the actual line number
   if (filePath) {
-    const offset = getFrontmatterOffset(filePath);
+    const offset = getFrontmatterLineCount(filePath);
     return bodyLineNumber + offset;
   }
   return bodyLineNumber;

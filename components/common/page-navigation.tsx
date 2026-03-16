@@ -2,6 +2,7 @@
 import {usePathname} from "next/navigation"
 import Link from "next/link"
 import {useEffect, useState} from "react"
+import {SITE_CONFIG} from "@/config/site.config"
 import styles from "./page-navigation.module.css"
 
 interface SiteNode {
@@ -108,7 +109,7 @@ export default function PageNavigation() {
     const getNavHref = (page: SiteNode | null) => {
         if (!page) return "#";
         if (!page.path) return "/";
-        return `/out${page.path}`;
+        return `${SITE_CONFIG.URL_PREFIX}${page.path}`;
     };
 
     const prevTitle = prevPage ? prevPage.title : "None"

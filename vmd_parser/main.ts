@@ -1,7 +1,7 @@
 import path from 'path';
 import fs from 'fs';
 import { SiteBuilder } from './builder';
-import { Cleaner } from './cleaner';
+import { DirectoryCleaner } from './directory_cleaner';
 import { VmdErrorCode, createVmdError, ErrorReporter, VmdErrorSeverity, VmdError } from './errors';
 
 function printUsage(): void {
@@ -44,7 +44,7 @@ function main(): void {
 
     console.log('Cleaning previous build...');
     try {
-      const cleaner = new Cleaner(projectRoot);
+      const cleaner = new DirectoryCleaner(projectRoot);
       cleaner.clean();
       console.log('Clean complete\n');
     } catch (err) {

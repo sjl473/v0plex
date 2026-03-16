@@ -13,7 +13,7 @@ import { VmdErrorCode, createVmdError, VmdError } from '../errors';
 import {
   createPostBlock,
   createCustomBlock,
-  smallImgExtension,
+  smallImageExtension,
   boldItalicExtension,
   blockMathExtension,
   inlineMathExtension
@@ -152,7 +152,7 @@ export function configureMarked(
       createCustomBlock('warning'),
       createCustomBlock('success'),
       createPostBlock(assetProcessor, CONFIG.IMAGE_WEB_PREFIX, currentFile),
-      smallImgExtension(assetProcessor, CONFIG.IMAGE_WEB_PREFIX, currentFile),
+      smallImageExtension(assetProcessor, CONFIG.IMAGE_WEB_PREFIX, currentFile),
       boldItalicExtension,
       blockMathExtension,
       inlineMathExtension

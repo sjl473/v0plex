@@ -9,11 +9,11 @@ import { marked } from 'marked';
 import { CONFIG } from '../config';
 
 /**
- * Save marked lexer tokens to public/vmdtoken for debugging
+ * Write marked lexer tokens to public/vmdtoken for debugging
  * Only enabled when CONFIG.ENABLE_TOKEN_GENERATION is true
  * Adds line numbers to each token based on frontmatter offset
  */
-export function saveTokens(
+export function writeTokens(
   markdownBody: string,
   filePath: string | undefined,
   projectRoot: string,

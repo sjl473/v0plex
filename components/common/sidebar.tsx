@@ -6,6 +6,7 @@ import Link from "next/link"
 import {usePathname} from "next/navigation"
 import {Search, X} from "lucide-react"
 import {ChevronDown, ChevronRight} from "@carbon/icons-react"
+import {SITE_CONFIG} from "@/config/site.config"
 import styles from "./sidebar.module.css"
 
 interface NavItem {
@@ -75,7 +76,7 @@ function isActivePage(pathname: string, item: NavItem): boolean {
     }
 
     const normalizedPathname = normalizePath(pathname)
-    const normalizedItemPath = normalizePath(`/out${item.path}`)
+    const normalizedItemPath = normalizePath(`${SITE_CONFIG.URL_PREFIX}${item.path}`)
 
     return normalizedPathname === normalizedItemPath
 }
@@ -271,7 +272,7 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
                 {isExpanded ? <ChevronDown size={12}/> : <ChevronRight size={12}/>}
               </span>
                 </button>) : item.path ? (
-                    <Link href={`/out${item.path}`} className={styles.navItemLink} onClick={onCloseMobile}>
+                    <Link href={`${SITE_CONFIG.URL_PREFIX}${item.path}`} className={styles.navItemLink} onClick={onCloseMobile}>
                         <span className={styles.navItemText}>{item.title}</span>
                     </Link>) : (<span className={styles.navItemText}>{item.title}</span>)}
             </div>
@@ -313,7 +314,7 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
                             className={`${styles.searchResultItem} ${item.path && isActivePage(pathname, { title: item.title, path: item.path }) ? styles.active : ""}`}
                         >
                             {item.path ? (
-                                <Link href={`/out${item.path}`} className={styles.searchResultLink}
+                                <Link href={`${SITE_CONFIG.URL_PREFIX}${item.path}`} className={styles.searchResultLink}
                                       onClick={onCloseMobile}>
                                     <div className={styles.searchResultTitle}>
                                         {item.title}

@@ -14,18 +14,18 @@ import { ProcessedMarkdown, ImageReference, FrontMatterAttributes } from '../typ
 import {
   createPostBlock,
   createCustomBlock,
-  smallImgExtension,
+  smallImageExtension,
   boldItalicExtension,
   blockMathExtension,
   inlineMathExtension,
-  setFullSource,
-  clearFullSource
+  setCompilationContext,
+  clearCompilationContext
 } from '../extensions';
 import { VmdErrorCode, createVmdError, ErrorLocation, VmdError } from '../errors';
 import { createRenderer } from './renderer';
 import { addVmdSuffix, fixLinkedImages, unwrapInvalidNesting, injectMetaComponent } from './transformers';
 import { detectNestedCodeBlocks, detectSingleBacktickCodeBlocks, detectInvalidTagNesting, detectEmptyMarkup } from './validators';
-import { saveTokens } from './token_saver';
+import { writeTokens } from './token_writer';
 
 export class MarkdownCompiler {
   private assetProcessor: AssetProcessor;
@@ -76,14 +76,14 @@ export class MarkdownCompiler {
       // Pre-validation: check for invalid tag nesting in custom blocks
       this.detectInvalidTagNesting(markdownBody);
 
-      // Store full source for extensions to calculate line numbers
-      // Pass the full source with frontmatter for accurate line number calculation
+      // Store compilation context for extensions to calculate line numbers
+      // Pass the markdown source and frontmatter offset for accurate line number calculation
       if (filePath) {
-        setFullSource(filePath, markdownBody, this.frontmatterLineOffset);
+        setCompilationContext(filePath, markdownBody, this.frontmatterLineOffset);
       }
 
       // Save tokens for debugging (before any processing that might fail)
-      this.saveTokens(markdownBody, filePath);
+      this.writeTokensToFile(markdownBody, filePath);
 
       this.configureMarked();
 
@@ -97,7 +97,7 @@ export class MarkdownCompiler {
 
       // Clean up full source storage
       if (filePath) {
-        clearFullSource(filePath);
+        clearCompilationContext(filePath);
       }
 
       return {
@@ -108,7 +108,7 @@ export class MarkdownCompiler {
     } catch (err) {
       // Clean up full source storage on error too
       if (filePath) {
-        clearFullSource(filePath);
+        clearCompilationContext(filePath);
       }
 
       if (err instanceof VmdError) {
@@ -138,12 +138,12 @@ export class MarkdownCompiler {
   }
 
   /**
-   * Save marked lexer tokens to public/vmdtoken for debugging
+   * Write marked lexer tokens to public/vmdtoken for debugging
    * Only enabled when CONFIG.ENABLE_TOKEN_GENERATION is true
    * Adds line numbers to each token based on frontmatter offset
    */
-  private saveTokens(markdownBody: string, filePath?: string): void {
-    saveTokens(markdownBody, filePath, this.projectRoot, this.frontmatterLineOffset);
+  private writeTokensToFile(markdownBody: string, filePath?: string): void {
+    writeTokens(markdownBody, filePath, this.projectRoot, this.frontmatterLineOffset);
   }
 
   private getLocation(): ErrorLocation {
@@ -162,7 +162,7 @@ export class MarkdownCompiler {
         createCustomBlock('warning'),
         createCustomBlock('success'),
         createPostBlock(this.assetProcessor, CONFIG.IMAGE_WEB_PREFIX, this.currentFile),
-        smallImgExtension(this.assetProcessor, CONFIG.IMAGE_WEB_PREFIX, this.currentFile),
+        smallImageExtension(this.assetProcessor, CONFIG.IMAGE_WEB_PREFIX, this.currentFile),
         boldItalicExtension,
         blockMathExtension,
         inlineMathExtension

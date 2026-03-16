@@ -5,8 +5,8 @@
 
 import { capitalize } from '../utils';
 import { VmdErrorCode, createVmdError, ErrorLocation } from '../errors';
-import { getFullSource, getFrontmatterOffset } from './source_store';
-import { getFileLocation, isPositionInCode, getLineAtPosition } from './utils';
+import { getMarkdownSource, getFrontmatterLineCount } from './compilation_context';
+import { getFileLocation, isPositionInCode, getLineAtPosition } from './validation_helpers';
 
 export const createCustomBlock = (name: string) => {
   return {
@@ -40,7 +40,7 @@ export const createCustomBlock = (name: string) => {
 
         // Check if this match is inside a code block by checking position in full source
         if (location.file) {
-          fullSource = getFullSource(location.file);
+          fullSource = getMarkdownSource(location.file);
           if (fullSource) {
             // Find the position of this match in the full source
             // We need to find the specific occurrence that corresponds to this tokenizer call

@@ -5,9 +5,9 @@
 
 import path from 'path';
 import { VmdErrorCode } from '../errors';
-import { getFileLocation } from './utils';
+import { getFileLocation } from './validation_helpers';
 
-export const smallImgExtension = (assetProcessor: any, imageWebPrefix: string, filePath?: string) => {
+export const smallImageExtension = (assetProcessor: any, imageWebPrefix: string, filePath?: string) => {
   return {
     name: 'smallimg',
     level: 'inline' as const,
