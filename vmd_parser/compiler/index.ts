@@ -25,5 +25,3 @@ export {
   detectEmptyMarkup
 } from './validators.ts';
 
-// Token writer
-export { writeTokens } from './token_writer.ts';

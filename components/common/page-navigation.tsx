@@ -2,8 +2,10 @@
 import {usePathname} from "next/navigation"
 import Link from "next/link"
 import {useEffect, useState} from "react"
-import {SITE_CONFIG} from "@/config/site.config"
+import {SITE_CONFIG, getStrings} from "@/config/site.config"
 import styles from "./page-navigation.module.css"
+
+const strings = getStrings();
 
 interface SiteNode {
     title: string;
@@ -91,7 +93,7 @@ export default function PageNavigation() {
     let nextPage: SiteNode | null = null;
 
     const homePage: SiteNode = {
-        title: "Home",
+        title: strings.pageNav.home,
         type: "page",
         path: "",
         hash: "",
@@ -112,8 +114,8 @@ export default function PageNavigation() {
         return `${SITE_CONFIG.URL_PREFIX}${page.path}`;
     };
 
-    const prevTitle = prevPage ? prevPage.title : "None"
-    const nextTitle = nextPage ? nextPage.title : "None"
+    const prevTitle = prevPage ? prevPage.title : strings.pageNav.none
+    const nextTitle = nextPage ? nextPage.title : strings.pageNav.none
 
     const truncatedPrevTitle = truncateTitle(prevTitle);
     const truncatedNextTitle = truncateTitle(nextTitle);
@@ -121,20 +123,20 @@ export default function PageNavigation() {
     return (<div className={styles.navigation}>
         <div className={styles.navContainer}>
             {prevPage ? (<Link href={getNavHref(prevPage)} className={styles.navLink} title={prevTitle}>
-                <div className={styles.navLabel}>Previous Page</div>
+                <div className={styles.navLabel}>{strings.pageNav.previousPage}</div>
                 <div className={styles.navTitle}>{truncatedPrevTitle}</div>
             </Link>) : (<div className={`${styles.navLink} ${styles.disabled}`}>
-                <div className={styles.navLabel}>Previous Page</div>
-                <div className={styles.navTitle}>None</div>
+                <div className={styles.navLabel}>{strings.pageNav.previousPage}</div>
+                <div className={styles.navTitle}>{strings.pageNav.none}</div>
             </div>)}
 
             {nextPage ? (<Link href={getNavHref(nextPage)} className={`${styles.navLink} ${styles.nextLink}`}
                                title={nextTitle}>
-                <div className={styles.navLabel}>Next Page</div>
+                <div className={styles.navLabel}>{strings.pageNav.nextPage}</div>
                 <div className={styles.navTitle}>{truncatedNextTitle}</div>
             </Link>) : (<div className={`${styles.navLink} ${styles.disabled}`}>
-                <div className={styles.navLabel}>Next Page</div>
-                <div className={styles.navTitle}>None</div>
+                <div className={styles.navLabel}>{strings.pageNav.nextPage}</div>
+                <div className={styles.navTitle}>{strings.pageNav.none}</div>
             </div>)}
         </div>
     </div>)

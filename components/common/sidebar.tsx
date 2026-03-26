@@ -6,8 +6,10 @@ import Link from "next/link"
 import {usePathname} from "next/navigation"
 import {Search, X} from "lucide-react"
 import {ChevronDown, ChevronRight} from "@carbon/icons-react"
-import {SITE_CONFIG} from "@/config/site.config"
+import {SITE_CONFIG, getStrings} from "@/config/site.config"
 import styles from "./sidebar.module.css"
+
+const strings = getStrings();
 
 interface NavItem {
     title: string
@@ -265,7 +267,7 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
                 {hasChildren ? (<button
                     className={styles.navItemButton}
                     onClick={(e) => handleItemClick(item, itemId, e)}
-                    aria-label={isExpanded ? "Collapse" : "Expand"}
+                    aria-label={isExpanded ? strings.sidebar.collapse : strings.sidebar.expand}
                 >
                     <span className={styles.navItemText}>{item.title}</span>
                     <span className={styles.navItemChevron}>
@@ -293,13 +295,13 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
                     <Search className={styles.searchIcon}/>
                     <input
                         type="text"
-                        placeholder="Search Contents..."
+                        placeholder={strings.sidebar.searchPlaceholder}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className={styles.searchInput}
                     />
                     {searchQuery && (<button onClick={clearSearch} className={styles.searchClearButton}
-                                             aria-label="Clear search">
+                                             aria-label={strings.sidebar.clearSearch}>
                         <X size={12}/>
                     </button>)}
                 </div>
@@ -307,7 +309,7 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
 
             <div className={styles.navigationContent}>
                 {searchQuery ? (<div className={styles.searchResults}>
-                    <div className={styles.searchResultsHeader}>Searched Results({searchResults.length})</div>
+                    <div className={styles.searchResultsHeader}>{strings.sidebar.searchResults}({searchResults.length})</div>
                     <div className={styles.searchResultsList}>
                         {searchResults.length > 0 ? (searchResults.map((item) => (<div
                             key={item.path || item.title}
@@ -320,18 +322,18 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
                                         {item.title}
                                         {item.hits ? (
                                             <span style={{marginLeft: '8px', fontSize: '0.65rem', color: 'var(--v0plex-text-secondary)'}}>
-                                                ({item.hits} hits)
+                                                ({item.hits} {strings.sidebar.hits})
                                             </span>
                                         ) : null}
                                     </div>
                                 </Link>) : (
                                 <div className={styles.searchResultTitle}>{item.title}</div>)}
-                        </div>))) : (<div className={styles.noResults}>No Searched Result</div>)}
+                        </div>))) : (<div className={styles.noResults}>{strings.sidebar.noResults}</div>)}
                     </div>
                 </div>) : null}
 
                 <div className={styles.directoryStructure}>
-                    <div className={styles.allArticlesHeader}>All Posts</div>
+                    <div className={styles.allArticlesHeader}>{strings.sidebar.allPosts || 'All Posts'}</div>
                     <div className={styles.directoryStructureContent}>
                         {navStructure.map((item) => renderNavItem(item))}
                     </div>

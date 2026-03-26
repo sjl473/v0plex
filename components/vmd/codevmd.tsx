@@ -2,6 +2,9 @@
 
 import React, {useEffect, useState} from 'react';
 import CodeBlock from '../common/code-block';
+import { getStrings } from '@/config/site.config';
+
+const strings = getStrings();
 
 interface CodeVmdProps {
     filePath: string;
@@ -22,7 +25,7 @@ export function Inlinecodevmd({filePath}: CodeVmdProps) {
             })
             .catch(err => {
                 // console.error("Failed to load inline code:", err);
-                setCode("Error loading code");
+                setCode(strings.code.error);
                 setLoading(false);
             });
     }, [filePath]);
@@ -47,12 +50,12 @@ export function Blockcodevmd({filePath, language}: CodeVmdProps) {
             })
             .catch(err => {
                 // console.error("Failed to load block code:", err);
-                setCode("Error loading code");
+                setCode(strings.code.error);
                 setLoading(false);
             });
     }, [filePath]);
 
-    if (loading) return <div className="loading-code-block">Loading code...</div>;
+    if (loading) return <div className="loading-code-block">{strings.code.loading}</div>;
 
     return <CodeBlock language={language}>{code}</CodeBlock>;
 }

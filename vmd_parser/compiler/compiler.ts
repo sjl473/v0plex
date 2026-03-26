@@ -19,13 +19,15 @@ import {
   blockMathExtension,
   inlineMathExtension,
   setCompilationContext,
-  clearCompilationContext
+  clearCompilationContext,
+  clearLineTracker,
+  scanVmdBlocks,
+  resetBlockIndices
 } from '../extensions';
 import { VmdErrorCode, createVmdError, ErrorLocation, VmdError } from '../errors';
 import { createRenderer } from './renderer';
 import { addVmdSuffix, fixLinkedImages, unwrapInvalidNesting, injectMetaComponent } from './transformers';
 import { detectNestedCodeBlocks, detectSingleBacktickCodeBlocks, detectInvalidTagNesting, detectEmptyMarkup } from './validators';
-import { writeTokens } from './token_writer';
 
 export class MarkdownCompiler {
   private assetProcessor: AssetProcessor;
@@ -82,8 +84,11 @@ export class MarkdownCompiler {
         setCompilationContext(filePath, markdownBody, this.frontmatterLineOffset);
       }
 
-      // Save tokens for debugging (before any processing that might fail)
-      this.writeTokensToFile(markdownBody, filePath);
+      // Initialize line tracker and pre-scan all VMD blocks for accurate line numbers
+      clearLineTracker(filePath || '');
+      resetBlockIndices();
+      scanVmdBlocks(markdownBody, this.frontmatterLineOffset);
+
 
       this.configureMarked();
 
@@ -115,12 +120,7 @@ export class MarkdownCompiler {
         throw err;
       }
 
-      // Sanitize error message - remove marked's "report to" text and replace with v0plex's
       let errorMessage = err instanceof Error ? err.message : String(err);
-      errorMessage = errorMessage.replace(
-        /please report this to https:\/\/github\.com\/markedjs\/marked\.?/gi,
-        'If you have questions, please report to https://github.com/sjl473/v0plex'
-      );
 
       throw createVmdError(
         VmdErrorCode.MARKDOWN_COMPILE_ERROR,
@@ -135,15 +135,6 @@ export class MarkdownCompiler {
   private resetState() {
     this.generatedFiles = [];
     this.usedImages = [];
-  }
-
-  /**
-   * Write marked lexer tokens to public/vmdtoken for debugging
-   * Only enabled when CONFIG.ENABLE_TOKEN_GENERATION is true
-   * Adds line numbers to each token based on frontmatter offset
-   */
-  private writeTokensToFile(markdownBody: string, filePath?: string): void {
-    writeTokens(markdownBody, filePath, this.projectRoot, this.frontmatterLineOffset);
   }
 
   private getLocation(): ErrorLocation {

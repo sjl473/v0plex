@@ -6,8 +6,9 @@
 import path from 'path';
 import { escapeHtml } from '../utils';
 import { VmdErrorCode, createVmdError, ErrorLocation } from '../errors';
-import { getMarkdownSource, getFrontmatterLineCount } from './compilation_context';
-import { getFileLocation, getLineAtPosition, isPositionInCode } from './validation_helpers';
+import { getMarkdownSource } from './compilation_context';
+import { getFileLocation, isPositionInCode } from './validation_helpers';
+import { getBlockLineNumber, calculateSubContentLine } from './line_tracker';
 
 export const createPostBlock = (assetProcessor?: any, imageWebPrefix?: string, filePath?: string) => {
   return {
@@ -68,19 +69,10 @@ export const createPostBlock = (assetProcessor?: any, imageWebPrefix?: string, f
         const fullContent = match[1];
         // location already defined above
 
-        // Calculate base position of this post block in the full source
-        let postBlockStartPos = 0;
-        if (location.file) {
-          const fullSource = getMarkdownSource(location.file);
-          if (fullSource) {
-            // Find where this specific match starts in the full source
-            // We need to search for the exact match text
-            const matchText = match[0];
-            postBlockStartPos = fullSource.indexOf(matchText);
-            if (postBlockStartPos !== -1) {
-              location.line = getLineAtPosition(fullSource, postBlockStartPos, location.file);
-            }
-          }
+        // Get accurate line number from pre-scanned line tracker
+        const postBlockLine = getBlockLineNumber();
+        if (postBlockLine !== undefined) {
+          location.line = postBlockLine;
         }
 
         const lftRegex = /<lft>([\s\S]*?)<\/lft>/;
@@ -134,34 +126,31 @@ export const createPostBlock = (assetProcessor?: any, imageWebPrefix?: string, f
         const rtContent = rtMatch[1];
 
         // Calculate line number for lft content
-        let lftLineNumber = location.line || 1;
-        if (location.file && postBlockStartPos !== -1) {
-          const fullSource = getMarkdownSource(location.file);
-          if (fullSource) {
-            const lftRelativePos = match[0].indexOf('<lft>');
-            if (lftRelativePos !== -1) {
-              const lftAbsolutePos = postBlockStartPos + lftRelativePos;
-              lftLineNumber = getLineAtPosition(fullSource, lftAbsolutePos, location.file);
-            }
-          }
-        }
+        // lft is always on the line after <post>, so add 1 to post line
+        let lftLineNumber = (location.line || 1) + 1;
         const lftLocation: ErrorLocation = { ...location, line: lftLineNumber };
 
         // Validate lft content:
-        // 1. Check for code blocks (```)
+        // 1. Check for code blocks (```) - must be multi-line fenced code blocks
+        // Match fenced blocks that span multiple lines (contain at least one newline)
         const codeBlockRegex = /```[\s\S]*?```/g;
-        const codeBlockMatch = codeBlockRegex.exec(lftContent);
-        if (codeBlockMatch) {
-          // Calculate the line number of the code block within lftContent
-          const codeBlockStartInLft = codeBlockMatch.index;
-          const linesBeforeCodeBlock = (lftContent.substring(0, codeBlockStartInLft).match(/\n/g) || []).length;
-          const actualCodeBlockLine = lftLineNumber + linesBeforeCodeBlock;
-          const codeBlockLocation: ErrorLocation = { ...location, line: actualCodeBlockLine };
-          throw createVmdError(
-            VmdErrorCode.EXTENSION_POST_LFT_CODE_BLOCK,
-            { line: actualCodeBlockLine },
-            codeBlockLocation
-          );
+        let codeBlockMatch;
+        while ((codeBlockMatch = codeBlockRegex.exec(lftContent)) !== null) {
+          const blockContent = codeBlockMatch[0];
+          // Only treat as a code block if it spans multiple lines
+          // Single-line fenced blocks like ```code``` are allowed as inline code
+          if (blockContent.includes('\n')) {
+            // Calculate the line number of the code block within lftContent
+            const codeBlockStartInLft = codeBlockMatch.index;
+            const linesBeforeCodeBlock = (lftContent.substring(0, codeBlockStartInLft).match(/\n/g) || []).length;
+            const actualCodeBlockLine = lftLineNumber + linesBeforeCodeBlock;
+            const codeBlockLocation: ErrorLocation = { ...location, line: actualCodeBlockLine };
+            throw createVmdError(
+              VmdErrorCode.EXTENSION_POST_LFT_CODE_BLOCK,
+              { line: actualCodeBlockLine },
+              codeBlockLocation
+            );
+          }
         }
 
         // 2. Check for block math ($$...$$)
@@ -176,21 +165,33 @@ export const createPostBlock = (assetProcessor?: any, imageWebPrefix?: string, f
 
         // 3. Check for images (![...](...))
         const lftImageRegex = /!\[.*?\]\(.*?\)/g;
-        if (lftImageRegex.test(lftContent)) {
+        const imageMatch = lftImageRegex.exec(lftContent);
+        if (imageMatch) {
+          // Calculate the line number of the image within lftContent
+          const imageStartInLft = imageMatch.index;
+          const linesBeforeImage = (lftContent.substring(0, imageStartInLft).match(/\n/g) || []).length;
+          const actualImageLine = lftLineNumber + linesBeforeImage;
+          const imageLocation: ErrorLocation = { ...location, line: actualImageLine };
           throw createVmdError(
             VmdErrorCode.EXTENSION_POST_LFT_IMAGE,
-            { line: lftLineNumber },
-            lftLocation
+            { line: actualImageLine },
+            imageLocation
           );
         }
 
         // 4. Check for blockquotes (> ...)
         const blockquoteRegex = /^[ \t]*>/m;
-        if (blockquoteRegex.test(lftContent)) {
+        const blockquoteMatch = blockquoteRegex.exec(lftContent);
+        if (blockquoteMatch) {
+          // Calculate the line number of the blockquote within lftContent
+          const blockquoteStartInLft = blockquoteMatch.index;
+          const linesBeforeBlockquote = (lftContent.substring(0, blockquoteStartInLft).match(/\n/g) || []).length;
+          const actualBlockquoteLine = lftLineNumber + linesBeforeBlockquote;
+          const blockquoteLocation: ErrorLocation = { ...location, line: actualBlockquoteLine };
           throw createVmdError(
             VmdErrorCode.EXTENSION_POST_LFT_BLOCKQUOTE,
-            { line: lftLineNumber },
-            lftLocation
+            { line: actualBlockquoteLine },
+            blockquoteLocation
           );
         }
 
@@ -233,16 +234,9 @@ export const createPostBlock = (assetProcessor?: any, imageWebPrefix?: string, f
 
         // Calculate exact line number for <rt> tag
         let rtLineNumber = location.line || 1;
-        if (location.file && postBlockStartPos !== -1) {
-          const fullSource = getMarkdownSource(location.file);
-          if (fullSource) {
-            // Find position of <rt> within the post block
-            const rtRelativePos = match[0].indexOf('<rt>');
-            if (rtRelativePos !== -1) {
-              const rtAbsolutePos = postBlockStartPos + rtRelativePos;
-              rtLineNumber = getLineAtPosition(fullSource, rtAbsolutePos, location.file);
-            }
-          }
+        const rtRelativePos = match[0].indexOf('<rt>');
+        if (rtRelativePos !== -1) {
+          rtLineNumber = calculateSubContentLine(rtLineNumber, match[0], rtRelativePos);
         }
         const rtLocation: ErrorLocation = { ...location, line: rtLineNumber };
 

@@ -28,6 +28,7 @@ export interface NavigationNode {
   tsxPath: string; // Relative path to generated TSX
   codeFiles: { originalPath: string; hashPath: string }[];
   images: { originalName: string; hashPath: string }[];
+  tags: string[]; // Tags from frontmatter
   children: NavigationNode[];
 }
 

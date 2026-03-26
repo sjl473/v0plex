@@ -62,19 +62,10 @@ export class VmdError extends Error {
       parts.push(locationStr);
     }
 
-    // Sanitize message
-    let sanitizedMessage = this.message.replace(
-      /please report this to https:\/\/github\.com\/markedjs\/marked\.?/gi,
-      'If you have questions, please report to https://github.com/sjl473/v0plex'
-    );
-    parts.push(`  Message: ${sanitizedMessage}`);
+    parts.push(`  Message: ${this.message}`);
 
     if (this.originalError && this.originalError !== this) {
-      let originalMessage = this.originalError.message.replace(
-        /please report this to https:\/\/github\.com\/markedjs\/marked\.?/gi,
-        'If you have questions, please report to https://github.com/sjl473/v0plex'
-      );
-      parts.push(`  Original: ${originalMessage}`);
+      parts.push(`  Original: ${this.originalError.message}`);
     }
 
     return parts.join('\n');
@@ -108,12 +99,7 @@ export class VmdError extends Error {
       parts.push(locationStr);
     }
 
-    // Sanitize message
-    let sanitizedMessage = this.message.replace(
-      /please report this to https:\/\/github\.com\/markedjs\/marked\.?/gi,
-      'If you have questions, please report to https://github.com/sjl473/v0plex'
-    );
-    parts.push(`${sanitizedMessage}`);
+    parts.push(`${this.message}`);
 
     return parts.join('\n');
   }

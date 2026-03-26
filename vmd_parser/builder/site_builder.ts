@@ -10,9 +10,10 @@ import { AssetProcessor } from '../asset_processor';
 import { MarkdownCompiler } from '../compiler';
 import { NavigationNode } from '../types';
 import { VmdErrorCode, createVmdError, ErrorReporter, VmdError } from '../errors';
-import { scanDirectoryForImages, traverseDirectory } from './directory_scanner';
+import { scanDirectoryForImages } from './directory_scanner';
 import { processFile } from './file_processor';
 import { writeSiteData } from './site_data_writer';
+import { cleanTitle } from '../utils';
 
 export class SiteBuilder {
   private projectRoot: string;
@@ -111,7 +112,7 @@ export class SiteBuilder {
 
       if (stats.isDirectory()) {
         if (/^_(\d+)/.test(item)) {
-          const folderTitle = this.cleanTitle(item, true);
+          const folderTitle = cleanTitle(item, true);
           const newNavGroup: NavigationNode = {
             title: folderTitle,
             type: 'folder',
@@ -122,6 +123,7 @@ export class SiteBuilder {
             tsxPath: "",
             codeFiles: [],
             images: [],
+            tags: [],
             children: []
           };
           navContainer.push(newNavGroup);
@@ -143,24 +145,6 @@ export class SiteBuilder {
 
   private writeSiteData(): void {
     writeSiteData(this.navigation, this.assetProcessor, this.projectRoot, this.errorReporter);
-  }
-
-  private cleanTitle(filename: string, isFolder: boolean = false): string {
-    // Remove numeric prefix (e.g., "01_" or "_01_")
-    let cleaned = filename.replace(/^_?(\d+)_/, '');
-
-    // Remove file extension (only for files, not folders)
-    if (!isFolder) {
-      cleaned = cleaned.replace(/\.[^/.]+$/, '');
-    }
-
-    // Replace underscores and hyphens with spaces
-    cleaned = cleaned.replace(/[_-]/g, ' ');
-
-    // Capitalize first letter of each word
-    cleaned = cleaned.replace(/\b\w/g, char => char.toUpperCase());
-
-    return cleaned;
   }
 
   public getErrorReporter(): ErrorReporter {

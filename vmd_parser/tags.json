@@ -1,0 +1,18 @@
+{
+  "description": "VMD Compiler - Allowed Tags Configuration",
+  "tags": [
+    "welcome",
+    "tutorial",
+    "test",
+    "combo",
+    "final",
+    "guide",
+    "reference",
+    "api",
+    "getting-started",
+    "advanced",
+    "troubleshooting",
+    "release-notes",
+    "changelog"
+  ]
+}

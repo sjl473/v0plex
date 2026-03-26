@@ -11,9 +11,26 @@ export function calculatePathHash(relativePath: string): string {
     .digest('hex');
 }
 
+/**
+ * Clean a file or directory name for display as a title
+ * Removes numeric prefixes, file extensions (for files), and formats with spaces and capitalization
+ */
 export function cleanTitle(name: string, isDirectory: boolean = false): string {
-  const nameNoExt = isDirectory ? name : path.parse(name).name;
-  return nameNoExt.replace(/^_\d+_/, '');
+  // Remove numeric prefix (e.g., "01_" or "_01_")
+  let cleaned = name.replace(/^_?(\d+)_/, '');
+
+  // Remove file extension (only for files, not directories)
+  if (!isDirectory) {
+    cleaned = cleaned.replace(/\.[^/.]+$/, '');
+  }
+
+  // Replace underscores and hyphens with spaces
+  cleaned = cleaned.replace(/[_-]/g, ' ');
+
+  // Capitalize first letter of each word
+  cleaned = cleaned.replace(/\b\w/g, char => char.toUpperCase());
+
+  return cleaned;
 }
 
 export function escapeHtml(text: string): string {

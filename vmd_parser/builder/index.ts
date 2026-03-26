@@ -7,7 +7,7 @@
 export { SiteBuilder } from './site_builder.ts';
 
 // Directory scanning
-export { scanDirectoryForImages, traverseDirectory } from './directory_scanner.ts';
+export { scanDirectoryForImages } from './directory_scanner.ts';
 
 // File processing
 export { processFile } from './file_processor.ts';

@@ -44,8 +44,8 @@ export class FrontMatterParser {
   }
 
   public static validate(attributes: FrontMatterAttributes, filePath: string): void {
-    // Check for exactly 5 required attributes: title, created_at, last_updated_at, author, has_custom_tsx
-    const requiredAttributes = ['title', 'created_at', 'last_updated_at', 'author', 'has_custom_tsx'];
+    // Check for exactly 6 required attributes: title, created_at, last_updated_at, author, has_custom_tsx, tags
+    const requiredAttributes = ['title', 'created_at', 'last_updated_at', 'author', 'has_custom_tsx', 'tags'];
     
     // Check for missing required attributes
     const missing = requiredAttributes.filter(req => !attributes[req]);
@@ -57,13 +57,13 @@ export class FrontMatterParser {
       );
     }
 
-    // Check for extra attributes beyond the required 5
+    // Check for extra attributes beyond the required 6
     const allowedAttributes = new Set(requiredAttributes);
     const extraAttributes = Object.keys(attributes).filter(key => !allowedAttributes.has(key));
     if (extraAttributes.length > 0) {
       throw createVmdError(
         VmdErrorCode.FRONTMATTER_INVALID_FORMAT,
-        { message: `Unexpected attributes found: ${extraAttributes.join(', ')}. Only 5 attributes allowed: title, created_at, last_updated_at, author, has_custom_tsx` },
+        { message: `Unexpected attributes found: ${extraAttributes.join(', ')}. Only 6 attributes allowed: title, created_at, last_updated_at, author, has_custom_tsx, tags` },
         { file: filePath }
       );
     }

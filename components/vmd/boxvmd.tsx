@@ -2,6 +2,9 @@
 
 import React from "react";
 import {HighlightBox} from "@/components/common/highlight-box";
+import { getStrings } from "@/config/site.config";
+
+const strings = getStrings();
 
 interface WrapperProps {
     children: React.ReactNode;
@@ -41,17 +44,17 @@ interface BoxVmdProps {
     title?: string;
 }
 
-export function Infovmd({children, title = "Notice："}: BoxVmdProps) {
+export function Infovmd({children, title = strings.boxes.infoDefault}: BoxVmdProps) {
     validateSingleParagraph(children, 'Infovmd');
     return <HighlightBox title={title} type="Info">{children}</HighlightBox>;
 }
 
-export function Warningvmd({children, title = "Warning"}: BoxVmdProps) {
+export function Warningvmd({children, title = strings.boxes.warningDefault}: BoxVmdProps) {
     validateSingleParagraph(children, 'Warningvmd');
     return <HighlightBox title={title} type="Warning">{children}</HighlightBox>;
 }
 
-export function Successvmd({children, title = "Success"}: BoxVmdProps) {
+export function Successvmd({children, title = strings.boxes.successDefault}: BoxVmdProps) {
     validateSingleParagraph(children, 'Successvmd');
     return <HighlightBox title={title} type="Success">{children}</HighlightBox>;
 }

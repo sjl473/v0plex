@@ -1,6 +1,10 @@
 "use client"
 import Link from "next/link"
+import { getStrings, formatDate, interpolateString } from "@/config/site.config"
 import styles from "./footer.module.css"
+
+const strings = getStrings();
+const dateStr = formatDate(new Date());
 
 interface FooterLink {
     name: string;
@@ -21,9 +25,7 @@ interface FooterProps {
     copyright?: string;
 }
 
-const buildTime = new Date().toLocaleDateString('en-US', {
-    year: 'numeric', month: 'short', day: 'numeric'
-});
+const buildTime = dateStr;
 
 export default function Footer({
                                    linkGroups = [{
@@ -33,9 +35,9 @@ export default function Footer({
                                    }],
                                    email = "@sjl473",
                                    emailAddress = "sjl473@outlook.com",
-                                   version = "preview test",
+                                   version = strings.footer.version,
                                    lastUpdated = buildTime,
-                                   copyright = "2026 sjl473, all rights reserved."
+                                   copyright = strings.footer.copyright
                                }: FooterProps = {}) {
     return (<footer className={styles.footer}>
         <div className={styles.main}>
@@ -59,14 +61,14 @@ export default function Footer({
 
                 <div className={styles.info}>
                     <p className={styles.infoText}>
-                        If you have any questions, please make contact {" "}
+                        {strings.footer.contactText} {" "}
                         <Link href={`mailto:${emailAddress}`} className={styles.emailLink}>
-                            {email}
+                            {strings.footer.emailLabel}
                         </Link>
                     </p>
                     <div className={styles.meta}>
-                        <span>Used version: {version}</span>
-                        <span>Last updated at: {lastUpdated}</span>
+                        <span>{strings.footer.versionLabel}: {version}</span>
+                        <span>{interpolateString(strings.footer.lastUpdated, { date: lastUpdated })}</span>
                         <span>© {copyright}</span>
                     </div>
                 </div>

@@ -33,3 +33,13 @@ export { createCustomBlock } from './custom_block.ts';
 export { smallImageExtension } from './small_image_extension.ts';
 export { boldItalicExtension } from './text_formatting.ts';
 export { blockMathExtension, inlineMathExtension } from './math_extension.ts';
+
+// Line tracker for accurate line number reporting
+export {
+  clearLineTracker,
+  scanVmdBlocks,
+  getBlockLineNumber,
+  resetBlockIndices,
+  calculateSubContentLine,
+  debugPrintTrackedBlocks
+} from './line_tracker.ts';

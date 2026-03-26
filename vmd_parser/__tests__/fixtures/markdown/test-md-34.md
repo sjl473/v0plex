@@ -1,6 +1,9 @@
 ---
 title: Hello World
-date: 2024-01-01
+created_at: 2024-01-01
+last_updated_at: 2024-01-01
+author: test-author
+has_custom_tsx: false
 tags: [welcome, tutorial]
 ---
 

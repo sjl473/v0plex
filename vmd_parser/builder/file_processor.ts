@@ -13,6 +13,25 @@ import { NavigationNode } from '../types';
 import { VmdErrorCode, createVmdError, ErrorReporter, VmdError } from '../errors';
 
 /**
+ * Parse tags from frontmatter string format "[tag1, tag2, tag3]"
+ */
+function parseTags(tagsValue: string | undefined): string[] {
+  if (!tagsValue) {
+    return [];
+  }
+
+  const match = tagsValue.match(/^\[([^\]]*)\]$/);
+  if (!match) {
+    return [];
+  }
+
+  return match[1]
+    .split(',')
+    .map(t => t.trim())
+    .filter(t => t.length > 0);
+}
+
+/**
  * Process a single file (markdown or TSX)
  */
 export function processFile(
@@ -89,6 +108,7 @@ function processMarkdownFile(
 
     const pageTitle = attributes.title || cleanTitle(item);
     const hasCustomTsx = FrontMatterParser.hasCustomTsx(attributes);
+    const tags = parseTags(attributes.tags as string);
 
     if (hasCustomTsx) {
       const mdBaseName = path.basename(srcPath, ext);
@@ -115,6 +135,7 @@ function processMarkdownFile(
         tsxPath: path.relative(projectRoot, destFile),
         codeFiles: [],
         images: [],
+        tags: tags,
         children: []
       });
 
@@ -148,6 +169,7 @@ function processMarkdownFile(
       tsxPath: path.relative(projectRoot, destFile),
       codeFiles: generatedFiles.map((f: string) => ({ originalPath: "", hashPath: path.join(CONFIG.VMD_CODE_DIR, f) })),
       images: usedImages.map((img: any) => ({ originalName: img.originalName, hashPath: path.join(CONFIG.VMD_IMAGE_DIR, img.hashName) })),
+      tags: tags,
       children: []
     });
 
@@ -236,6 +258,7 @@ function processTsxFile(
     tsxPath: path.relative(projectRoot, destFile),
     codeFiles: [],
     images: [],
+    tags: [],
     children: []
   });
 }

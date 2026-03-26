@@ -5,6 +5,9 @@ import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, ZoomOut } from '@carbon/icons-react'; // Removed ZoomIn import
 import styles from './postvmd.module.css';
 import { Pvmd } from './pvmd';
+import { getStrings } from '@/config/site.config';
+
+const strings = getStrings();
 
 export function Postvmd({ children }: { children: React.ReactNode }) {
     return (
@@ -113,12 +116,12 @@ export function Rtvmd({ children }: { children: React.ReactNode }) {
         return createPortal(
             <div className={styles.modalOverlay} onClick={closeModal}>
                 <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-                    <button className={styles.modalCloseBtn} onClick={closeModal} title="Zoom back">
+                    <button className={styles.modalCloseBtn} onClick={closeModal} title={strings.postModal.zoomBack}>
                         <ZoomOut size={32} />
                     </button>
                     
                     {hasMultiple && (
-                        <button className={`${styles.modalNavBtn} ${styles.modalPrev}`} onClick={prevImage} title="Previous image">
+                        <button className={`${styles.modalNavBtn} ${styles.modalPrev}`} onClick={prevImage} title={strings.postModal.previousImage}>
                             <ChevronLeft size={32} />
                         </button>
                     )}
@@ -130,7 +133,7 @@ export function Rtvmd({ children }: { children: React.ReactNode }) {
                     />
 
                     {hasMultiple && (
-                        <button className={`${styles.modalNavBtn} ${styles.modalNext}`} onClick={nextImage} title="Next image">
+                        <button className={`${styles.modalNavBtn} ${styles.modalNext}`} onClick={nextImage} title={strings.postModal.nextImage}>
                             <ChevronRight size={32} />
                         </button>
                     )}
@@ -169,10 +172,10 @@ export function Rtvmd({ children }: { children: React.ReactNode }) {
 
                 {hasMultiple && (
                     <>
-                        <div className={`${styles.navOverlay} ${styles.navLeft}`} onClick={prevImage} title="Previous">
+                        <div className={`${styles.navOverlay} ${styles.navLeft}`} onClick={prevImage} title={strings.postModal.previous}>
                             <ChevronLeft className={styles.arrow} />
                         </div>
-                        <div className={`${styles.navOverlay} ${styles.navRight}`} onClick={nextImage} title="Next">
+                        <div className={`${styles.navOverlay} ${styles.navRight}`} onClick={nextImage} title={strings.postModal.next}>
                             <ChevronRight className={styles.arrow} />
                         </div>
                     </>

@@ -4,7 +4,10 @@ import type React from "react"
 import Link from "next/link"
 import {useTheme} from "./theme-provider"
 import {Asleep, Light, Menu} from "@carbon/icons-react"
+import { getStrings } from "@/config/site.config"
 import styles from "./header.module.css"
+
+const strings = getStrings();
 
 interface CarbonHeaderProps {
     onToggleSidebar?: () => void
@@ -42,8 +45,8 @@ export default function Header({onToggleSidebar}: CarbonHeaderProps) {
         </div>
         <div className={styles.rightSection}>
             <button
-                aria-label={theme === "white" ? "switch dark" : "switch light"}
-                title={theme === "white" ? "switch dark" : "switch light"}
+                aria-label={theme === "white" ? strings.header.switchToDark : strings.header.switchToLight}
+                title={theme === "white" ? strings.header.switchToDark : strings.header.switchToLight}
                 onClick={toggleTheme}
                 className={styles.themeToggle}
             >

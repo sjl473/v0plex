@@ -5,7 +5,10 @@ import {PrismLight as SyntaxHighlighter} from "react-syntax-highlighter"
 import {vscDarkPlus} from "react-syntax-highlighter/dist/esm/styles/prism"
 import {Checkmark, Copy} from "@carbon/icons-react"
 import {useTheme} from "@/components/common/theme-provider"
+import { getStrings } from "@/config/site.config"
 import styles from "./code-block.module.css"
+
+const strings = getStrings();
 
 import typescript from 'react-syntax-highlighter/dist/esm/languages/prism/typescript'
 import javascript from 'react-syntax-highlighter/dist/esm/languages/prism/javascript'
@@ -123,13 +126,13 @@ export default function CodeBlock({
         <div className={styles.codeBlockWrapper}>
             <div className={styles.codeBlockHeader}>
           <span className={styles.codeBlockLanguage}>
-            {language} {filePath && <span className={styles.filePath}>(from: {filePath.split('/').pop()})</span>}
+            {language} {filePath && <span className={styles.filePath}>({strings.codeBlock.from}: {filePath.split('/').pop()})</span>}
           </span>
                 <button
                     onClick={handleCopy}
                     className={styles.copyButton}
-                    title="Copy Code"
-                    aria-label="Copy Code"
+                    title={strings.codeBlock.copyCode}
+                    aria-label={strings.codeBlock.copyCode}
                 >
                     {copied ? <Checkmark size={16}/> : <Copy size={16}/>}
                 </button>

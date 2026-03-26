@@ -109,7 +109,11 @@ export class AssetProcessor {
 
     // If location has a file, also check relative to that file's directory
     if (location?.file) {
-      const fileDir = path.dirname(path.join(this.projectRoot, location.file));
+      // Handle both absolute and relative file paths
+      const filePath = path.isAbsolute(location.file)
+        ? location.file
+        : path.join(this.projectRoot, location.file);
+      const fileDir = path.dirname(filePath);
       possiblePaths.push(path.normalize(path.join(fileDir, decodedPath)));
     }
 

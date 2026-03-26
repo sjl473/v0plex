@@ -11,11 +11,6 @@ import { VmdErrorCode } from './error_codes';
 export const ErrorMessages: Record<VmdErrorCode, (details?: Record<string, any>) => string> = {
   [VmdErrorCode.UNKNOWN_ERROR]: (d) => {
     let details = d?.details || '';
-    // Remove marked's "report to" message and replace with v0plex's
-    details = details.replace(
-      /please report this to https:\/\/github\.com\/markedjs\/marked\.?/gi,
-      'If you have questions, please report to https://github.com/sjl473/v0plex'
-    );
     return `Unknown error${details ? `: ${details}` : ''}`;
   },
   [VmdErrorCode.CONFIG_ERROR]: (d) => `Configuration error: ${d?.message || 'Invalid configuration'}`,
@@ -31,20 +26,10 @@ export const ErrorMessages: Record<VmdErrorCode, (details?: Record<string, any>)
 
   [VmdErrorCode.MARKDOWN_COMPILE_ERROR]: (d) => {
     let details = d?.details || '';
-    // Remove marked's "report to" message and replace with v0plex's
-    details = details.replace(
-      /please report this to https:\/\/github\.com\/markedjs\/marked\.?/gi,
-      'If you have questions, please report to https://github.com/sjl473/v0plex'
-    );
     return `Markdown compilation failed${details ? `: ${details}` : ''}`;
   },
   [VmdErrorCode.MARKDOWN_SYNTAX_ERROR]: (d) => {
     let details = d?.details || '';
-    // Remove marked's "report to" message and replace with v0plex's
-    details = details.replace(
-      /please report this to https:\/\/github\.com\/markedjs\/marked\.?/gi,
-      'If you have questions, please report to https://github.com/sjl473/v0plex'
-    );
     return `Markdown syntax error${details ? `: ${details}` : ''}`;
   },
   [VmdErrorCode.MARKDOWN_NESTED_CODE_BLOCK]: (d) =>
