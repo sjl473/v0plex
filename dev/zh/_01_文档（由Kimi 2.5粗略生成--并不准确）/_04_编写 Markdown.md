@@ -96,7 +96,7 @@ v0plex 完整支持 CommonMark 规范的基础语法。
 [站内链接](../_01_其他章节/_01_文档.md)
 [页内锚点](#章节标题)
 
-![图像描述](../assets/images/screenshot.png)
+![图像描述](../../assets/images/screenshot.png)
 ```
 
 引用块使用大于号开头，可以多行连续，也可以嵌套。

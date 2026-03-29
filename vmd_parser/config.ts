@@ -12,12 +12,13 @@ export const CONFIG = {
   // URL Configuration (imported from shared config)
   URL_PREFIX: SITE_CONFIG.URL_PREFIX,
 
-  EXCLUDED_DIRS: ['node_modules', 'libs', 'vmd', 'dist', 'build', '.git', '.idea', SITE_CONFIG.OUT_DIR],
+  EXCLUDED_DIRS: ['node_modules', 'libs', 'vmd', 'dist', 'build', '.git', '.idea', 'assets', SITE_CONFIG.OUT_DIR],
 
   SITE_DATA_JSON: 'site-data.json',
 
   COMPONENT_IMPORT_PATH: '@/components/vmd/vmdimporter',
-  IMAGE_WEB_PREFIX: '/vmdimage/',
+  // Use the shared config for consistency
+  IMAGE_WEB_PREFIX: SITE_CONFIG.DATA_PATHS.VMD_IMAGE,
 
   GITHUB_REPO_BASE_URL: "",
 };

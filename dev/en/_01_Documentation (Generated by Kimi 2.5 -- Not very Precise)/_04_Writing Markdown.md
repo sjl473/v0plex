@@ -96,7 +96,7 @@ Links use square brackets to wrap the link text, followed immediately by parenth
 [Internal link](../_01_Other Chapter/_01_Document.md)
 [In-page anchor](#Section Title)
 
-![Image description](../assets/images/screenshot.png)
+![Image description](../../assets/images/screenshot.png)
 ```
 
 Blockquotes use greater-than signs at the beginning of lines and can span multiple lines or be nested.

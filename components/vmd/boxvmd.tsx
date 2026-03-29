@@ -2,9 +2,7 @@
 
 import React from "react";
 import {HighlightBox} from "@/components/common/highlight-box";
-import { getStrings } from "@/config/site.config";
-
-const strings = getStrings();
+import {useLanguage} from "@/components/common/language-provider";
 
 interface WrapperProps {
     children: React.ReactNode;
@@ -44,17 +42,20 @@ interface BoxVmdProps {
     title?: string;
 }
 
-export function Infovmd({children, title = strings.boxes.infoDefault}: BoxVmdProps) {
+export function Infovmd({children, title}: BoxVmdProps) {
+    const {strings} = useLanguage();
     validateSingleParagraph(children, 'Infovmd');
-    return <HighlightBox title={title} type="Info">{children}</HighlightBox>;
+    return <HighlightBox title={title || strings.boxes.infoDefault} type="Info">{children}</HighlightBox>;
 }
 
-export function Warningvmd({children, title = strings.boxes.warningDefault}: BoxVmdProps) {
+export function Warningvmd({children, title}: BoxVmdProps) {
+    const {strings} = useLanguage();
     validateSingleParagraph(children, 'Warningvmd');
-    return <HighlightBox title={title} type="Warning">{children}</HighlightBox>;
+    return <HighlightBox title={title || strings.boxes.warningDefault} type="Warning">{children}</HighlightBox>;
 }
 
-export function Successvmd({children, title = strings.boxes.successDefault}: BoxVmdProps) {
+export function Successvmd({children, title}: BoxVmdProps) {
+    const {strings} = useLanguage();
     validateSingleParagraph(children, 'Successvmd');
-    return <HighlightBox title={title} type="Success">{children}</HighlightBox>;
+    return <HighlightBox title={title || strings.boxes.successDefault} type="Success">{children}</HighlightBox>;
 }

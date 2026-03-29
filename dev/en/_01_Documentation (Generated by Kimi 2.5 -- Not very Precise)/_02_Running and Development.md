@@ -37,7 +37,7 @@ After saving modifications, the development server automatically rebuilds affect
 
 Technical documentation typically contains numerous screenshots, diagrams, and charts. v0plex manages these resources through the `dev/assets/` directory.
 
-When referencing images in Markdown, use relative paths. For example, a document located under `dev/_01_Guide/` referencing an image in `dev/assets/images/` should use the path `../assets/images/screenshot.png`. During the build process, v0plex automatically copies these images to the `public/vmdimage/` directory and correctly references them in the final static site.
+When referencing images in Markdown, use relative paths. For example, a document located under `dev/_01_Guide/` referencing an image in `dev/assets/images/` should use the path `../../assets/images/screenshot.png`. During the build process, v0plex automatically copies these images to the `public/vmdimage/` directory and correctly references them in the final static site.
 
 For image filenames, lowercase letters, numbers, and hyphens are recommended, avoiding spaces and special characters. Although v0plex supports filenames with spaces, spaces require URL encoding, adding unnecessary complications.
 

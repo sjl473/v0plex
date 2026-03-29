@@ -3,6 +3,7 @@
 import type React from "react"
 import {useCallback, useState} from "react"
 import {ThemeProvider} from "@/components/common/theme-provider"
+import {LanguageProvider} from "@/components/common/language-provider"
 import {MathJaxProvider} from "@/components/common/mathjax-provider"
 import Header from "@/components/common/header"
 import Sidebar from "@/components/common/sidebar"
@@ -32,6 +33,7 @@ export default function ClientLayout({
     }, [])
 
     return (<ThemeProvider>
+        <LanguageProvider>
         <MathJaxProvider>
             <div className={styles.container}>
                 <Header onToggleSidebar={toggleMobileSidebar}/>
@@ -53,5 +55,6 @@ export default function ClientLayout({
                 </div>
             </div>
         </MathJaxProvider>
+        </LanguageProvider>
     </ThemeProvider>)
 }

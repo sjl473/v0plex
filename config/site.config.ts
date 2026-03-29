@@ -1,52 +1,44 @@
-/**
- * Site Configuration
- *
- * IMPORTANT: This configuration is shared between frontend and backend.
- * Change URL_PREFIX in one place to update all URLs throughout the application.
- */
-
-// ============================================================================
-// GLOBAL URL PREFIX CONFIGURATION
-// Change this value to update all URLs throughout the application
-// ============================================================================
-export const URL_PREFIX = 'page'; // Change to 'out' or any other path as needed
+export const URL_PREFIX = 'page';
 
 export const SITE_CONFIG = {
-  /**
-   * URL prefix for all markdown pages
-   * Example: '/page' means pages will be at /page/article-name
-   * Change URL_PREFIX above to update this throughout the app
-   */
   URL_PREFIX: `/${URL_PREFIX}`,
-
-  /**
-   * Directory name where generated pages are stored
-   */
   OUT_DIR: URL_PREFIX,
+  DATA_PATHS: {
+    SITE_DATA: '/vmdjson/site-data.json',
+    VMD_CODE: '/vmdcode/',
+    VMD_IMAGE: '/vmdimage/',
+    VMD_JSON: '/vmdjson/',
+  },
+  GITHUB_PAGES_URL: 'https://sjl473.github.io/v0plex',
+  BUILD_DATE: process.env.NEXT_PUBLIC_BUILD_DATE || new Date().toISOString(),
 } as const;
 
-// ============================================================================
-// INTERNATIONALIZATION (i18n) CONFIGURATION
-// ============================================================================
+export const DEFAULT_LOCALE: Locale = 'zh';
+export const LOCALE_STORAGE_KEY = 'v0plex-locale';
 
-/**
- * Current locale setting
- * Change this to switch between languages
- * Supported: 'en' (English), 'zh' (Chinese)
- */
-export const DEFAULT_LOCALE: Locale = 'en';
-
-/**
- * Supported locale types
- */
 export type Locale = 'en' | 'zh';
 
-/**
- * i18n String Structure
- * All user-facing UI strings are centralized here for easy translation
- */
+export interface LanguageConfig {
+  code: Locale;
+  name: string;
+  nativeName: string;
+  folder: string;
+}
+
+export const AVAILABLE_LANGUAGES: LanguageConfig[] = [
+  { code: 'zh', name: 'Chinese', nativeName: '中文', folder: 'zh' },
+  { code: 'en', name: 'English', nativeName: 'English', folder: 'en' },
+];
+
+export function getLanguageConfig(locale: Locale): LanguageConfig {
+  return AVAILABLE_LANGUAGES.find(lang => lang.code === locale) || AVAILABLE_LANGUAGES[0];
+}
+
+export function isValidLocale(locale: string): locale is Locale {
+  return AVAILABLE_LANGUAGES.some(lang => lang.code === locale);
+}
+
 export interface I18nStrings {
-  // Sidebar component
   sidebar: {
     searchPlaceholder: string;
     searchResults: string;
@@ -57,16 +49,12 @@ export interface I18nStrings {
     clearSearch: string;
     allPosts: string;
   };
-
-  // Header component
   header: {
     siteTitle: string;
     siteDescription: string;
     switchToDark: string;
     switchToLight: string;
   };
-
-  // Footer component
   footer: {
     version: string;
     versionLabel: string;
@@ -75,35 +63,25 @@ export interface I18nStrings {
     emailLabel: string;
     contactText: string;
   };
-
-  // Page navigation
   pageNav: {
     home: string;
     previousPage: string;
     nextPage: string;
     none: string;
   };
-
-  // Code block
   codeBlock: {
     copyCode: string;
     from: string;
   };
-
-  // Highlight boxes (Info, Warning, Success)
   boxes: {
     infoDefault: string;
     warningDefault: string;
     successDefault: string;
   };
-
-  // Code loading states
   code: {
     loading: string;
     error: string;
   };
-
-  // Post modal (image viewer)
   postModal: {
     zoomBack: string;
     previousImage: string;
@@ -111,8 +89,6 @@ export interface I18nStrings {
     previous: string;
     next: string;
   };
-
-  // Page metadata (author, dates)
   pageMeta: {
     created: string;
     updated: string;
@@ -120,9 +96,6 @@ export interface I18nStrings {
   };
 }
 
-/**
- * English translations (default)
- */
 export const EN_STRINGS: I18nStrings = {
   sidebar: {
     searchPlaceholder: 'Search Contents...',
@@ -134,14 +107,12 @@ export const EN_STRINGS: I18nStrings = {
     clearSearch: 'Clear search',
     allPosts: 'All Posts',
   },
-
   header: {
     siteTitle: 'v0plex',
     siteDescription: 'Commercial Loan Platform Management Handbooks',
     switchToDark: 'switch dark',
     switchToLight: 'switch light',
   },
-
   footer: {
     version: 'preview test',
     versionLabel: 'Used version',
@@ -150,30 +121,25 @@ export const EN_STRINGS: I18nStrings = {
     emailLabel: '@sjl473',
     contactText: 'If you have any questions, please make contact',
   },
-
   pageNav: {
     home: 'Home',
     previousPage: 'Previous Page',
     nextPage: 'Next Page',
     none: 'None',
   },
-
   codeBlock: {
     copyCode: 'Copy Code',
     from: 'from',
   },
-
   boxes: {
     infoDefault: 'Notice：',
     warningDefault: 'Warning',
     successDefault: 'Success',
   },
-
   code: {
     loading: 'Loading code...',
     error: 'Error loading code',
   },
-
   postModal: {
     zoomBack: 'Zoom back',
     previousImage: 'Previous image',
@@ -181,7 +147,6 @@ export const EN_STRINGS: I18nStrings = {
     previous: 'Previous',
     next: 'Next',
   },
-
   pageMeta: {
     created: 'Created',
     updated: 'Updated',
@@ -189,9 +154,6 @@ export const EN_STRINGS: I18nStrings = {
   },
 };
 
-/**
- * Chinese translations
- */
 export const ZH_STRINGS: I18nStrings = {
   sidebar: {
     searchPlaceholder: '搜索内容...',
@@ -203,14 +165,12 @@ export const ZH_STRINGS: I18nStrings = {
     clearSearch: '清除搜索',
     allPosts: '所有文章',
   },
-
   header: {
     siteTitle: 'v0plex',
     siteDescription: '商业贷款平台管理手册',
     switchToDark: '切换深色模式',
     switchToLight: '切换浅色模式',
   },
-
   footer: {
     version: '预览测试版',
     versionLabel: '当前版本',
@@ -219,30 +179,25 @@ export const ZH_STRINGS: I18nStrings = {
     emailLabel: '@sjl473',
     contactText: '如有任何问题，请联系我们',
   },
-
   pageNav: {
     home: '首页',
     previousPage: '上一页',
     nextPage: '下一页',
     none: '无',
   },
-
   codeBlock: {
     copyCode: '复制代码',
     from: '来源',
   },
-
   boxes: {
     infoDefault: '注意：',
-    warningDefault: '警告',
-    successDefault: '成功',
+    warningDefault: '警告：',
+    successDefault: '关于：',
   },
-
   code: {
     loading: '加载代码中...',
     error: '加载代码失败',
   },
-
   postModal: {
     zoomBack: '缩小返回',
     previousImage: '上一张图片',
@@ -250,7 +205,6 @@ export const ZH_STRINGS: I18nStrings = {
     previous: '上一张',
     next: '下一张',
   },
-
   pageMeta: {
     created: '创建时间',
     updated: '更新时间',
@@ -258,18 +212,12 @@ export const ZH_STRINGS: I18nStrings = {
   },
 };
 
-/**
- * All available translations
- */
-export const TRANSLATIONS: Record<Locale, I18nStrings> = {
+export const TRANSLATIONS: Partial<Record<Locale, I18nStrings>> = {
   en: EN_STRINGS,
   zh: ZH_STRINGS,
 };
 
-/**
- * Date format configuration by locale
- */
-export const DATE_FORMATS: Record<Locale, Intl.DateTimeFormatOptions> = {
+export const DATE_FORMATS: Partial<Record<Locale, Intl.DateTimeFormatOptions>> = {
   en: {
     year: 'numeric',
     month: 'short',
@@ -282,31 +230,16 @@ export const DATE_FORMATS: Record<Locale, Intl.DateTimeFormatOptions> = {
   },
 };
 
-/**
- * Get strings for the current locale
- * Usage: import { getStrings } from '@/config/site.config';
- *        const strings = getStrings();
- *        <input placeholder={strings.sidebar.searchPlaceholder} />
- */
 export function getStrings(locale: Locale = DEFAULT_LOCALE): I18nStrings {
-  return TRANSLATIONS[locale] || TRANSLATIONS[DEFAULT_LOCALE];
+  return TRANSLATIONS[locale] || TRANSLATIONS[DEFAULT_LOCALE] || EN_STRINGS;
 }
 
-/**
- * Format a date according to locale
- * Usage: const dateStr = formatDate(new Date(), 'zh');
- */
 export function formatDate(date: Date, locale: Locale = DEFAULT_LOCALE): string {
-  return date.toLocaleDateString(
-    locale === 'zh' ? 'zh-CN' : 'en-US',
-    DATE_FORMATS[locale]
-  );
+  const formatOptions = DATE_FORMATS[locale] || DATE_FORMATS[DEFAULT_LOCALE] || { year: 'numeric', month: 'short', day: 'numeric' };
+  const localeString = locale === 'zh' ? 'zh-CN' : 'en-US';
+  return date.toLocaleDateString(localeString, formatOptions);
 }
 
-/**
- * Interpolate template string with values
- * Usage: interpolateString(strings.footer.lastUpdated, { date: '2026-01-01' })
- */
 export function interpolateString(
   template: string,
   values: Record<string, string>

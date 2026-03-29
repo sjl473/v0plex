@@ -172,7 +172,7 @@ $$
 
 ### 6.1 标准 Markdown 图像
 
-![示例图片](../assets/images/pasted_file.png)
+![示例图片](../../assets/images/pasted_file.png)
 
 ### 6.2 带链接的图像
 
@@ -268,17 +268,17 @@ todo
 ### 8.4 提示框内嵌套 smallimg
 
 <info>
-这是一个包含小图标的提示框：<smallimg>![图标](../assets/images/pasted_file.png)</smallimg>
+这是一个包含小图标的提示框：<smallimg>![图标](../../assets/images/pasted_file.png)</smallimg>
 
 小图标可以出现在段落的任何位置。
 </info>
 
 <warning>
-警告：<smallimg>![警告图标](../assets/images/pasted_file.png)</smallimg> 请谨慎操作！
+警告：<smallimg>![警告图标](../../assets/images/pasted_file.png)</smallimg> 请谨慎操作！
 </warning>
 
 <success>
-成功：<smallimg>![成功图标](../assets/images/pasted_file.png)</smallimg> 操作已完成。
+成功：<smallimg>![成功图标](../../assets/images/pasted_file.png)</smallimg> 操作已完成。
 </success>
 
 
@@ -287,11 +287,11 @@ todo
 
 ### 9.1 段落中的小图像
 
-这是一段包含<smallimg>![小图标](../assets/images/pasted_file.png)</smallimg>小图像的文本。小图像可以与文字混排，不会打断段落流。
+这是一段包含<smallimg>![小图标](../../assets/images/pasted_file.png)</smallimg>小图像的文本。小图像可以与文字混排，不会打断段落流。
 
 ### 9.2 多个小图像
 
-在一段文字中可以插入多个<smallimg>![图标1](../assets/images/pasted_file.png)</smallimg>小图像<smallimg>![图标2](../assets/images/pasted_file.png)</smallimg>，它们会保持在行内显示。
+在一段文字中可以插入多个<smallimg>![图标1](../../assets/images/pasted_file.png)</smallimg>小图像<smallimg>![图标2](../../assets/images/pasted_file.png)</smallimg>，它们会保持在行内显示。
 
 
 
@@ -313,7 +313,7 @@ todo
 </lft>
 <rt>
 
-![示例图](../assets/images/pasted_file.png)
+![示例图](../../assets/images/pasted_file.png)
 
 </rt>
 </post>
@@ -338,9 +338,9 @@ todo
 </lft>
 <rt>
 
-![图1](../assets/images/pasted_file.png)
+![图1](../../assets/images/pasted_file.png)
 
-![图2](../assets/images/pasted_file.png)
+![图2](../../assets/images/pasted_file.png)
 
 </rt>
 </post>
@@ -357,7 +357,7 @@ todo
 </lft>
 <rt>
 
-![图A](../assets/images/pasted_file.png)
+![图A](../../assets/images/pasted_file.png)
 
 </rt>
 </post>
@@ -372,9 +372,9 @@ todo
 </lft>
 <rt>
 
-![图B](../assets/images/pasted_file.png)
+![图B](../../assets/images/pasted_file.png)
 
-![图C](../assets/images/pasted_file.png)
+![图C](../../assets/images/pasted_file.png)
 
 </rt>
 </post>
@@ -385,8 +385,8 @@ todo
 
 ### 11.1 列表内包含 smallimg
 
-- 项目一 <smallimg>![图标](../assets/images/pasted_file.png)</smallimg> 带图标
-- 项目二 <smallimg>![图标](../assets/images/pasted_file.png)</smallimg> 另一个图标
+- 项目一 <smallimg>![图标](../../assets/images/pasted_file.png)</smallimg> 带图标
+- 项目二 <smallimg>![图标](../../assets/images/pasted_file.png)</smallimg> 另一个图标
 - 项目三 纯文字
 
 ### 11.2 多层嵌套结构
@@ -395,7 +395,7 @@ todo
 **复杂嵌套示例**
 
 1. 第一层列表
-   - 第二层列表 <smallimg>![图标](../assets/images/pasted_file.png)</smallimg>
+   - 第二层列表 <smallimg>![图标](../../assets/images/pasted_file.png)</smallimg>
    - 另一个第二项
 2. 继续第一层
    1. 有序子项
@@ -502,11 +502,11 @@ const config = {
 </lft>
 <rt>
 
-![步骤1](../assets/images/pasted_file.png)
+![步骤1](../../assets/images/pasted_file.png)
 
-![步骤2](../assets/images/pasted_file.png)
+![步骤2](../../assets/images/pasted_file.png)
 
-![步骤3](../assets/images/pasted_file.png)
+![步骤3](../../assets/images/pasted_file.png)
 
 </rt>
 </post>

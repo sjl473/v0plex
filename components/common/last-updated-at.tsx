@@ -1,8 +1,6 @@
 import {CalendarAdd, UpdateNow, User} from "@carbon/icons-react"
-import { getStrings } from "@/config/site.config"
+import {useLanguage} from "./language-provider"
 import styles from "./last-updated-at.module.css"
-
-const strings = getStrings();
 
 interface PageDatesProps {
     publishedAt: string
@@ -11,6 +9,7 @@ interface PageDatesProps {
 }
 
 export default function PageDates({publishedAt, updatedAt, author}: PageDatesProps) {
+    const {strings} = useLanguage()
     return (
         <div className={styles.metadataContainer}>
             <div className={styles.metadataRow}>

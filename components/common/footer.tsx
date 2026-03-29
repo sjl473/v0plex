@@ -1,10 +1,8 @@
 "use client"
 import Link from "next/link"
-import { getStrings, formatDate, interpolateString } from "@/config/site.config"
+import { formatDate, interpolateString } from "@/config/site.config"
+import { useLanguage } from "./language-provider"
 import styles from "./footer.module.css"
-
-const strings = getStrings();
-const dateStr = formatDate(new Date());
 
 interface FooterLink {
     name: string;
@@ -25,8 +23,6 @@ interface FooterProps {
     copyright?: string;
 }
 
-const buildTime = dateStr;
-
 export default function Footer({
                                    linkGroups = [{
                                        links: [{name: "", url: "#"}, {name: "", url: "#"}]
@@ -35,10 +31,15 @@ export default function Footer({
                                    }],
                                    email = "@sjl473",
                                    emailAddress = "sjl473@outlook.com",
-                                   version = strings.footer.version,
-                                   lastUpdated = buildTime,
-                                   copyright = strings.footer.copyright
+                                   version: versionProp,
+                                   lastUpdated: lastUpdatedProp,
+                                   copyright: copyrightProp
                                }: FooterProps = {}) {
+    const {strings, locale} = useLanguage()
+    const version = versionProp || strings.footer.version
+    const copyright = copyrightProp || strings.footer.copyright
+    const dateStr = formatDate(new Date(), locale)
+    const lastUpdated = lastUpdatedProp || dateStr
     return (<footer className={styles.footer}>
         <div className={styles.main}>
             <div className={styles.container}>

@@ -54,7 +54,6 @@
 .rightSection {
     display: flex;
     align-items: center;
-    gap: 1rem;
     height: 40px;
 }
 
@@ -77,6 +76,54 @@
 .themeToggle:hover {
     background: #393939;
     color: #f4f4f4;
+}
+
+.gitLink {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #c6c6c6;
+    transition: all 0.2s ease;
+    height: 32px;
+    width: 32px;
+    min-height: 32px;
+    min-width: 32px;
+    text-decoration: none;
+}
+
+.gitLink:hover {
+    background: #393939;
+    color: #f4f4f4;
+}
+
+.langToggle {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    color: #c6c6c6;
+    transition: all 0.2s ease;
+    height: 32px;
+    min-height: 32px;
+}
+
+.langToggle:hover {
+    background: #393939;
+    color: #f4f4f4;
+}
+
+.langLabel {
+    font-size: 0.625rem;
+    font-weight: 600;
+    min-width: 1.5rem;
 }
 
 @media (max-width: 600px) {

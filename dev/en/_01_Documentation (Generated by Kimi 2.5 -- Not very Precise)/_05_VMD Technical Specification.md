@@ -33,8 +33,8 @@ Can be paragraphs, lists, code, etc.
 </lft>
 <rt>
 
-![Image 1](../assets/images/a.png)
-![Image 2](../assets/images/b.png)
+![Image 1](../../assets/images/a.png)
+![Image 2](../../assets/images/b.png)
 
 </rt>
 </post>
@@ -65,9 +65,9 @@ Content within the `<rt>` tag is more strictly limited, only allowing Markdown i
 ```markdown
 <rt>
 
-![Correct image description](../assets/images/correct.png)
+![Correct image description](../../assets/images/correct.png)
 
-![Another image](../assets/images/another.png)
+![Another image](../../assets/images/another.png)
 
 </rt>
 ```
@@ -124,7 +124,7 @@ The `<smallimg>` tag is used to insert small-sized images within paragraphs, com
 ### Syntax Structure
 
 ```markdown
-This is a paragraph containing a <smallimg>![icon](../assets/images/icon.png)</smallimg> small image in the text.
+This is a paragraph containing a <smallimg>![icon](../../assets/images/icon.png)</smallimg> small image in the text.
 ```
 
 `<smallimg>` is an inline tag and must begin and end on the same line. The tag must contain exactly one Markdown image syntax with no spaces or other content before or after the image.

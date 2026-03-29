@@ -5,9 +5,7 @@ import { createPortal } from 'react-dom';
 import { ChevronLeft, ChevronRight, ZoomOut } from '@carbon/icons-react'; // Removed ZoomIn import
 import styles from './postvmd.module.css';
 import { Pvmd } from './pvmd';
-import { getStrings } from '@/config/site.config';
-
-const strings = getStrings();
+import {useLanguage} from '@/components/common/language-provider';
 
 export function Postvmd({ children }: { children: React.ReactNode }) {
     return (
@@ -32,6 +30,7 @@ interface ImageProps {
 }
 
 export function Rtvmd({ children }: { children: React.ReactNode }) {
+    const {strings} = useLanguage();
     // Extract image data from children
     const images: ImageProps[] = [];
 

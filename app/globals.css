@@ -1,9 +1,6 @@
 @import "@ibm/plex/css/ibm-plex.css";
 @import "@carbon/styles/css/styles.css";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 html,
 body {

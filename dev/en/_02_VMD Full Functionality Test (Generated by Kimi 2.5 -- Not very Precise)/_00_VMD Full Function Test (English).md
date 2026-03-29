@@ -172,7 +172,7 @@ $$
 
 ### 6.1 Standard Markdown Images
 
-![Example image](../assets/images/pasted_file.png)
+![Example image](../../assets/images/pasted_file.png)
 
 ### 6.2 Linked Images
 
@@ -268,17 +268,17 @@ Follow these steps:
 ### 8.4 Boxes with smallimg
 
 <info>
-This is an info box containing a small icon: <smallimg>![icon](../assets/images/pasted_file.png)</smallimg>
+This is an info box containing a small icon: <smallimg>![icon](../../assets/images/pasted_file.png)</smallimg>
 
 Small icons can appear anywhere in the paragraph.
 </info>
 
 <warning>
-Warning: <smallimg>![warning icon](../assets/images/pasted_file.png)</smallimg> Please proceed with caution!
+Warning: <smallimg>![warning icon](../../assets/images/pasted_file.png)</smallimg> Please proceed with caution!
 </warning>
 
 <success>
-Success: <smallimg>![success icon](../assets/images/pasted_file.png)</smallimg> Operation completed.
+Success: <smallimg>![success icon](../../assets/images/pasted_file.png)</smallimg> Operation completed.
 </success>
 
 
@@ -287,11 +287,11 @@ Success: <smallimg>![success icon](../assets/images/pasted_file.png)</smallimg> 
 
 ### 9.1 Small Images in Paragraphs
 
-This is a paragraph containing a <smallimg>![small icon](../assets/images/pasted_file.png)</smallimg> small image. Small images can be mixed with text without breaking the paragraph flow.
+This is a paragraph containing a <smallimg>![small icon](../../assets/images/pasted_file.png)</smallimg> small image. Small images can be mixed with text without breaking the paragraph flow.
 
 ### 9.2 Multiple Small Images
 
-Multiple <smallimg>![icon1](../assets/images/pasted_file.png)</smallimg> small images <smallimg>![icon2](../assets/images/pasted_file.png)</smallimg> can be inserted in a single paragraph, and they will remain inline.
+Multiple <smallimg>![icon1](../../assets/images/pasted_file.png)</smallimg> small images <smallimg>![icon2](../../assets/images/pasted_file.png)</smallimg> can be inserted in a single paragraph, and they will remain inline.
 
 
 
@@ -313,7 +313,7 @@ Left content supports:
 </lft>
 <rt>
 
-![Example image](../assets/images/pasted_file.png)
+![Example image](../../assets/images/pasted_file.png)
 
 </rt>
 </post>
@@ -338,9 +338,9 @@ And a regular paragraph.
 </lft>
 <rt>
 
-![Image 1](../assets/images/pasted_file.png)
+![Image 1](../../assets/images/pasted_file.png)
 
-![Image 2](../assets/images/pasted_file.png)
+![Image 2](../../assets/images/pasted_file.png)
 
 </rt>
 </post>
@@ -357,7 +357,7 @@ This is the left content of the first side-by-side layout.
 </lft>
 <rt>
 
-![Image A](../assets/images/pasted_file.png)
+![Image A](../../assets/images/pasted_file.png)
 
 </rt>
 </post>
@@ -372,9 +372,9 @@ This is the left content of the second side-by-side layout, demonstrating that m
 </lft>
 <rt>
 
-![Image B](../assets/images/pasted_file.png)
+![Image B](../../assets/images/pasted_file.png)
 
-![Image C](../assets/images/pasted_file.png)
+![Image C](../../assets/images/pasted_file.png)
 
 </rt>
 </post>
@@ -385,8 +385,8 @@ This is the left content of the second side-by-side layout, demonstrating that m
 
 ### 11.1 Lists with smallimg
 
-- Item 1 <smallimg>![icon](../assets/images/pasted_file.png)</smallimg> with icon
-- Item 2 <smallimg>![icon](../assets/images/pasted_file.png)</smallimg> another icon
+- Item 1 <smallimg>![icon](../../assets/images/pasted_file.png)</smallimg> with icon
+- Item 2 <smallimg>![icon](../../assets/images/pasted_file.png)</smallimg> another icon
 - Item 3 plain text
 
 ### 11.2 Multi-level Nested Structure
@@ -395,7 +395,7 @@ This is the left content of the second side-by-side layout, demonstrating that m
 **Complex Nesting Example**
 
 1. First level list
-   - Second level list <smallimg>![icon](../assets/images/pasted_file.png)</smallimg>
+   - Second level list <smallimg>![icon](../../assets/images/pasted_file.png)</smallimg>
    - Another second level item
 2. Continue first level
    1. Ordered sub-item
@@ -502,11 +502,11 @@ Step-by-step instructions:
 </lft>
 <rt>
 
-![Step 1](../assets/images/pasted_file.png)
+![Step 1](../../assets/images/pasted_file.png)
 
-![Step 2](../assets/images/pasted_file.png)
+![Step 2](../../assets/images/pasted_file.png)
 
-![Step 3](../assets/images/pasted_file.png)
+![Step 3](../../assets/images/pasted_file.png)
 
 </rt>
 </post>

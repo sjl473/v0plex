@@ -5,10 +5,8 @@ import {PrismLight as SyntaxHighlighter} from "react-syntax-highlighter"
 import {vscDarkPlus} from "react-syntax-highlighter/dist/esm/styles/prism"
 import {Checkmark, Copy} from "@carbon/icons-react"
 import {useTheme} from "@/components/common/theme-provider"
-import { getStrings } from "@/config/site.config"
+import {useLanguage} from "./language-provider"
 import styles from "./code-block.module.css"
-
-const strings = getStrings();
 
 import typescript from 'react-syntax-highlighter/dist/esm/languages/prism/typescript'
 import javascript from 'react-syntax-highlighter/dist/esm/languages/prism/javascript'
@@ -60,6 +58,7 @@ interface CodeBlockProps {
 export default function CodeBlock({
                                       children, language = "text", inline = false, showLineNumbers = false, filePath
                                   }: CodeBlockProps) {
+    const {strings} = useLanguage()
     const [copied, setCopied] = useState(false)
     const [codeContent, setCodeContent] = useState<string>(children || "")
     const [isLoading, setIsLoading] = useState(!!filePath)

@@ -41,7 +41,8 @@ export function processFile(
   assetProcessor: AssetProcessor,
   markdownCompiler: any,
   generatedTsxFiles: Set<string>,
-  errorReporter: ErrorReporter
+  errorReporter: ErrorReporter,
+  locale?: string
 ): void {
   const ext = path.extname(srcPath).toLowerCase();
   const relativePath = path.relative(projectRoot, srcPath);
@@ -49,9 +50,9 @@ export function processFile(
   const location = { file: relativePath };
 
   if (ext === '.md' || ext === '.mdx') {
-    processMarkdownFile(srcPath, navContainer, projectRoot, assetProcessor, markdownCompiler, generatedTsxFiles, errorReporter);
+    processMarkdownFile(srcPath, navContainer, projectRoot, assetProcessor, markdownCompiler, generatedTsxFiles, errorReporter, locale);
   } else if (ext === '.tsx') {
-    processTsxFile(srcPath, navContainer, projectRoot, generatedTsxFiles, errorReporter);
+    processTsxFile(srcPath, navContainer, projectRoot, generatedTsxFiles, errorReporter, locale);
   }
 }
 
@@ -65,7 +66,8 @@ function processMarkdownFile(
   assetProcessor: AssetProcessor,
   markdownCompiler: any,
   generatedTsxFiles: Set<string>,
-  errorReporter: ErrorReporter
+  errorReporter: ErrorReporter,
+  locale?: string
 ): void {
   const ext = path.extname(srcPath).toLowerCase();
   const relativePath = path.relative(projectRoot, srcPath);
@@ -136,6 +138,7 @@ function processMarkdownFile(
         codeFiles: [],
         images: [],
         tags: tags,
+        locale: locale,
         children: []
       });
 
@@ -170,6 +173,7 @@ function processMarkdownFile(
       codeFiles: generatedFiles.map((f: string) => ({ originalPath: "", hashPath: path.join(CONFIG.VMD_CODE_DIR, f) })),
       images: usedImages.map((img: any) => ({ originalName: img.originalName, hashPath: path.join(CONFIG.VMD_IMAGE_DIR, img.hashName) })),
       tags: tags,
+      locale: locale,
       children: []
     });
 
@@ -196,7 +200,8 @@ function processTsxFile(
   navContainer: NavigationNode[],
   projectRoot: string,
   generatedTsxFiles: Set<string>,
-  errorReporter: ErrorReporter
+  errorReporter: ErrorReporter,
+  locale?: string
 ): void {
   const relativePath = path.relative(projectRoot, srcPath);
   const item = path.basename(srcPath);
@@ -259,6 +264,7 @@ function processTsxFile(
     codeFiles: [],
     images: [],
     tags: [],
+    locale: locale,
     children: []
   });
 }

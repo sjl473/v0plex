@@ -38,10 +38,5 @@ coverage/
 *.temp
 .cache/
 
-# Generated pages (if using different OUT_DIR)
-app/out/
-
 # VMD test output (no longer generated, but ignore if present)
 vmd_parser/__tests__/fixtures/public/
-
-.venv/

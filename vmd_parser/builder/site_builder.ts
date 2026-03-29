@@ -14,6 +14,11 @@ import { scanDirectoryForImages } from './directory_scanner';
 import { processFile } from './file_processor';
 import { writeSiteData } from './site_data_writer';
 import { cleanTitle } from '../utils';
+import { AVAILABLE_LANGUAGES, type Locale, DEFAULT_LOCALE } from '../../config/site.config';
+
+// Get valid language codes from config
+const VALID_LOCALES = new Set(AVAILABLE_LANGUAGES.map(lang => lang.code));
+const VALID_LOCALE_FOLDERS = new Set(AVAILABLE_LANGUAGES.map(lang => lang.folder));
 
 export class SiteBuilder {
   private projectRoot: string;
@@ -46,7 +51,41 @@ export class SiteBuilder {
     try {
       const stats = fs.statSync(inputPath);
       if (stats.isDirectory()) {
+        // Validate language folders
+        const items = fs.readdirSync(inputPath);
+        const subdirs = items
+          .map(item => path.join(inputPath, item))
+          .filter(itemPath => fs.statSync(itemPath).isDirectory())
+          .map(itemPath => path.basename(itemPath));
+        
+        // Check for invalid folders
+        const invalidFolders = subdirs.filter(folder =>
+          !VALID_LOCALE_FOLDERS.has(folder) &&
+          !CONFIG.EXCLUDED_DIRS.includes(folder) &&
+          !folder.startsWith('.')
+        );
+        
+        if (invalidFolders.length > 0) {
+          const error = createVmdError(
+            VmdErrorCode.CONFIG_ERROR,
+            {
+              message: `Invalid folder(s) found in ${inputPath}: ${invalidFolders.join(', ')}. ` +
+                       `Folders must match configured languages: ${Array.from(VALID_LOCALE_FOLDERS).join(', ')}. ` +
+                       `Please move content to appropriate language folders or update AVAILABLE_LANGUAGES in config/site.config.ts`
+            }
+          );
+          console.error(`\n❌ ${error.format()}\n`);
+          this.errorReporter.report(error);
+          this.errorReporter.printReports();
+          return false;
+        }
+        
         scanDirectoryForImages(inputPath, this.assetProcessor, this.errorReporter);
+        // Explicitly scan assets folder for images (excluded from folder validation)
+        const assetsPath = path.join(inputPath, 'assets');
+        if (fs.existsSync(assetsPath)) {
+          scanDirectoryForImages(assetsPath, this.assetProcessor, this.errorReporter);
+        }
         this.traverseDirectory(inputPath, this.navigation);
       } else if (stats.isFile()) {
         processFile(
@@ -59,6 +98,9 @@ export class SiteBuilder {
           this.errorReporter
         );
       }
+
+      // Build cross-language links after all pages are processed
+      this.buildCrossLanguageLinks();
 
       this.writeSiteData();
 
@@ -90,7 +132,7 @@ export class SiteBuilder {
     }
   }
 
-  private traverseDirectory(dir: string, navContainer: NavigationNode[]): void {
+  private traverseDirectory(dir: string, navContainer: NavigationNode[], locale?: string): void {
     const items = fs.readdirSync(dir);
 
     items.sort((a, b) => {
@@ -111,7 +153,11 @@ export class SiteBuilder {
       const stats = fs.statSync(srcPath);
 
       if (stats.isDirectory()) {
-        if (/^_(\d+)/.test(item)) {
+        // Check if this is a language folder (direct child of input path)
+        if (!locale && VALID_LOCALE_FOLDERS.has(item)) {
+          // This is a language folder, process its contents with the locale
+          this.traverseDirectory(srcPath, navContainer, item);
+        } else if (/^_(\d+)/.test(item)) {
           const folderTitle = cleanTitle(item, true);
           const newNavGroup: NavigationNode = {
             title: folderTitle,
@@ -124,10 +170,11 @@ export class SiteBuilder {
             codeFiles: [],
             images: [],
             tags: [],
+            locale: locale,
             children: []
           };
           navContainer.push(newNavGroup);
-          this.traverseDirectory(srcPath, newNavGroup.children);
+          this.traverseDirectory(srcPath, newNavGroup.children, locale);
         }
       } else if (stats.isFile()) {
         processFile(
@@ -137,10 +184,139 @@ export class SiteBuilder {
           this.assetProcessor,
           this.markdownCompiler,
           this.generatedTsxFiles,
-          this.errorReporter
+          this.errorReporter,
+          locale
         );
       }
     });
+  }
+
+  /**
+   * Extract prefix ID from file/folder name (e.g., "_01_intro.md" -> "01")
+   */
+  private extractPrefixId(name: string): string | null {
+    const match = name.match(/^_?(\d+)/);
+    return match ? match[1] : null;
+  }
+
+  /**
+   * Build a prefix identifier from the navigation hierarchy.
+   * Uses both FOLDER and FILE prefixes to match pages across languages.
+   * Format: "folderPrefix_filePrefix" for nested structure, or just "filePrefix" for root level.
+   * Example: "_01_Docs/_00_intro.md" in EN and "_01_文档/_00_简介.md" in ZH
+   *          both get prefix "01_00" and are matched as the same article.
+   */
+  private buildPrefixPath(node: NavigationNode, ancestorPrefixes: string[]): string {
+    const mdPath = node.mdPath || '';
+    const baseName = path.basename(mdPath);
+    const filePrefix = this.extractPrefixId(baseName);
+    
+    if (!filePrefix) return '';
+    
+    // Include ancestor folder prefixes + file prefix
+    // This creates unique identifiers like "01_00", "01_01", "02_00" etc.
+    const parts = [...ancestorPrefixes, filePrefix];
+    return parts.join('_');
+  }
+
+  /**
+   * Collect all pages from navigation tree with their prefix paths.
+   * Tracks folder name prefixes (not folder positions) to match pages across languages.
+   * Pages are matched based on their numeric prefixes (e.g., "_01_Docs/_00_file.md" matches
+   * "_01_Documentation/_00_page.md" because both have "01" folder prefix and "00" file prefix).
+   */
+  private collectPages(nodes: NavigationNode[], ancestorPrefixes: string[] = []): Array<{ node: NavigationNode; prefixPath: string; locale: string }> {
+    const pages: Array<{ node: NavigationNode; prefixPath: string; locale: string }> = [];
+    
+    for (const node of nodes) {
+      if (node.type === 'page') {
+        const prefixPath = this.buildPrefixPath(node, ancestorPrefixes);
+        if (prefixPath) {
+          pages.push({ node, prefixPath, locale: node.locale || '' });
+        }
+      }
+      
+      if (node.children && node.children.length > 0) {
+        // Extract folder prefix from the first child's path (all children should be in same folder)
+        let folderPrefix = '';
+        const firstChildPath = node.children[0].mdPath;
+        if (firstChildPath) {
+          const parentDir = path.dirname(firstChildPath);
+          folderPrefix = this.extractPrefixId(path.basename(parentDir)) || '';
+        }
+        
+        // Only recurse if we have a valid folder prefix
+        if (folderPrefix) {
+          pages.push(...this.collectPages(node.children, [...ancestorPrefixes, folderPrefix]));
+        }
+      }
+    }
+    
+    return pages;
+  }
+
+  /**
+   * Build cross-language links for all pages
+   */
+  private buildCrossLanguageLinks(): void {
+    const allPages = this.collectPages(this.navigation);
+    
+    // Group pages by prefix path
+    const pagesByPrefix = new Map<string, Array<{ node: NavigationNode; locale: string }>>();
+    
+    for (const page of allPages) {
+      if (!pagesByPrefix.has(page.prefixPath)) {
+        pagesByPrefix.set(page.prefixPath, []);
+      }
+      pagesByPrefix.get(page.prefixPath)!.push({ node: page.node, locale: page.locale });
+    }
+    
+    // Build languageLinks for each page
+    for (const [prefixPath, pages] of pagesByPrefix) {
+      if (pages.length <= 1) continue; // Skip if only one language
+      
+      // Create locale -> path mapping
+      const languageLinks: Record<string, string> = {};
+      for (const { node, locale } of pages) {
+        if (locale && node.path) {
+          languageLinks[locale] = node.path;
+        }
+      }
+      
+      // Assign to each page
+      for (const { node } of pages) {
+        node.languageLinks = { ...languageLinks };
+        node.prefixId = prefixPath;
+      }
+    }
+    
+    // Validate: report prefix paths that don't have all configured languages
+    const configuredLocales = new Set(AVAILABLE_LANGUAGES.map(l => l.code));
+    let hasPrefixMismatch = false;
+    
+    for (const [prefixPath, pages] of pagesByPrefix) {
+      const pageLocales = new Set(pages.map(p => p.locale).filter(Boolean));
+      const missingLocales = [...configuredLocales].filter(l => !pageLocales.has(l));
+      
+      if (missingLocales.length > 0 && pages.length > 0) {
+        hasPrefixMismatch = true;
+        const examplePage = pages[0].node.mdPath || prefixPath;
+        const error = createVmdError(
+          VmdErrorCode.CONFIG_ERROR,
+          {
+            message: `i18n prefix mismatch: Page "${prefixPath}" exists in [${[...pageLocales].join(', ')}] but missing in [${missingLocales.join(', ')}]. ` +
+                     `Each prefix must exist in ALL configured languages: ${[...configuredLocales].join(', ')}. ` +
+                     `Location: ${examplePage}`
+          }
+        );
+        this.errorReporter.report(error);
+      }
+    }
+    
+    if (hasPrefixMismatch) {
+      console.error('\n❌ Build failed: i18n prefix mismatch detected.');
+      console.error('   Ensure all content folders and files have matching numeric prefixes across all language directories.');
+    }
   }
 
   private writeSiteData(): void {

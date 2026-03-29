@@ -7,14 +7,14 @@ import {usePathname} from "next/navigation"
 import {Search, X} from "lucide-react"
 import {ChevronDown, ChevronRight} from "@carbon/icons-react"
 import {SITE_CONFIG, getStrings} from "@/config/site.config"
+import {useLanguage} from "@/components/common/language-provider"
 import styles from "./sidebar.module.css"
-
-const strings = getStrings();
 
 interface NavItem {
     title: string
     path?: string
     type?: 'folder' | 'page'
+    locale?: string
     children?: NavItem[]
 }
 
@@ -107,6 +107,30 @@ function shouldExpand(pathname: string, item: NavItem, itemId: string, manuallyE
     return hasActiveChild(pathname, item)
 }
 
+// Filter navigation tree to only include items for the specified locale
+function filterNavigationByLocale(nodes: NavItem[], locale: string): NavItem[] {
+    const result: NavItem[] = [];
+    
+    for (const node of nodes) {
+        // If this node has a different locale, skip it
+        if (node.locale && node.locale !== locale) {
+            continue;
+        }
+        
+        // Recursively filter children
+        const filteredChildren = node.children
+            ? filterNavigationByLocale(node.children, locale)
+            : undefined;
+        
+        result.push({
+            ...node,
+            children: filteredChildren
+        });
+    }
+    
+    return result;
+}
+
 export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: CarbonSidebarProps) {
     const [searchQuery, setSearchQuery] = useState("")
     const [manuallyExpandedItems, setManuallyExpandedItems] = useState<Set<string>>(new Set())
@@ -116,15 +140,18 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
     const [siteData, setSiteData] = useState<SiteData | null>(null)
     const sidebarRef = useRef<HTMLDivElement>(null)
     const pathname = usePathname()
+    const { locale, strings } = useLanguage()
 
     useEffect(() => {
         loadSiteData().then(data => {
             if (data) {
                 setSiteData(data);
-                setNavStructure(data.navigation || []);
+                // Filter navigation by current locale
+                const filteredNav = filterNavigationByLocale(data.navigation || [], locale);
+                setNavStructure(filteredNav);
             }
         });
-    }, []);
+    }, [locale]);
 
     useEffect(() => {
         setManuallyCollapsedItems(prev => {
@@ -157,6 +184,20 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
 
     const searchResults: SearchResult[] = [];
 
+    // Build a set of valid page paths for current locale from navStructure
+    const validPathsForLocale = new Set<string>();
+    const collectPaths = (nodes: NavItem[]) => {
+        for (const node of nodes) {
+            if (node.path) {
+                validPathsForLocale.add(node.path);
+            }
+            if (node.children) {
+                collectPaths(node.children);
+            }
+        }
+    };
+    collectPaths(navStructure);
+
     // Only search lexeme words, ignoring standard title match
     if (normalizedQuery) {
         if (siteData?.lexemeStats?.byWord && siteData?.lexemeStats?.pageIndex) {
@@ -174,7 +215,8 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
 
             for (const [hash, hits] of Object.entries(pageHits)) {
                 const pageMeta = siteData.lexemeStats.pageIndex[hash];
-                if (pageMeta) {
+                // Only include results for pages in current locale
+                if (pageMeta && validPathsForLocale.has(pageMeta.path)) {
                     searchResults.push({
                         title: pageMeta.title,
                         path: pageMeta.path,

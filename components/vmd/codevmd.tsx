@@ -2,9 +2,8 @@
 
 import React, {useEffect, useState} from 'react';
 import CodeBlock from '../common/code-block';
-import { getStrings } from '@/config/site.config';
-
-const strings = getStrings();
+import {useLanguage} from '@/components/common/language-provider';
+import {SITE_CONFIG} from '@/config/site.config';
 
 interface CodeVmdProps {
     filePath: string;
@@ -12,12 +11,13 @@ interface CodeVmdProps {
 }
 
 export function Inlinecodevmd({filePath}: CodeVmdProps) {
+    const {strings} = useLanguage();
     const [code, setCode] = useState<string>('');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!filePath) return;
-        fetch(`/vmdcode/${filePath}.txt`)
+        fetch(`${SITE_CONFIG.DATA_PATHS.VMD_CODE}${filePath}.txt`)
             .then(res => res.text())
             .then(text => {
                 setCode(text);
@@ -28,7 +28,7 @@ export function Inlinecodevmd({filePath}: CodeVmdProps) {
                 setCode(strings.code.error);
                 setLoading(false);
             });
-    }, [filePath]);
+    }, [filePath, strings.code.error]);
 
     if (loading) return <code>...</code>;
 
@@ -36,13 +36,14 @@ export function Inlinecodevmd({filePath}: CodeVmdProps) {
 }
 
 export function Blockcodevmd({filePath, language}: CodeVmdProps) {
+    const {strings} = useLanguage();
     const [code, setCode] = useState<string>('');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!filePath) return;
 
-        fetch(`/vmdcode/${filePath}.txt`)
+        fetch(`${SITE_CONFIG.DATA_PATHS.VMD_CODE}${filePath}.txt`)
             .then(res => res.text())
             .then(text => {
                 setCode(text);
@@ -53,7 +54,7 @@ export function Blockcodevmd({filePath, language}: CodeVmdProps) {
                 setCode(strings.code.error);
                 setLoading(false);
             });
-    }, [filePath]);
+    }, [filePath, strings.code.error]);
 
     if (loading) return <div className="loading-code-block">{strings.code.loading}</div>;
 
