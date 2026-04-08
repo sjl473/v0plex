@@ -29,13 +29,46 @@ function checkXssInMath(formula: string, location: ErrorLocation): void {
 }
 
 /**
+ * Check if position is inside inline code (backticks)
+ * This prevents math parsing inside inline code like `$...$` or `$$...$$`
+ */
+function isInsideBackticks(src: string, position: number): boolean {
+  // Find all inline code spans: `...` or ``...``
+  // Pattern matches: single backtick code (not preceded by backtick) or double backtick code
+  const codePattern = /(?<!`)`([^`]+)`(?!`)|``([^`]+)``/g;
+  let match;
+  
+  while ((match = codePattern.exec(src)) !== null) {
+    const start = match.index;
+    const end = match.index + match[0].length;
+    
+    // Check if our position is inside this code span
+    if (position >= start && position < end) {
+      return true;
+    }
+    
+    // Optimization: if we've passed the position, no need to continue
+    if (start > position) {
+      break;
+    }
+  }
+  
+  return false;
+}
+
+/**
  * Block math extension ($$...$$)
  */
 export const blockMathExtension = {
   name: 'blockMath',
   level: 'block' as const,
   start(src: string) {
-    return src.indexOf('$$');
+    let pos = src.indexOf('$$');
+    // Skip positions that are inside backticks
+    while (pos !== -1 && isInsideBackticks(src, pos)) {
+      pos = src.indexOf('$$', pos + 2);
+    }
+    return pos;
   },
   tokenizer(this: any, src: string, tokens: any[]) {
     const rule = /^\$\$([\s\S]+?)\$\$/;
@@ -60,6 +93,7 @@ export const blockMathExtension = {
 
 /**
  * Inline math extension ($...$)
+ * Does NOT match content inside backticks (inline code)
  */
 export const inlineMathExtension = {
   name: 'inlineMath',
@@ -72,6 +106,12 @@ export const inlineMathExtension = {
     const match = rule.exec(src);
     if (match) {
       const formula = match[1].trim();
+      
+      // Skip if formula contains backticks (means it's inside inline code)
+      if (formula.includes('`')) {
+        return undefined;
+      }
+      
       const location = getFileLocation(this);
       checkXssInMath(formula, location);
       return {

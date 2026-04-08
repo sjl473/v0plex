@@ -23,6 +23,31 @@
     scrollbar-width: thin !important;
 }
 
+/* Custom scrollbar styles for code blocks - lighter colors for better visibility */
+.syntaxHighlighter::-webkit-scrollbar {
+    height: 8px;
+}
+
+.syntaxHighlighter::-webkit-scrollbar-track {
+    background: #262626;
+    border-radius: 4px;
+}
+
+.syntaxHighlighter::-webkit-scrollbar-thumb {
+    background: #8d8d8d;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.syntaxHighlighter::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Firefox scrollbar color */
+.syntaxHighlighter {
+    scrollbar-color: #8d8d8d #262626;
+}
+
 .syntaxHighlighter :global(.linenumber),
 .syntaxHighlighter :global(.react-syntax-highlighter-line-number) {
     margin-right: 1.5rem !important;
