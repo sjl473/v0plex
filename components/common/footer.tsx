@@ -1,5 +1,6 @@
 "use client"
 import Link from "next/link"
+import { useEffect, useRef } from "react"
 import { formatDate, interpolateString } from "@/config/site.config"
 import { useLanguage } from "./language-provider"
 import styles from "./footer.module.css"
@@ -36,11 +37,21 @@ export default function Footer({
                                    copyright: copyrightProp
                                }: FooterProps = {}) {
     const {strings, locale} = useLanguage()
+    const footerRef = useRef<HTMLElement>(null)
     const version = versionProp || strings.footer.version
     const copyright = copyrightProp || strings.footer.copyright
     const dateStr = formatDate(new Date(), locale)
     const lastUpdated = lastUpdatedProp || dateStr
-    return (<footer className={styles.footer}>
+
+    // Debug: log left offset
+    useEffect(() => {
+        if (footerRef.current) {
+            const rect = footerRef.current.getBoundingClientRect();
+            console.log('[Footer] Left offset:', rect.left);
+        }
+    }, [])
+
+    return (<footer ref={footerRef} className={styles.footer}>
         <div className={styles.main}>
             <div className={styles.container}>
                 <div className={styles.leftSection}>

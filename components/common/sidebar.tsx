@@ -231,23 +231,9 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
     }
 
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
-        e.preventDefault()
-        setIsResizing(true)
-
-        const handleMouseMove = (e: MouseEvent) => {
-            const newWidth = Math.max(200, Math.min(600, e.clientX))
-            onResize(newWidth)
-        }
-
-        const handleMouseUp = () => {
-            setIsResizing(false)
-            document.removeEventListener("mousemove", handleMouseMove)
-            document.removeEventListener("mouseup", handleMouseUp)
-        }
-
-        document.addEventListener("mousemove", handleMouseMove)
-        document.addEventListener("mouseup", handleMouseUp)
-    }, [onResize])
+        // Disable resize completely - sidebar width is fixed on all devices
+        return
+    }, [])
 
     const toggleExpanded = (itemId: string, e: React.MouseEvent) => {
         e.preventDefault();

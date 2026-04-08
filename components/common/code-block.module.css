@@ -1,10 +1,14 @@
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .syntaxHighlighter {
         font-size: 0.6rem !important;
+        /* Ensure code block doesn't expand beyond container */
+        max-width: 100% !important;
     }
 
     .syntaxHighlighter pre {
         white-space: pre !important;
+        /* Allow code block to scroll internally instead of expanding */
+        max-width: 100% !important;
     }
 }
 

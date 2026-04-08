@@ -1,5 +1,15 @@
 export const URL_PREFIX = 'page';
 
+export const LAYOUT_CONFIG = {
+  SIDEBAR_WIDTH: 300,
+  RIGHT_SIDEBAR_WIDTH: 300, // New right sidebar width
+  LEFT_CONTENT_OFFSET: {
+    pc: '1.25rem',      // PC layout (≥1025px)
+    tablet: '1rem',     // Tablet layout (601px-1024px)
+    mobile: '0.5rem'    // Mobile layout (≤600px) - matches header padding
+  }
+} as const;
+
 export const SITE_CONFIG = {
   URL_PREFIX: `/${URL_PREFIX}`,
   OUT_DIR: URL_PREFIX,
@@ -48,6 +58,7 @@ export interface I18nStrings {
     expand: string;
     clearSearch: string;
     allPosts: string;
+    catalog: string;
   };
   header: {
     siteTitle: string;
@@ -106,6 +117,7 @@ export const EN_STRINGS: I18nStrings = {
     expand: 'Expand',
     clearSearch: 'Clear search',
     allPosts: 'All Posts',
+    catalog: 'Catalog',
   },
   header: {
     siteTitle: 'v0plex',
@@ -164,6 +176,7 @@ export const ZH_STRINGS: I18nStrings = {
     expand: '展开',
     clearSearch: '清除搜索',
     allPosts: '所有文章',
+    catalog: '目录',
   },
   header: {
     siteTitle: 'v0plex',

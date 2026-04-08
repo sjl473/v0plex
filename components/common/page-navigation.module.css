@@ -12,35 +12,57 @@
 .navContainer {
     display: flex;
     justify-content: space-between;
+    /* Fluid width - fills the entire main area */
     width: 100%;
-    max-width: 850px;
     margin: 0;
+    /* No padding on container - buttons handle their own spacing */
     padding: 0;
+    gap: 0;
+    box-sizing: border-box;
 }
 
 .navLink {
     display: flex;
     flex-direction: column;
     text-decoration: none;
-    padding: 1.2rem 0;
     transition: background-color 0.2s ease;
+    /* Each button is exactly 50% of the container width */
     width: 50%;
     box-sizing: border-box;
     border: none;
     background-color: transparent;
     border-radius: 0;
+    /* Default padding - left aligned with content */
+    padding: 1.2rem 0;
 }
 
 .navLink:first-child {
-    padding-left: 1.5rem;
-    padding-right: 2.5rem;
+    /* PC layout uses pc offset */
+    padding-left: var(--content-left-offset-pc);
+    padding-right: 1rem;
 }
 
 .navLink:last-child {
-    padding-right: 0.5rem;
     padding-left: 1rem;
+    /* Right padding matches contentWrapper right padding */
+    padding-right: 2rem;
     text-align: right;
     align-items: flex-end;
+}
+
+/* Tablet layout: adjust padding to match contentWrapper */
+@media (max-width: 1024px) and (min-width: 601px) {
+    .navContainer > .navLink:first-child {
+        /* Tablet layout uses tablet offset */
+        padding-left: var(--content-left-offset-tablet) !important;
+        padding-right: 0.75rem;
+    }
+
+    .navContainer > .navLink:last-child {
+        padding-left: 0.75rem;
+        /* Match tablet contentWrapper right padding: 1.5rem */
+        padding-right: 1.5rem;
+    }
 }
 
 .navLink:hover {
@@ -72,7 +94,7 @@
 
     .navContainer {
         flex-direction: row;
-        max-width: 100%;
+        /* Mobile: use full width */
         width: 100%;
         margin: 0;
         padding: 0;
@@ -80,16 +102,21 @@
 
     .navLink {
         width: 50%;
-        padding: 1.2rem 0;
+        box-sizing: border-box;
     }
 
-    .navLink:first-child {
-        padding-left: 1rem;
-        padding-right: 1rem;
+    .navContainer > .navLink:first-child {
+        /* Mobile layout: match header padding */
+        padding-left: var(--content-left-offset-mobile) !important;
+        padding-top: 1.2rem;
+        padding-bottom: 1.2rem;
+        padding-right: 0.5rem;
     }
 
-    .navLink:last-child {
+    .navContainer > .navLink:last-child {
         padding-right: 1rem;
-        padding-left: 1rem;
+        padding-left: 0.5rem;
+        padding-top: 1.2rem;
+        padding-bottom: 1.2rem;
     }
 }

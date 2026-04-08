@@ -4,7 +4,7 @@
     font-weight: 400 !important;
     margin-top: 2rem;
     margin-bottom: 1rem;
-    line-height: 1.25;
+    line-height: 1.6;
 }
 
 /* Override weights for specific headers */
@@ -47,15 +47,15 @@
 */
 
 .navItem.active:not(.hasChildren) {
-    background: var(--sidebar-item-selected-bg);
+    background: var(--v0plex-background-active);
     color: var(--v0plex-text-primary);
-    border-left: 3px solid #0f62fe; /* Ensure this color is visible */
+    border-left: 3px solid var(--v0plex-link-primary); /* Ensure this color is visible */
     font-weight: 600;
 }
 
 /* Ensure specificity */
 div.navItem.active:not(.hasChildren) {
-    background-color: var(--sidebar-item-selected-bg) !important;
+    background-color: var(--v0plex-background-active) !important;
     border-left-color: var(--v0plex-link-primary) !important;
 }
 

@@ -6,13 +6,21 @@
     display: flex;
     flex-direction: column;
     height: calc(100vh - 40px);
-    background: var(--v0plex-background);
+    background: var(--sidebar-bg);
     border-right: 1px solid var(--v0plex-border-subtle);
     overflow-y: auto;
     margin: 0;
     padding: 0;
     border-top: none;
     box-sizing: border-box;
+}
+
+/* Fixed width for PC, Tablet and iPad (≥601px) - no resizing allowed */
+@media (min-width: 601px) {
+    .sidebar {
+        /* Use CSS variable for sidebar width, fallback to 256px */
+        width: var(--sidebar-width) !important;
+    }
 }
 
 html[v0plex-theme="white"] .sidebar::-webkit-scrollbar {
@@ -94,7 +102,7 @@ html[v0plex-theme="g100"] .sidebar {
 
 .searchInput {
     width: 100%;
-    height: 1.75rem;
+    height: 1.5rem;
     background: var(--sidebar-search-input-bg);
     border: 1px solid var(--sidebar-search-border);
     color: var(--v0plex-text-primary);
@@ -154,7 +162,7 @@ html[v0plex-theme="g100"] .sidebar {
 .navigationContent {
     flex: 1;
     overflow: hidden;
-    background: var(--v0plex-background);
+    background: var(--sidebar-bg);
     margin: 0;
     padding: 0;
     display: flex;
@@ -173,19 +181,18 @@ html[v0plex-theme="g100"] .sidebar {
 }
 
 .searchResultsHeader {
-    padding: 0.25rem 0.75rem;
-    font-size: 0.55rem;
-    font-weight: 600;
+    padding: 0.15rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 400;
     color: var(--v0plex-text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.16px;
+    letter-spacing: 0.32px;
     border-bottom: 1px solid var(--v0plex-border-subtle);
-    line-height: 0.7rem;
+    line-height: 1rem;
     background: var(--sidebar-header-bg);
     margin: 0;
     flex-shrink: 0;
 }
-
 .searchResultsList {
     flex: 1;
     overflow-y: auto;
@@ -199,15 +206,15 @@ html[v0plex-theme="g100"] .sidebar {
 .searchResultItem {
     display: flex;
     align-items: center;
-    padding: 0.4rem 0.75rem;
+    padding: 0.25rem 0.75rem;
     cursor: pointer;
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     transition: all 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
-    min-height: 1.6rem;
+    min-height: 1.75rem;
     background: transparent;
     color: var(--v0plex-text-primary);
     border-left: 3px solid transparent;
-    line-height: 0.8rem;
+    line-height: 1rem;
     word-break: break-word;
     overflow-wrap: break-word;
     box-sizing: border-box;
@@ -242,9 +249,9 @@ html[v0plex-theme="g100"] .sidebar {
 }
 
 .searchResultPath {
-    font-size: 0.55rem;
+    font-size: 0.6875rem;
     color: var(--v0plex-text-secondary);
-    line-height: 0.7rem;
+    line-height: 0.875rem;
     word-break: break-word;
     overflow-wrap: break-word;
     width: 100%;
@@ -253,7 +260,7 @@ html[v0plex-theme="g100"] .sidebar {
 
 .directoryStructure {
     padding: 0.125rem 0;
-    background: var(--v0plex-background);
+    background: var(--sidebar-bg);
     flex: 1;
     min-height: 0;
     overflow: hidden !important;
@@ -262,15 +269,15 @@ html[v0plex-theme="g100"] .sidebar {
 }
 
 .allArticlesHeader {
-    padding: 0.2rem 0.75rem;
-    font-size: 0.55rem;
-    font-weight: 600;
+    padding: 0.15rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 400;
     color: var(--v0plex-text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0;
+    letter-spacing: 0.32px;
     border-bottom: 1px solid var(--v0plex-border-subtle);
     margin-bottom: 0;
-    line-height: 0.7rem;
+    line-height: 1rem;
     margin-top: -2px;
     background: var(--sidebar-header-bg);
     flex-shrink: 0;
@@ -287,28 +294,28 @@ html[v0plex-theme="g100"] .sidebar {
 .navItem {
     display: flex;
     align-items: center;
-    padding: 0.3rem 0.75rem;
+    padding: 0.2rem 0.75rem;
     cursor: pointer;
-    font-size: 0.825rem;
+    font-size: 0.8125rem;
     transition: all 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
-    min-height: 1.4rem;
+    min-height: 1.5rem;
     position: relative;
     background: transparent;
     color: var(--v0plex-text-primary);
     border-left: 3px solid transparent;
-    line-height: 0.85rem;
+    line-height: 1.125rem;
 }
 
 .navItem.active:not(.hasChildren) {
     background: var(--sidebar-item-selected-bg);
     color: var(--v0plex-text-primary);
     border-left: 3px solid #0f62fe;
-    font-weight: 600;
+    font-weight: 400;
 
 }
 
 .navItem.hasChildren {
-    font-weight: 600;
+    font-weight: 400;
     color: var(--v0plex-text-primary);
 }
 
@@ -401,12 +408,17 @@ html[v0plex-theme="g100"] .sidebar {
     background: var(--v0plex-link-primary);
 }
 
+/* Hide resize handle on all devices - sidebar width is fixed */
+.resizeHandle {
+    display: none !important;
+}
+
 .noResults {
     padding: 0.75rem;
     color: var(--v0plex-text-secondary);
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     font-style: italic;
-    line-height: 0.8rem;
+    line-height: 1rem;
     text-align: center;
     background: var(--sidebar-results-bg);
 }
@@ -426,7 +438,8 @@ html[v0plex-theme="g100"] .sidebar {
     .sidebar {
         transform: translateX(-100%);
         transition: transform 0.3s ease;
-        width: 80vw !important;
+        /* Fixed width on mobile/tablet - no dragging allowed */
+        width: 320px !important;
         max-width: 320px !important;
         z-index: 1001 !important;
     }
@@ -446,6 +459,8 @@ html[v0plex-theme="g100"] .sidebar {
 
 @media (max-width: 480px) {
     .sidebar {
-        width: 260px !important;
+        /* Fixed width on small mobile */
+        width: 280px !important;
+        max-width: 280px !important;
     }
 }

@@ -2,10 +2,13 @@
 
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { SITE_CONFIG, getStrings } from "@/config/site.config"
 import { useLanguage } from "@/components/common/language-provider"
 import styles from "./page-navigation.module.css"
+
+// Content max width - should match .page-typography-content max-width
+const CONTENT_MAX_WIDTH = 800;
 
 interface SiteNode {
   title: string;
@@ -49,6 +52,18 @@ export default function PageNavigation() {
   const normalizedPath = normalizePath(pathname)
   const [pages, setPages] = useState<SiteNode[]>([])
   const { strings, locale } = useLanguage()
+  const navRef = useRef<HTMLDivElement>(null)
+
+  // Set CSS variable for max-width on both navigation divs
+  useEffect(() => {
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(() => {
+      if (navRef.current) {
+        navRef.current.style.setProperty('--page-nav-max-width', `${CONTENT_MAX_WIDTH}px`)
+      }
+    }, 0)
+    return () => clearTimeout(timer)
+  }, [])
 
   useEffect(() => {
     fetch('/vmdjson/site-data.json')
@@ -65,7 +80,7 @@ export default function PageNavigation() {
 
   if (pages.length === 0) {
     return (
-      <div className={styles.navigation}>
+      <div ref={navRef} className={styles.navigation}>
         <div className={styles.navContainer}>
           <div className={`${styles.navLink} ${styles.disabled}`}>
             <div className={styles.navLabel}>{strings.pageNav.previousPage}</div>
@@ -122,7 +137,7 @@ export default function PageNavigation() {
   const truncatedNextTitle = truncateTitle(nextTitle);
 
   return (
-    <div className={styles.navigation}>
+    <div ref={navRef} className={styles.navigation}>
       <div className={styles.navContainer}>
         {prevPage ? (
           <Link href={getNavHref(prevPage)} className={styles.navLink} title={prevTitle}>

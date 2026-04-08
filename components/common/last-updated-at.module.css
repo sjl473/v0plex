@@ -1,67 +1,65 @@
 .metadataContainer {
-    margin: 1.5rem 0 1rem 0;
-    padding: 0.5rem 0.75rem;
-    background: var(--cds-layer-01);
-    border-radius: 4px;
-    border-left: 3px solid var(--cds-border-interactive);
-}
-
-.metadataRow {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 0.25rem 0;
+    gap: 0.5rem;
+    margin: 1.75rem 0 1.25rem 0;
+    padding: 0;
+}
+
+.metadataRow {
+    display: contents;
 }
 
 .metadataItem {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 0.375rem;
-    padding: 0 0.5rem;
+    padding: 0.3rem 0.65rem;
+    border-radius: 999px;
+    background: var(--v0plex-background-hover);
+    border: 1px solid var(--v0plex-border-subtle);
+    transition: border-color 0.15s ease, background 0.15s ease;
 }
 
-.metadataItem:first-child {
-    padding-left: 0;
+.metadataItem:hover {
+    background: var(--v0plex-background-active);
+    border-color: var(--v0plex-border);
 }
 
 .icon {
-    color: var(--cds-text-secondary);
+    color: var(--v0plex-text-secondary);
     flex-shrink: 0;
+    opacity: 0.75;
 }
 
 .label {
-    font-size: 0.65rem;
-    color: var(--cds-text-secondary);
+    font-size: 0.6875rem;
+    color: var(--v0plex-text-secondary);
     text-transform: uppercase;
-    letter-spacing: 0.02em;
-    font-weight: 500;
+    letter-spacing: 0.06em;
+    font-weight: 600;
 }
 
 .date {
-    font-size: 0.7rem;
-    color: var(--cds-text-primary);
+    font-size: 0.6875rem;
+    color: var(--v0plex-text-primary);
     font-family: "IBM Plex Mono", monospace;
+    font-weight: 400;
+    letter-spacing: 0.01em;
 }
 
+/* hide old divider — layout is now gap-based */
 .divider {
-    width: 1px;
-    height: 0.75rem;
-    background: var(--cds-border-subtle);
-    margin: 0 0.25rem;
+    display: none;
 }
 
 @media (max-width: 640px) {
-    .metadataRow {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.25rem;
-    }
-
-    .divider {
-        display: none;
+    .metadataContainer {
+        gap: 0.375rem;
     }
 
     .metadataItem {
-        padding: 0;
+        padding: 0.25rem 0.55rem;
     }
 }

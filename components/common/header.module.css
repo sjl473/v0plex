@@ -128,9 +128,9 @@
 
 @media (max-width: 600px) {
     .header {
-        width: 100vw !important;
-        max-width: 100vw !important;
-        padding: 0 0.5rem !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 var(--content-left-offset-mobile) !important;
         height: 40px !important;
         min-height: 40px !important;
         max-height: 40px !important;
@@ -138,6 +138,8 @@
 
     .mobileMenuBtn {
         display: flex !important;
+        /* Remove left padding to align icon with content */
+        padding-left: 0 !important;
     }
 
     .leftSection {
@@ -153,19 +155,19 @@
 
 @media (max-width: 480px) {
     .header {
-        padding: 0 0.25rem !important;
+        padding: 0 var(--content-left-offset-mobile) !important;
         height: 48px !important;
         min-height: 48px !important;
         max-height: 48px !important;
     }
 
     .leftSection {
-        gap: 0.25rem;
+        gap: 0.5rem;
         height: 48px;
     }
 
     .rightSection {
-        gap: 0.25rem;
+        gap: 0.5rem;
         height: 48px;
     }
 

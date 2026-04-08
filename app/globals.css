@@ -1,6 +1,14 @@
 @import "@ibm/plex/css/ibm-plex.css";
 @import "@carbon/styles/css/styles.css";
 
+/* CSS Variables - will be set by JS in client-layout.tsx */
+:root {
+    --sidebar-width: 256px;
+    --right-sidebar-width: 256px;
+    --content-left-offset-pc: 1.25rem;
+    --content-left-offset-tablet: 1rem;
+    --content-left-offset-mobile: 0.5rem;
+}
 
 html,
 body {
@@ -21,6 +29,7 @@ body[v0plex-theme="white"] {
     --v0plex-text-inverse: #ffffff;
     --v0plex-border-subtle: #e0e0e0;
     --v0plex-border-subtle-01: #e0e0e0;
+    --v0plex-border: #c6c6c6;
     --v0plex-icon-primary: #161616;
     --v0plex-icon-secondary: #525252;
     --v0plex-link-primary: #0f62fe;
@@ -33,18 +42,18 @@ body[v0plex-theme="white"] {
     --v0plex-scrollbar-thumb: #c6c6c6;
     --v0plex-scrollbar-thumb-hover: #a8a8a8;
 
-    --sidebar-search-bg: #e8e8e8;
-    --sidebar-search-input-bg: #ffffff;
-    --sidebar-search-input-hover: #f4f4f4;
+    --sidebar-bg: #f4f4f4;
+    --sidebar-search-bg: #e0e0e0;
+    --sidebar-search-input-bg: #f4f4f4;
+    --sidebar-search-input-hover: #e8e8e8;
     --sidebar-search-border: #c6c6c6;
-    --sidebar-results-bg: #f4f4f4;
-    --sidebar-header-bg: #e0e0e0;
-    --sidebar-item-hover: #e8e8e8;
-    --sidebar-nav-hover: #f4f4f4;
-    --sidebar-item-selected-bg: #e8e8e8;
+    --sidebar-results-bg: #e8e8e8;
+    --sidebar-header-bg: #d8d8d8;
+    --sidebar-item-hover: #e0e0e0;
+    --sidebar-nav-hover: #e8e8e8;
+    --sidebar-item-selected-bg: #e0e0e0;
     --sidebar-item-selected-border: #0f62fe;
-
-    background: #ffffff !important;
+    background: #f4f4f4 !important;
     color: #161616 !important;
 }
 
@@ -59,6 +68,7 @@ body[v0plex-theme="g100"] {
     --v0plex-text-inverse: #161616;
     --v0plex-border-subtle: #393939;
     --v0plex-border-subtle-01: #393939;
+    --v0plex-border: #525252;
     --v0plex-icon-primary: #f4f4f4;
     --v0plex-icon-secondary: #c6c6c6;
     --v0plex-link-primary: #78a9ff;
@@ -72,17 +82,17 @@ body[v0plex-theme="g100"] {
     --v0plex-scrollbar-thumb-hover: #6f6f6f;
 
 
-    --sidebar-search-bg: #262626;
-    --sidebar-search-input-bg: #393939;
+    --sidebar-bg: #262626;
+    --sidebar-search-bg: #2d2d2d;
+    --sidebar-search-input-bg: #3d3d3d;
     --sidebar-search-input-hover: #4c4c4c;
     --sidebar-search-border: #525252;
-    --sidebar-results-bg: #1f1f1f;
-    --sidebar-header-bg: #2d2d2d;
+    --sidebar-results-bg: #2d2d2d;
+    --sidebar-header-bg: #333333;
     --sidebar-item-hover: #353535;
-    --sidebar-nav-hover: #262626;
-    --sidebar-item-selected-bg: #2d2d2d;
+    --sidebar-nav-hover: #2d2d2d;
+    --sidebar-item-selected-bg: #333333;
     --sidebar-item-selected-border: #0f62fe;
-
     background: #161616 !important;
     color: #f4f4f4 !important;
 }
@@ -97,15 +107,17 @@ body[v0plex-theme="g100"] {
 
 .page-typography-content {
     color: var(--v0plex-text-primary);
-    line-height: 1.29;
-    font-size: 0.875rem;
-    max-width: 800px;
+    line-height: 1.4;
+    font-size: 1rem;
     font-weight: 400;
+    /* Fluid width - takes full available space in main area */
     width: 100%;
+    max-width: 100%;
     overflow-wrap: break-word;
     word-wrap: break-word;
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
 
 .page-typography-content h1 {
@@ -140,9 +152,9 @@ body[v0plex-theme="g100"] {
 
 .page-typography-content p {
     color: var(--v0plex-text-secondary);
-    margin-bottom: 1rem;
-    line-height: 1.29;
-    font-size: 0.875rem !important;
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+    font-size: 1rem !important;
     font-weight: 400;
     text-indent: 0 !important;
 }
@@ -173,8 +185,8 @@ body[v0plex-theme="g100"] {
 
 .page-typography-content ul,
 .page-typography-content ol {
-    font-size: 0.875rem;
-    line-height: 1.29;
+    font-size: 1rem;
+    line-height: 1.4;
     margin-bottom: 1rem;
 }
 
@@ -279,6 +291,9 @@ pre {
     line-height: 1.33;
     margin: 1.5rem 0;
     max-width: 100%;
+    /* Prevent pre from causing horizontal scroll */
+    white-space: pre-wrap;
+    word-wrap: break-word;
 }
 
 pre *,
@@ -531,9 +546,9 @@ aside::-webkit-scrollbar-thumb:hover {
     }
 
     header {
-        padding: 0 0.5rem !important;
-        width: 100vw !important;
-        max-width: 100vw !important;
+        padding: 0 var(--content-left-offset-mobile) !important;
+        width: 100% !important;
+        max-width: 100% !important;
     }
 
     header input {
@@ -554,8 +569,8 @@ aside::-webkit-scrollbar-thumb:hover {
     }
 
     main {
-        min-width: 100vw !important;
-        max-width: 100vw !important;
+        width: 100% !important;
+        max-width: 100% !important;
         overflow-x: hidden !important;
     }
 }
@@ -567,7 +582,7 @@ aside::-webkit-scrollbar-thumb:hover {
     }
 
     .v0plex-content {
-        padding: 1rem !important;
+        padding: 1rem var(--content-left-offset-mobile) !important;
         padding-top: 4rem !important;
         overflow: visible !important;
         height: auto !important;
@@ -598,11 +613,11 @@ aside::-webkit-scrollbar-thumb:hover {
     max-height: none !important;
 }
 
-* {
+*:not(aside):not(aside *) {
     overflow-x: visible !important;
 }
 
-*:not(html):not(body):not(pre):not(.sidebar):not(.sidebar *):not(.table-responsive-wrapper):not(.cds--data-table-container):not(.cds--table-container) {
+*:not(html):not(body):not(pre):not(.sidebar):not(.sidebar *):not(aside):not(aside *):not(.table-responsive-wrapper):not(.cds--data-table-container):not(.cds--table-container) {
     overflow-y: visible !important;
 }
 
@@ -610,5 +625,20 @@ aside::-webkit-scrollbar-thumb:hover {
     .table-responsive-wrapper {
         overflow-x: auto !important;
         overflow-y: visible !important;
+    }
+}
+
+/* Force mobile content alignment - override everything */
+@media (max-width: 600px) {
+    [class*="contentWrapper"] {
+        padding-left: var(--content-left-offset-mobile) !important;
+    }
+    
+    [class*="footer_main__"] {
+        padding-left: var(--content-left-offset-mobile) !important;
+    }
+    
+    [class*="page-navigation_navContainer__"] > [class*="navLink__"]:first-child {
+        padding-left: var(--content-left-offset-mobile) !important;
     }
 }

@@ -1,30 +1,42 @@
 .footer {
-    background: #000000; /* Pure black */
+    background: #000000;
     color: #f4f4f4;
     margin: 0;
     padding: 0;
     width: 100%;
     font-family: 'IBM Plex Sans', sans-serif;
-    border-top: 1px solid #393939; /* Add border top for separation if needed, matching dark theme */
+    border-top: 1px solid #393939;
+    /* Force footer to stick to bottom of mainContent */
+    margin-top: auto;
+    box-sizing: border-box;
+    flex-shrink: 0;
 }
 
 .main {
-    padding: 3rem 0;
-    margin-top: 0;
+    /* PC layout uses pc offset */
+    padding: 3rem 2rem 3rem var(--content-left-offset-pc);
+    margin: 0;
     width: 100%;
     box-sizing: border-box;
-    display: flex; /* Allow centering or aligning container if needed */
-    justify-content: flex-start; /* Align left to match content flow usually */
+    display: block;
+}
+
+/* Tablet layout: adjust padding to match contentWrapper */
+@media (max-width: 1024px) and (min-width: 601px) {
+    .main {
+        /* Tablet layout uses tablet offset */
+        padding: 3rem 1.5rem 3rem var(--content-left-offset-tablet);
+    }
 }
 
 .container {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Two columns like typical IBM footer: Links | Info/Logo */
+    grid-template-columns: 1fr 1fr;
+    /* Fluid width - fills the entire main area */
     width: 100%;
-    max-width: 850px; /* Match the pagination container width */
-    margin: 0; /* Align with left edge of content */
-    /* Updated padding to match page-navigation alignment */
-    padding: 0 0.5rem 0 1.5rem;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
     gap: 2rem;
     box-sizing: border-box;
 }
@@ -104,10 +116,16 @@
     text-align: right;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
+    .main {
+        /* Mobile layout: match header padding */
+        padding-left: var(--content-left-offset-mobile) !important;
+    }
+
     .container {
         grid-template-columns: 1fr;
-        padding: 0 1rem;
+        /* Reset container padding since .main already has it */
+        padding: 0 1rem 0 0;
     }
 
     .info {
@@ -117,11 +135,5 @@
 
     .meta {
         text-align: left;
-    }
-}
-
-@media (max-width: 480px) {
-    .container {
-        padding: 0 1rem;
     }
 }
