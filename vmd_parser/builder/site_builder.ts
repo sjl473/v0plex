@@ -206,16 +206,41 @@ export class SiteBuilder {
    * Example: "_01_Docs/_00_intro.md" in EN and "_01_文档/_00_简介.md" in ZH
    *          both get prefix "01_00" and are matched as the same article.
    */
-  private buildPrefixPath(node: NavigationNode, ancestorPrefixes: string[]): string {
+  private buildPrefixPath(node: NavigationNode): string {
     const mdPath = node.mdPath || '';
+    if (!mdPath) return '';
+    
+    // Extract all folder prefixes from the path + file prefix
+    // This ensures consistent prefixIds even when folder names differ across languages
+    const parts: string[] = [];
+    
+    // Split path and extract folder prefixes
+    const pathParts = mdPath.split(path.sep);
+    for (const part of pathParts) {
+      const folderPrefix = this.extractPrefixId(part);
+      if (folderPrefix) {
+        parts.push(folderPrefix);
+      }
+    }
+    
+    // Also extract file prefix from basename
     const baseName = path.basename(mdPath);
     const filePrefix = this.extractPrefixId(baseName);
-    
     if (!filePrefix) return '';
     
-    // Include ancestor folder prefixes + file prefix
-    // This creates unique identifiers like "01_00", "01_01", "02_00" etc.
-    const parts = [...ancestorPrefixes, filePrefix];
+    // Replace the last folder prefix with the file prefix (if there are folder prefixes)
+    // Or just use file prefix for root-level files
+    if (parts.length > 0 && pathParts.length > 0) {
+      // Check if the last part was a folder or the file itself
+      const lastPart = pathParts[pathParts.length - 1];
+      if (lastPart === baseName) {
+        // The last extracted prefix was from the file itself, so it's already correct
+      } else {
+        // Need to add the file prefix
+        parts.push(filePrefix);
+      }
+    }
+    
     return parts.join('_');
   }
 
@@ -225,30 +250,20 @@ export class SiteBuilder {
    * Pages are matched based on their numeric prefixes (e.g., "_01_Docs/_00_file.md" matches
    * "_01_Documentation/_00_page.md" because both have "01" folder prefix and "00" file prefix).
    */
-  private collectPages(nodes: NavigationNode[], ancestorPrefixes: string[] = []): Array<{ node: NavigationNode; prefixPath: string; locale: string }> {
+  private collectPages(nodes: NavigationNode[]): Array<{ node: NavigationNode; prefixPath: string; locale: string }> {
     const pages: Array<{ node: NavigationNode; prefixPath: string; locale: string }> = [];
     
     for (const node of nodes) {
       if (node.type === 'page') {
-        const prefixPath = this.buildPrefixPath(node, ancestorPrefixes);
+        const prefixPath = this.buildPrefixPath(node);
         if (prefixPath) {
           pages.push({ node, prefixPath, locale: node.locale || '' });
         }
       }
       
       if (node.children && node.children.length > 0) {
-        // Extract folder prefix from the first child's path (all children should be in same folder)
-        let folderPrefix = '';
-        const firstChildPath = node.children[0].mdPath;
-        if (firstChildPath) {
-          const parentDir = path.dirname(firstChildPath);
-          folderPrefix = this.extractPrefixId(path.basename(parentDir)) || '';
-        }
-        
-        // Only recurse if we have a valid folder prefix
-        if (folderPrefix) {
-          pages.push(...this.collectPages(node.children, [...ancestorPrefixes, folderPrefix]));
-        }
+        // Recurse into children
+        pages.push(...this.collectPages(node.children));
       }
     }
     

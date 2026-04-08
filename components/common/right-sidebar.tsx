@@ -1,6 +1,7 @@
 "use client"
 import React, { useEffect, useRef, useState } from "react"
 import { usePathname } from "next/navigation"
+import { useLanguage } from "@/components/common/language-provider"
 import styles from "./right-sidebar.module.css"
 
 interface TocItem {
@@ -23,6 +24,7 @@ export default function RightSidebar() {
   const [items, setItems] = useState<TocItem[]>([])
   const [activeId, setActiveId] = useState<string>("")
   const observerRef = useRef<IntersectionObserver | null>(null)
+  const { strings } = useLanguage()
 
   useEffect(() => {
     setItems([])
@@ -89,7 +91,7 @@ export default function RightSidebar() {
   return (
     <aside className={styles.sidebar} aria-label="Table of contents">
       <div className={styles.content}>
-        <div className={styles.tocHeader}>On this page</div>
+        <div className={styles.tocHeader}>{strings.sidebar.catalog}</div>
         <nav className={styles.tocNav}>
           {items.length === 0 && (
             <span className={styles.tocEmpty}>No headings found</span>
