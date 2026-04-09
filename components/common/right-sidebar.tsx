@@ -21,20 +21,30 @@ function slugify(text: string): string {
 
 export default function RightSidebar() {
   const pathname = usePathname()
+  const { strings } = useLanguage()
   const [items, setItems] = useState<TocItem[]>([])
   const [activeId, setActiveId] = useState<string>("")
-  const observerRef = useRef<IntersectionObserver | null>(null)
-  const { strings } = useLanguage()
+  const [autoScroll, setAutoScroll] = useState<boolean>(true)
 
+  const observerRef = useRef<IntersectionObserver | null>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const itemRefs = useRef<Map<string, HTMLButtonElement>>(new Map())
+
+  const setItemRef = (id: string, el: HTMLButtonElement | null) => {
+    if (el) itemRefs.current.set(id, el)
+    else itemRefs.current.delete(id)
+  }
+
+  // Re-scan headings on every route change
   useEffect(() => {
     setItems([])
     setActiveId("")
+    itemRefs.current.clear()
     if (observerRef.current) {
       observerRef.current.disconnect()
       observerRef.current = null
     }
 
-    // Defer scan to allow Next.js to finish rendering new page content
     const timer = setTimeout(() => {
       const container = document.querySelector(".page-typography-content")
       if (!container) return
@@ -62,11 +72,8 @@ export default function RightSidebar() {
       observerRef.current = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              visibleSet.add(entry.target.id)
-            } else {
-              visibleSet.delete(entry.target.id)
-            }
+            if (entry.isIntersecting) visibleSet.add(entry.target.id)
+            else visibleSet.delete(entry.target.id)
           })
           const first = headingIds.find((id) => visibleSet.has(id))
           if (first) setActiveId(first)
@@ -83,6 +90,20 @@ export default function RightSidebar() {
     }
   }, [pathname])
 
+  // Scroll the TOC panel to keep the active item visible
+  useEffect(() => {
+    if (!autoScroll || !activeId || !contentRef.current) return
+    const activeBtn = itemRefs.current.get(activeId)
+    if (!activeBtn) return
+
+    const scrollEl = contentRef.current
+    const elTop = activeBtn.offsetTop
+    const elHeight = activeBtn.offsetHeight
+    const panelHeight = scrollEl.clientHeight
+    const targetTop = elTop - panelHeight / 2 + elHeight / 2
+    scrollEl.scrollTo({ top: targetTop, behavior: "smooth" })
+  }, [activeId, autoScroll])
+
   const handleClick = (id: string) => {
     const el = document.getElementById(id)
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" })
@@ -90,8 +111,18 @@ export default function RightSidebar() {
 
   return (
     <aside className={styles.sidebar} aria-label="Table of contents">
-      <div className={styles.content}>
-        <div className={styles.tocHeader}>{strings.sidebar.catalog}</div>
+      <div className={styles.tocHeaderRow}>
+        <span className={styles.tocHeaderLabel}>{strings.sidebar.catalog}</span>
+        <button
+          className={`${styles.autoScrollBtn} ${autoScroll ? styles.autoScrollOn : ""}`}
+          onClick={() => setAutoScroll((v) => !v)}
+          title={autoScroll ? "Auto-scroll: ON" : "Auto-scroll: OFF"}
+          aria-pressed={autoScroll}
+        >
+          {autoScroll ? "↕ ON" : "↕ OFF"}
+        </button>
+      </div>
+      <div className={styles.content} ref={contentRef}>
         <nav className={styles.tocNav}>
           {items.length === 0 && (
             <span className={styles.tocEmpty}>No headings found</span>
@@ -99,6 +130,7 @@ export default function RightSidebar() {
           {items.map((item) => (
             <button
               key={item.id}
+              ref={(el) => setItemRef(item.id, el)}
               className={`${styles.tocItem} ${activeId === item.id ? styles.tocActive : ""}`}
               onClick={() => handleClick(item.id)}
               title={item.text}
