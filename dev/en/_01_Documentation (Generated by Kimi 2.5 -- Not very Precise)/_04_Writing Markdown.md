@@ -2,7 +2,7 @@
 title: Writing Markdown
 created_at: 2026-03-12
 last_updated_at: 2026-03-12
-author: v0plex
+author: v0plex->v0plex@outlook.com
 has_custom_tsx: false
 tags: [guide, reference]
 ---
@@ -42,7 +42,7 @@ Each Markdown file must begin with YAML frontmatter, enclosed by three pairs of 
 title: Document Title
 created_at: 2026-03-12
 last_updated_at: 2026-03-12
-author: Author Name
+author: Author Name->author@example.com
 has_custom_tsx: false
 description: Brief description of the document
 ---
@@ -177,7 +177,7 @@ To use custom TSX components, first set the `has_custom_tsx` field to `true` in 
 title: Document with Custom Components
 created_at: 2026-03-12
 last_updated_at: 2026-03-12
-author: v0plex
+author: v0plex->v0plex@outlook.com
 has_custom_tsx: true
 ---
 ```

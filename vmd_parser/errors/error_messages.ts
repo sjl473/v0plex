@@ -23,6 +23,8 @@ export const ErrorMessages: Record<VmdErrorCode, (details?: Record<string, any>)
     `Invalid value for frontmatter attribute '${d?.field}': ${d?.value}`,
   [VmdErrorCode.FRONTMATTER_INVALID_FORMAT]: (d) =>
     `Invalid frontmatter format: ${d?.message}`,
+  [VmdErrorCode.FRONTMATTER_INVALID_AUTHOR_FORMAT]: (d) =>
+    `Invalid author format: ${d?.message}. Expected format: "Name1 | Name2 | Name->email@example.com"`,
 
   [VmdErrorCode.MARKDOWN_COMPILE_ERROR]: (d) => {
     let details = d?.details || '';

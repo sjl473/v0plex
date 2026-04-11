@@ -5,14 +5,16 @@ import Link from "next/link"
 import {useTheme} from "./theme-provider"
 import {useLanguage} from "./language-provider"
 import {getLanguageConfig} from "@/config/site.config"
-import {Asleep, Light, Menu, Translate, LogoGithub} from "@carbon/icons-react"
+import {Asleep, Light, Menu, Translate, LogoGithub, RightPanelOpen, RightPanelClose} from "@carbon/icons-react"
 import styles from "./header.module.css"
 
 interface CarbonHeaderProps {
     onToggleSidebar?: () => void
+    onToggleRightSidebar?: () => void
+    isRightSidebarOpen?: boolean
 }
 
-export default function Header({onToggleSidebar}: CarbonHeaderProps) {
+export default function Header({onToggleSidebar, onToggleRightSidebar, isRightSidebarOpen}: CarbonHeaderProps) {
     const {theme, toggleTheme, mounted: themeMounted} = useTheme()
     const {locale, toggleLocale, strings, availableLanguages, mounted: langMounted} = useLanguage()
 
@@ -55,6 +57,14 @@ export default function Header({onToggleSidebar}: CarbonHeaderProps) {
             </Link>
         </div>
         <div className={styles.rightSection}>
+            <button
+                aria-label={isRightSidebarOpen ? "Hide table of contents" : "Show table of contents"}
+                title={isRightSidebarOpen ? "Hide table of contents" : "Show table of contents"}
+                onClick={onToggleRightSidebar}
+                className={styles.tocToggle}
+            >
+                {isRightSidebarOpen ? <RightPanelClose size={20}/> : <RightPanelOpen size={20}/>}
+            </button>
             <button
                 aria-label={theme === "white" ? strings.header.switchToDark : strings.header.switchToLight}
                 title={theme === "white" ? strings.header.switchToDark : strings.header.switchToLight}

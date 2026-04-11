@@ -28,6 +28,17 @@ export default function ClientLayout({
 }) {
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
     const [sidebarWidth, setSidebarWidth] = useState(SIDEBAR_WIDTH)
+    const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true)
+    const toggleRightSidebar = useCallback(() => {
+        setIsRightSidebarOpen(prev => {
+            const next = !prev
+            document.documentElement.style.setProperty(
+                '--right-sidebar-width',
+                next ? `${RIGHT_SIDEBAR_WIDTH}px` : '0px'
+            )
+            return next
+        })
+    }, [])
 
     const toggleMobileSidebar = () => {
         setIsMobileSidebarOpen(!isMobileSidebarOpen)
@@ -94,7 +105,7 @@ export default function ClientLayout({
         <LanguageProvider>
         <MathJaxProvider>
             <div className={styles.container}>
-                <Header onToggleSidebar={toggleMobileSidebar}/>
+                <Header onToggleSidebar={toggleMobileSidebar} onToggleRightSidebar={toggleRightSidebar} isRightSidebarOpen={isRightSidebarOpen}/>
                 <div className={styles.layout}>
                     <Sidebar
                         isMobileOpen={isMobileSidebarOpen}

@@ -57,6 +57,31 @@
     height: 40px;
 }
 
+/* TOC / right-sidebar toggle — PC only */
+.tocToggle {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #c6c6c6;
+    transition: all 0.2s ease;
+    height: 32px;
+    width: 32px;
+    min-height: 32px;
+    min-width: 32px;
+}
+.tocToggle:hover {
+    background: #393939;
+    color: #f4f4f4;
+}
+@media (max-width: 1024px) {
+    .tocToggle {
+        display: none !important;
+    }
+}
 .themeToggle {
     background: transparent;
     border: none;

@@ -2,7 +2,7 @@
 title: 编写 Markdown
 created_at: 2026-03-12
 last_updated_at: 2026-03-12
-author: v0plex
+author: v0plex->v0plex@outlook.com
 has_custom_tsx: false
 tags: [guide, reference]
 ---
@@ -177,7 +177,7 @@ v0plex 使用 MathJax 的 `tex-chtml` 输出格式，支持绝大多数标准 La
 title: 带有自定义组件的文档
 created_at: 2026-03-12
 last_updated_at: 2026-03-12
-author: v0plex
+author: v0plex->v0plex@outlook.com
 has_custom_tsx: true
 ---
 ```

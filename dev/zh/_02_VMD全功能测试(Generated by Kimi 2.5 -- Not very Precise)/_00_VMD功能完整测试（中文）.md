@@ -2,7 +2,7 @@
 title: VMD 功能完整测试（中文）
 created_at: 2026-03-12
 last_updated_at: 2026-03-12
-author: v0plex
+author: v0plex->v0plex@outlook.com
 has_custom_tsx: false
 tags: [test, reference]
 ---

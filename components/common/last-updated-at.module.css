@@ -1,14 +1,16 @@
 .metadataContainer {
     display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    flex-direction: column;
+    gap: 0.625rem;
     margin: 1.75rem 0 1.25rem 0;
     padding: 0;
 }
 
 .metadataRow {
-    display: contents;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
 .metadataItem {
@@ -49,17 +51,126 @@
     letter-spacing: 0.01em;
 }
 
-/* hide old divider — layout is now gap-based */
 .divider {
     display: none;
+}
+
+/* Maintainers section */
+.maintainersRow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.maintainersLabel {
+    font-size: 0.6875rem;
+    color: var(--v0plex-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.avatarList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+}
+
+/* New compact author chip - even smaller */
+.authorChip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    padding: 0.05rem 0.15rem 0.05rem 0.05rem;
+    border-radius: 999px;
+    background: var(--v0plex-background-hover);
+    border: 1px solid var(--v0plex-border-subtle);
+    transition: border-color 0.15s ease, background 0.15s ease;
+    cursor: default;
+}
+
+.authorChip:hover {
+    background: var(--v0plex-background-active);
+    border-color: var(--v0plex-border);
+}
+
+/* Smaller avatar initials - even smaller */
+.avatarInitials {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 50%;
+    font-size: 0.3125rem;
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: 0.02em;
+    flex-shrink: 0;
+    font-family: "IBM Plex Sans", sans-serif;
+}
+
+/* Smaller avatar name */
+.avatarName {
+    font-size: 0.5625rem;
+    color: var(--v0plex-text-primary);
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 400;
+    white-space: nowrap;
+}
+
+/* Icon button group */
+.iconButtonGroup {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.125rem;
+    margin-left: 0.125rem;
+}
+
+/* Small icon buttons - even smaller */
+.iconButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 50%;
+    background: transparent;
+    border: none;
+    color: var(--v0plex-text-secondary);
+    cursor: pointer;
+    transition: color 0.15s ease, background 0.15s ease;
+    text-decoration: none;
+}
+
+.iconButton:hover {
+    color: var(--v0plex-primary);
+    background: var(--v0plex-background-hover);
 }
 
 @media (max-width: 640px) {
     .metadataContainer {
         gap: 0.375rem;
     }
-
     .metadataItem {
-        padding: 0.25rem 0.55rem;
+        padding: 0.2rem 0.45rem;
+    }
+    .authorChip {
+        padding: 0.04rem 0.12rem 0.04rem 0.04rem;
+    }
+    .avatarInitials {
+        width: 0.5rem;
+        height: 0.5rem;
+        font-size: 0.25rem;
+    }
+    .avatarName {
+        font-size: 0.5rem;
+    }
+    .iconButton {
+        width: 0.5rem;
+        height: 0.5rem;
     }
 }

@@ -1,7 +1,7 @@
 "use client"
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState, useCallback } from "react"
 import { usePathname } from "next/navigation"
-import { useLanguage } from "@/components/common/language-provider"
+import { Toggle } from "@carbon/react"
 import styles from "./right-sidebar.module.css"
 
 interface TocItem {
@@ -11,6 +11,18 @@ interface TocItem {
 }
 
 function slugify(text: string): string {
+  const hasCJK = /[\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af]/.test(text)
+  
+  if (hasCJK) {
+    let hash = 0
+    for (let i = 0; i < text.length; i++) {
+      const char = text.charCodeAt(i)
+      hash = ((hash << 5) - hash) + char
+      hash = hash & hash
+    }
+    return `heading-${Math.abs(hash).toString(36).substring(0, 8)}`
+  }
+  
   return text
     .toLowerCase()
     .trim()
@@ -21,29 +33,31 @@ function slugify(text: string): string {
 
 export default function RightSidebar() {
   const pathname = usePathname()
-  const { strings } = useLanguage()
   const [items, setItems] = useState<TocItem[]>([])
   const [activeId, setActiveId] = useState<string>("")
-  const [autoScroll, setAutoScroll] = useState<boolean>(true)
-
-  const observerRef = useRef<IntersectionObserver | null>(null)
+  const [autoScroll, setAutoScroll] = useState(true)
+  const rafRef = useRef<number | null>(null)
+  const lastActiveIdRef = useRef<string>("")
   const contentRef = useRef<HTMLDivElement>(null)
-  const itemRefs = useRef<Map<string, HTMLButtonElement>>(new Map())
+  const sidebarRafRef = useRef<number | null>(null)
+  const isSyncingRef = useRef(false)
+  const autoScrollRef = useRef(true)
+  const itemsRef = useRef<TocItem[]>([])
 
-  const setItemRef = (id: string, el: HTMLButtonElement | null) => {
-    if (el) itemRefs.current.set(id, el)
-    else itemRefs.current.delete(id)
-  }
+  // Keep refs in sync with state
+  useEffect(() => {
+    autoScrollRef.current = autoScroll
+  }, [autoScroll])
 
-  // Re-scan headings on every route change
+  useEffect(() => {
+    itemsRef.current = items
+  }, [items])
+
+  // Extract headings from page
   useEffect(() => {
     setItems([])
     setActiveId("")
-    itemRefs.current.clear()
-    if (observerRef.current) {
-      observerRef.current.disconnect()
-      observerRef.current = null
-    }
+    lastActiveIdRef.current = ""
 
     const timer = setTimeout(() => {
       const container = document.querySelector(".page-typography-content")
@@ -53,84 +67,185 @@ export default function RightSidebar() {
         container.querySelectorAll<HTMLElement>("h1, h2, h3")
       )
 
-      const seenIds = new Map<string, number>()
-      const tocItems: TocItem[] = headings.map((el, index) => {
+      const usedIds = new Set<string>()
+      
+      const tocItems: TocItem[] = headings.map((el) => {
         const text = el.textContent?.trim() ?? ""
-        const base = slugify(text) || `heading-${index}`
-        const count = seenIds.get(base) ?? 0
-        seenIds.set(base, count + 1)
-        const id = count === 0 ? base : `${base}-${count}`
-        el.id = id
+        let id = el.id
+        
+        if (!id || usedIds.has(id)) {
+          id = slugify(text)
+          let candidate = id
+          let count = 1
+          while (usedIds.has(candidate)) {
+            candidate = `${id}-${count++}`
+          }
+          usedIds.add(candidate)
+          el.id = candidate
+          id = candidate
+        } else {
+          usedIds.add(id)
+        }
         return { id, text, tag: el.tagName.toLowerCase() as "h1" | "h2" | "h3" }
       })
 
       setItems(tocItems)
-
-      const headingIds = tocItems.map((t) => t.id)
-      const visibleSet = new Set<string>()
-
-      observerRef.current = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) visibleSet.add(entry.target.id)
-            else visibleSet.delete(entry.target.id)
-          })
-          const first = headingIds.find((id) => visibleSet.has(id))
-          if (first) setActiveId(first)
-        },
-        { rootMargin: "0px 0px -70% 0px", threshold: 0 }
-      )
-
-      headings.forEach((el) => observerRef.current!.observe(el))
     }, 100)
 
     return () => {
       clearTimeout(timer)
-      observerRef.current?.disconnect()
     }
   }, [pathname])
 
-  // Scroll the TOC panel to keep the active item visible
+  // Main page scroll handler (updates active TOC item)
   useEffect(() => {
-    if (!autoScroll || !activeId || !contentRef.current) return
-    const activeBtn = itemRefs.current.get(activeId)
-    if (!activeBtn) return
+    if (items.length === 0) return
 
-    const scrollEl = contentRef.current
-    const elTop = activeBtn.offsetTop
-    const elHeight = activeBtn.offsetHeight
-    const panelHeight = scrollEl.clientHeight
-    const targetTop = elTop - panelHeight / 2 + elHeight / 2
-    scrollEl.scrollTo({ top: targetTop, behavior: "smooth" })
-  }, [activeId, autoScroll])
+    const headingIds = items.map((t) => t.id)
+
+    const handleScroll = () => {
+      if (!autoScrollRef.current || isSyncingRef.current) return
+      
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+      }
+
+      rafRef.current = requestAnimationFrame(() => {
+        const scrollY = window.scrollY
+        const offset = 150
+
+        let newActiveId = ""
+        
+        for (let i = 0; i < headingIds.length; i++) {
+          const id = headingIds[i]
+          const el = document.getElementById(id)
+          if (!el) continue
+          
+          const rect = el.getBoundingClientRect()
+          const elementTop = rect.top + scrollY
+          
+          if (elementTop <= scrollY + offset) {
+            newActiveId = id
+          }
+        }
+
+        if (newActiveId && newActiveId !== lastActiveIdRef.current) {
+          lastActiveIdRef.current = newActiveId
+          setActiveId(newActiveId)
+        }
+      })
+    }
+
+    handleScroll()
+    
+    window.addEventListener("scroll", handleScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current)
+      }
+    }
+  }, [items])
 
   const handleClick = (id: string) => {
     const el = document.getElementById(id)
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" })
+    if (el) {
+      setActiveId(id)
+      lastActiveIdRef.current = id
+      el.scrollIntoView({ behavior: "smooth", block: "start" })
+    }
   }
+
+  // Sidebar scroll handler - using callback ref pattern
+  const setContentRef = useCallback((node: HTMLDivElement | null) => {
+    if (node) {
+      contentRef.current = node
+      
+      // Setup scroll handler when ref is set
+      const syncMainContent = () => {
+        if (!autoScrollRef.current) return
+
+        const currentItems = itemsRef.current
+        if (currentItems.length === 0) return
+
+        const tocButtons = node.querySelectorAll<HTMLElement>('button[data-toc-index]')
+        if (tocButtons.length === 0) return
+
+        const sidebarRect = node.getBoundingClientRect()
+        const viewportCenter = sidebarRect.top + sidebarRect.height / 2
+
+        let closestIndex = 0
+        let closestDistance = Infinity
+        
+        for (let i = 0; i < tocButtons.length; i++) {
+          const btn = tocButtons[i]
+          const rect = btn.getBoundingClientRect()
+          const btnCenter = rect.top + rect.height / 2
+          const distance = Math.abs(btnCenter - viewportCenter)
+          
+          if (distance < closestDistance) {
+            closestDistance = distance
+            closestIndex = i
+          }
+        }
+
+        const closestButton = tocButtons[closestIndex]
+        const itemId = closestButton?.getAttribute('data-toc-id')
+        
+        if (itemId) {
+          const targetEl = document.getElementById(itemId)
+          if (targetEl) {
+            isSyncingRef.current = true
+            lastActiveIdRef.current = itemId
+            setActiveId(itemId)
+            targetEl.scrollIntoView({ behavior: "auto", block: "start" })
+            
+            setTimeout(() => {
+              isSyncingRef.current = false
+            }, 50)
+          }
+        }
+      }
+
+      const handleSidebarScroll = () => {
+        if (!autoScrollRef.current) return
+        
+        if (sidebarRafRef.current) {
+          cancelAnimationFrame(sidebarRafRef.current)
+        }
+        sidebarRafRef.current = requestAnimationFrame(syncMainContent)
+      }
+
+      node.addEventListener("scroll", handleSidebarScroll, { passive: true })
+    }
+  }, [])
 
   return (
     <aside className={styles.sidebar} aria-label="Table of contents">
       <div className={styles.tocHeaderRow}>
-        <span className={styles.tocHeaderLabel}>{strings.sidebar.catalog}</span>
-        <button
-          className={`${styles.autoScrollBtn} ${autoScroll ? styles.autoScrollOn : ""}`}
-          onClick={() => setAutoScroll((v) => !v)}
-          title={autoScroll ? "Auto-scroll: ON" : "Auto-scroll: OFF"}
-          aria-pressed={autoScroll}
-        >
-          {autoScroll ? "↕ ON" : "↕ OFF"}
-        </button>
+        <span className={styles.tocHeaderLabel}>On this page</span>
+        <Toggle
+          id="toc-autoscroll-toggle"
+          size="sm"
+          toggled={autoScroll}
+          onToggle={(checked: boolean) => setAutoScroll(checked)}
+          labelA=""
+          labelB=""
+          hideLabel
+          className={styles.autoScrollToggle}
+        />
       </div>
-      <div className={styles.content} ref={contentRef}>
+      <div ref={setContentRef} className={styles.content}>
         <nav className={styles.tocNav}>
           {items.length === 0 && (
             <span className={styles.tocEmpty}>No headings found</span>
           )}
-          {items.map((item) => (
+          {items.map((item, index) => (
             <button
               key={item.id}
-              ref={(el) => setItemRef(item.id, el)}
+              data-toc-index={index}
+              data-toc-id={item.id}
               className={`${styles.tocItem} ${activeId === item.id ? styles.tocActive : ""}`}
               onClick={() => handleClick(item.id)}
               title={item.text}

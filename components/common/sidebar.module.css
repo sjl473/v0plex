@@ -5,7 +5,6 @@
     z-index: 100;
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 40px);
     background: var(--sidebar-bg);
     border-right: 1px solid var(--v0plex-border-subtle);
     overflow-y: auto;
@@ -13,6 +12,11 @@
     padding: 0;
     border-top: none;
     box-sizing: border-box;
+    font-family: "IBM Plex Mono", "Courier New", monospace;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    height: calc(100vh - 40px);
+    height: calc(100dvh - 40px);
 }
 
 /* Fixed width for PC, Tablet and iPad (≥601px) - no resizing allowed */
@@ -109,7 +113,7 @@ html[v0plex-theme="g100"] .sidebar {
     padding: 0 1.75rem 0 1.75rem;
     font-size: 0.75rem;
     line-height: 0.875rem;
-    font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+    font-family: "IBM Plex Mono", "Courier New", monospace;
     outline: none;
     border-radius: 0;
     transition: border-color 70ms cubic-bezier(0.2, 0, 0.38, 0.9), background-color 70ms cubic-bezier(0.2, 0, 0.38, 0.9);
@@ -181,8 +185,8 @@ html[v0plex-theme="g100"] .sidebar {
 }
 
 .searchResultsHeader {
-    padding: 0.15rem 0.75rem;
-    font-size: 0.75rem;
+    padding: 0.15rem 0.5rem;
+    font-size: 0.6875rem;
     font-weight: 400;
     color: var(--v0plex-text-secondary);
     text-transform: uppercase;
@@ -206,11 +210,11 @@ html[v0plex-theme="g100"] .sidebar {
 .searchResultItem {
     display: flex;
     align-items: center;
-    padding: 0.25rem 0.75rem;
+    padding: 0.1rem 0.5rem;
     cursor: pointer;
-    font-size: 0.75rem;
+    font-size: 0.625rem;
     transition: all 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
-    min-height: 1.75rem;
+    min-height: 1.375rem;
     background: transparent;
     color: var(--v0plex-text-primary);
     border-left: 3px solid transparent;
@@ -269,8 +273,8 @@ html[v0plex-theme="g100"] .sidebar {
 }
 
 .allArticlesHeader {
-    padding: 0.15rem 0.75rem;
-    font-size: 0.75rem;
+    padding: 0.15rem 0.5rem;
+    font-size: 0.6875rem;
     font-weight: 400;
     color: var(--v0plex-text-secondary);
     text-transform: uppercase;
@@ -294,11 +298,11 @@ html[v0plex-theme="g100"] .sidebar {
 .navItem {
     display: flex;
     align-items: center;
-    padding: 0.2rem 0.75rem;
+    padding: 0.1rem 0.5rem;
     cursor: pointer;
-    font-size: 0.8125rem;
+    font-size: 0.6875rem;
     transition: all 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
-    min-height: 1.5rem;
+    min-height: 1.375rem;
     position: relative;
     background: transparent;
     color: var(--v0plex-text-primary);

@@ -108,7 +108,7 @@ function processMarkdownFile(
     const { attributes, body, frontmatterLineCount } = FrontMatterParser.parse(mdContent, relativePath);
     FrontMatterParser.validate(attributes, relativePath);
 
-    const pageTitle = attributes.title || cleanTitle(item);
+    const pageTitle = cleanTitle(item);
     const hasCustomTsx = FrontMatterParser.hasCustomTsx(attributes);
     const tags = parseTags(attributes.tags as string);
 

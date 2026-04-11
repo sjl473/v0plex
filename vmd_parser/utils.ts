@@ -16,19 +16,18 @@ export function calculatePathHash(relativePath: string): string {
  * Removes numeric prefixes, file extensions (for files), and formats with spaces and capitalization
  */
 export function cleanTitle(name: string, isDirectory: boolean = false): string {
-  // Remove numeric prefix (e.g., "01_" or "_01_")
-  let cleaned = name.replace(/^_?(\d+)_/, '');
+  // Strip leading sort prefix: "_086_" or "086_"
+  // e.g. "_086_深入_版本控制_86.md" → "深入_版本控制_86.md"
+  let cleaned = name.replace(/^_?\d+_/, '');
 
   // Remove file extension (only for files, not directories)
   if (!isDirectory) {
     cleaned = cleaned.replace(/\.[^/.]+$/, '');
   }
 
-  // Replace underscores and hyphens with spaces
-  cleaned = cleaned.replace(/[_-]/g, ' ');
-
-  // Capitalize first letter of each word
-  cleaned = cleaned.replace(/\b\w/g, char => char.toUpperCase());
+  // Strip trailing numeric suffix: "_86" → ""
+  // e.g. "深入_版本控制_86" → "深入_版本控制"
+  cleaned = cleaned.replace(/_\d+$/, '');
 
   return cleaned;
 }
