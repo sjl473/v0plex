@@ -1,6 +1,6 @@
 @media (max-width: 1024px) {
     .syntaxHighlighter {
-        font-size: 0.6rem !important;
+        font-size: 0.4375rem !important;
         /* Ensure code block doesn't expand beyond container */
         max-width: 100% !important;
     }
@@ -14,11 +14,11 @@
 
 .syntaxHighlighter {
     margin: 0 !important;
-    padding: 1rem !important;
+    padding: 0.5rem !important;
     border-radius: 0 !important;
     font-family: "IBM Plex Mono", monospace !important;
-    font-size: 0.675rem !important;
-    line-height: 1.5 !important;
+    font-size: 0.4375rem !important;
+    line-height: 1.15 !important;
     border: none !important;
     display: block !important;
     overflow-x: auto !important;
@@ -54,8 +54,8 @@
 
 .syntaxHighlighter :global(.linenumber),
 .syntaxHighlighter :global(.react-syntax-highlighter-line-number) {
-    margin-right: 1.5rem !important;
-    min-width: 2.5rem !important;
+    margin-right: 1rem !important;
+    min-width: 1.75rem !important;
     text-align: right !important;
     color: #6c6c6c !important;
     opacity: 0.8 !important;
@@ -75,7 +75,7 @@
 
 
 .codeBlockContainer {
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.7rem;
     position: relative;
     padding: 0;
     font-size: 0;
@@ -85,7 +85,7 @@
 .codeBlockWrapper {
     position: relative;
     overflow: hidden;
-    border-radius: 4px;
+    border-radius: 3px;
     font-family: "IBM Plex Mono", monospace;
     font-size: 0;
     line-height: 0;
@@ -95,11 +95,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 1rem;
+    padding: 0.12rem 0.35rem;
 }
 
 .codeBlockLanguage {
-    font-size: 0.65rem;
+    font-size: 0.4375rem;
     font-weight: 600;
     font-family: "IBM Plex Mono", monospace;
 }
@@ -108,7 +108,7 @@
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 0.25rem;
+    padding: 0.08rem;
     display: flex;
     align-items: center;
     transition: color 0.2s ease;
@@ -158,13 +158,17 @@
 }
 
 .inlineCode {
-    padding: 0.125rem 0.25rem;
-    border-radius: 4px;
-    font-size: 0.675rem;
+    padding: 0.04rem 0.2rem;
+    border-radius: 3px;
+    font-size: 0.415rem;
     font-family: "IBM Plex Mono", monospace;
-    display: inline-block;
-    margin: 0 0.25rem;
-    line-height: 1.4;
+    display: inline-flex;
+    align-items: center;
+    margin: 0 0.15rem;
+    line-height: 1;
+    min-height: 0.71875rem;
+    box-sizing: border-box;
+    vertical-align: 18%;
 }
 
 .lightTheme .inlineCode {
@@ -221,18 +225,19 @@
 }
 
 .errorContainer {
-    padding: 1rem;
+    padding: 0.5rem;
     background: #500;
     color: #f88;
     border: 1px solid #800;
-    border-radius: 4px;
+    border-radius: 3px;
     font-family: "IBM Plex Mono", monospace;
     font-style: normal;
+    font-size: 0.4375rem;
 }
 
 .filePath {
-    font-size: 0.7rem;
+    font-size: 0.4375rem;
     opacity: 0.7;
-    margin-left: 0.5rem;
+    margin-left: 0.3rem;
     font-style: normal;
 }

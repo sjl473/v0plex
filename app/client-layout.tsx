@@ -105,7 +105,7 @@ export default function ClientLayout({
         <LanguageProvider>
         <MathJaxProvider>
             <div className={styles.container}>
-                <Header onToggleSidebar={toggleMobileSidebar} onToggleRightSidebar={toggleRightSidebar} isRightSidebarOpen={isRightSidebarOpen}/>
+                <Header onToggleSidebar={toggleMobileSidebar} onToggleRightSidebar={toggleRightSidebar} isRightSidebarOpen={isRightSidebarOpen} isSidebarOpen={isMobileSidebarOpen}/>
                 <div className={styles.layout}>
                     <Sidebar
                         isMobileOpen={isMobileSidebarOpen}

@@ -67,12 +67,12 @@ export interface I18nStrings {
     switchToLight: string;
   };
   footer: {
+    siteName: string;
     version: string;
     versionLabel: string;
     lastUpdated: string;
     copyright: string;
-    emailLabel: string;
-    contactText: string;
+    copyrightSymbol: string;
   };
   pageNav: {
     home: string;
@@ -88,6 +88,7 @@ export interface I18nStrings {
     infoDefault: string;
     warningDefault: string;
     successDefault: string;
+    errorDefault: string;
   };
   code: {
     loading: string;
@@ -104,6 +105,10 @@ export interface I18nStrings {
     created: string;
     updated: string;
     author: string;
+    timeLabel: string;
+  };
+  editThisPage: {
+    label: string;
   };
 }
 
@@ -126,12 +131,12 @@ export const EN_STRINGS: I18nStrings = {
     switchToLight: 'switch light',
   },
   footer: {
-    version: 'preview test',
-    versionLabel: 'Used version',
-    lastUpdated: 'Last updated: {date}',
-    copyright: '2026 sjl473, all rights reserved.',
-    emailLabel: '@sjl473',
-    contactText: 'If you have any questions, please make contact',
+    siteName: 'v0plex',
+    version: '1.0.0',
+    versionLabel: 'Version',
+    lastUpdated: '{date}',
+    copyright: '2026 sjl473',
+    copyrightSymbol: '©',
   },
   pageNav: {
     home: 'Home',
@@ -147,6 +152,7 @@ export const EN_STRINGS: I18nStrings = {
     infoDefault: 'Notice：',
     warningDefault: 'Warning',
     successDefault: 'Success',
+    errorDefault: 'Error',
   },
   code: {
     loading: 'Loading code...',
@@ -162,7 +168,11 @@ export const EN_STRINGS: I18nStrings = {
   pageMeta: {
     created: 'Created',
     updated: 'Updated',
-    author: 'Author',
+    author: 'Author:',
+    timeLabel: 'Time:',
+  },
+  editThisPage: {
+    label: 'Edit Page on Github / Gitlab ↵',
   },
 };
 
@@ -185,12 +195,12 @@ export const ZH_STRINGS: I18nStrings = {
     switchToLight: '切换浅色模式',
   },
   footer: {
-    version: '预览测试版',
-    versionLabel: '当前版本',
-    lastUpdated: '最后更新：{date}',
-    copyright: '2026 sjl473，保留所有权利。',
-    emailLabel: '@sjl473',
-    contactText: '如有任何问题，请联系我们',
+    siteName: 'v0plex',
+    version: '1.0.0',
+    versionLabel: '版本',
+    lastUpdated: '{date}',
+    copyright: '2026 sjl473',
+    copyrightSymbol: '©',
   },
   pageNav: {
     home: '首页',
@@ -206,6 +216,7 @@ export const ZH_STRINGS: I18nStrings = {
     infoDefault: '注意：',
     warningDefault: '警告：',
     successDefault: '关于：',
+    errorDefault: '错误',
   },
   code: {
     loading: '加载代码中...',
@@ -221,7 +232,11 @@ export const ZH_STRINGS: I18nStrings = {
   pageMeta: {
     created: '创建时间',
     updated: '更新时间',
-    author: '作者',
+    author: '作者：',
+    timeLabel: '时间：',
+  },
+  editThisPage: {
+    label: '在 Github / Gitlab 上编辑 ↵',
   },
 };
 

@@ -3,7 +3,7 @@
     margin: 0;
     padding: 0;
     width: 100%;
-    background-color: #333333;
+    background-color: var(--bg-secondary, #2a2a2a);
     /* Reduced margin-top to 0 to minimize gap */
     margin-top: 0;
     margin-bottom: 0;
@@ -33,7 +33,7 @@
     background-color: transparent;
     border-radius: 0;
     /* Default padding - left aligned with content */
-    padding: 1.2rem 0;
+    padding: 0.75rem 0;
 }
 
 .navLink:first-child {
@@ -66,7 +66,7 @@
 }
 
 .navLink:hover {
-    background-color: #444444;
+    background-color: var(--bg-tertiary, #3a3a3a);
 }
 
 .navLink.disabled {
@@ -75,14 +75,33 @@
 }
 
 .navLabel {
-    font-size: 0.75rem;
+    font-size: 0.625rem;
     color: #c6c6c6;
     margin-bottom: 0.5rem;
 }
 
 .navTitle {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     color: #ffffff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* Max width is roughly half of footer content area minus padding */
+    max-width: calc(50vw - 180px);
+}
+
+/* Tablet: adjust for smaller viewport */
+@media (max-width: 1024px) and (min-width: 601px) {
+    .navTitle {
+        max-width: calc(50vw - 160px);
+    }
+}
+
+/* Mobile: simpler calc without sidebar */
+@media (max-width: 600px) {
+    .navTitle {
+        max-width: calc(50vw - 50px);
+    }
 }
 
 @media (max-width: 600px) {
@@ -108,15 +127,15 @@
     .navContainer > .navLink:first-child {
         /* Mobile layout: match header padding */
         padding-left: var(--content-left-offset-mobile) !important;
-        padding-top: 1.2rem;
-        padding-bottom: 1.2rem;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
         padding-right: 0.5rem;
     }
 
     .navContainer > .navLink:last-child {
         padding-right: 1rem;
         padding-left: 0.5rem;
-        padding-top: 1.2rem;
-        padding-bottom: 1.2rem;
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
     }
 }

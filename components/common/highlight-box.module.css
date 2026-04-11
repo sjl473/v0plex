@@ -1,83 +1,185 @@
+/* Carbon Design System - Inline Notification Style */
+
 .highlightBox {
-    background: var(--v0plex-background-hover); /* Carbon: $layer-01 or $ui-02 depending on context, using existing var for consistency */
-    padding: 1rem !important; /* Carbon: $spacing-05 (16px/1rem) */
-    margin: 1.5rem 0 !important; /* Carbon: $spacing-07 (24px/1.5rem) */
-    width: 100% !important;
-    border: 1px solid transparent; /* To match box model if needed */
+  position: relative;
+  margin: 1rem 0;
+  padding: 2rem 1rem 0.75rem 0.75rem !important;
+  border: 1px solid;
+  border-left-width: 3px;
+  font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.625rem;
+  line-height: 1.4;
 }
 
-/* Carbon Notification/Callout styles typically use these colors for the left border */
-.highlightBoxInfo {
-    border-left: 4px solid #0f62fe; /* Carbon: $support-info (Blue 60) */
-}
-
-:global(html[v0plex-theme="g100"]) .highlightBoxInfo {
-    border-left: 4px solid #4589ff; /* Carbon Dark: $support-info (Blue 50) */
-}
-
-.highlightBoxWarning {
-    border-left: 4px solid #f1c21b; /* Carbon: $support-warning (Yellow 20) */
-}
-
-:global(html[v0plex-theme="g100"]) .highlightBoxWarning {
-    border-left: 4px solid #f1c21b; /* Carbon Dark: $support-warning (Yellow 20) is often same or Yellow 30 */
-}
-
-.highlightBoxSuccess {
-    border-left: 4px solid #24a148; /* Carbon: $support-success (Green 50) */
-}
-
-:global(html[v0plex-theme="g100"]) .highlightBoxSuccess {
-    border-left: 4px solid #42be65; /* Carbon Dark: $support-success (Green 40) */
-}
-
+/* Title positioned at top-left - vertically aligned with icon */
 .highlightTitle {
-    margin: 0 0 0.5rem 0 !important; /* Carbon: $spacing-03 */
-    color: var(--v0plex-text-primary);
-    font-size: 0.875rem !important; /* Carbon: $body-short-01 or $label-01 (14px) */
-    font-weight: 600 !important; /* Carbon: $font-weight-semibold */
-    font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif !important;
-    text-indent: 0 !important;
-    line-height: 1.29 !important;
+  position: absolute;
+  top: 0.5rem;
+  left: 0.75rem;
+  font-weight: 600;
+  font-size: 0.625rem !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  height: 1rem;
+  display: flex;
+  align-items: center;
 }
 
+/* Title colors matching border colors - using !important to override globals.css h4 */
+.titleInfo {
+  color: #0f62fe !important;
+}
+
+:global(html[v0plex-theme="g100"]) .titleInfo {
+  color: #4589ff !important;
+}
+
+.titleWarning {
+  color: #b28600 !important;
+}
+
+:global(html[v0plex-theme="g100"]) .titleWarning {
+  color: #f1c21b !important;
+}
+
+.titleSuccess {
+  color: #24a148 !important;
+}
+
+:global(html[v0plex-theme="g100"]) .titleSuccess {
+  color: #42be65 !important;
+}
+
+.titleError {
+  color: #da1e28 !important;
+}
+
+:global(html[v0plex-theme="g100"]) .titleError {
+  color: #fa4d56 !important;
+}
+
+/* Icon positioned at top-right - same vertical position as title */
+.iconWrapper {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Icon colors */
+.iconInfo {
+  color: #0f62fe;
+}
+
+:global(html[v0plex-theme="g100"]) .iconInfo {
+  color: #4589ff;
+}
+
+.iconWarning {
+  color: #b28600;
+}
+
+:global(html[v0plex-theme="g100"]) .iconWarning {
+  color: #f1c21b;
+}
+
+.iconSuccess {
+  color: #24a148;
+}
+
+:global(html[v0plex-theme="g100"]) .iconSuccess {
+  color: #42be65;
+}
+
+.iconError {
+  color: #da1e28;
+}
+
+:global(html[v0plex-theme="g100"]) .iconError {
+  color: #fa4d56;
+}
+
+/* Content */
 .highlightContent {
-    color: var(--v0plex-text-primary);
-    font-size: 0.875rem !important; /* Carbon: $body-long-01 (14px) */
-    line-height: 1.5 !important;
-    margin: 0 !important;
-    text-indent: 0 !important;
-    font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif !important;
-    font-weight: 400 !important;
-}
-
-
-.highlightBox * {
-    text-indent: 0 !important;
-}
-
-/* Make ALL elements inside highlight boxes use the same background color */
-.highlightBox * {
-    background-color: var(--v0plex-background-hover) !important;
-}
-
-/* Override Carbon Design System list styles */
-.highlightBox :global(.cds--list--unordered),
-.highlightBox :global(.cds--list--ordered),
-.highlightBox :global(.cds--list-item),
-.highlightBox :global(.cds--list--nested) {
-    background-color: var(--v0plex-background-hover) !important;
-}
-
-.highlightContent * {
-    text-indent: 0 !important;
+  font-weight: 400;
+  font-size: 0.625rem;
+  line-height: 1.4;
+  color: inherit;
 }
 
 .highlightContent p {
-    text-indent: 0 !important;
-    margin-bottom: 0.5rem !important;
+  margin: 0 0 0.5rem 0;
 }
 
 .highlightContent p:last-child {
-    margin-bottom: 0 !important;
+  margin-bottom: 0;
+}
+
+/* Info - Blue */
+.highlightBoxInfo {
+  background-color: #edf5ff;
+  border-color: #0f62fe;
+  color: #161616;
+}
+
+:global(html[v0plex-theme="g100"]) .highlightBoxInfo {
+  background-color: rgba(15, 98, 254, 0.08);
+  border-color: #4589ff;
+  color: #f4f4f4;
+}
+
+/* Warning - Yellow */
+.highlightBoxWarning {
+  background-color: #fcf4d6;
+  border-color: #f1c21b;
+  color: #161616;
+}
+
+:global(html[v0plex-theme="g100"]) .highlightBoxWarning {
+  background-color: rgba(241, 194, 27, 0.08);
+  border-color: #f1c21b;
+  color: #f4f4f4;
+}
+
+/* Success - Green */
+.highlightBoxSuccess {
+  background-color: #defbe6;
+  border-color: #24a148;
+  color: #161616;
+}
+
+:global(html[v0plex-theme="g100"]) .highlightBoxSuccess {
+  background-color: rgba(36, 161, 72, 0.08);
+  border-color: #42be65;
+  color: #f4f4f4;
+}
+
+/* Error - Red */
+.highlightBoxError {
+  background-color: #fff1f1;
+  border-color: #da1e28;
+  color: #161616;
+}
+
+:global(html[v0plex-theme="g100"]) .highlightBoxError {
+  background-color: rgba(218, 30, 40, 0.08);
+  border-color: #fa4d56;
+  color: #f4f4f4;
+}
+
+/* Ensure proper text rendering */
+.highlightBox * {
+  text-indent: 0 !important;
+}
+
+/* Nested elements inherit background */
+.highlightBox * {
+  background-color: transparent !important;
 }

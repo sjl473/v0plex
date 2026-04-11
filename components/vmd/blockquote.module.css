@@ -1,32 +1,83 @@
+/* Modern Blockquote - Left Accent Line Style */
+
 .blockquote {
-    font-weight: bold !important;
-    font-style: italic !important;
-    margin: 1.5rem 0 !important;
-    /* Increased padding-left significantly to move sentence more to the right */
-    padding: 0.5rem 0.1rem 0.5rem 0.5rem !important;
-    border-left: 4px solid currentColor !important;
-    /* Default background, overridden by themes below */
-    background-color: rgba(0, 0, 0, 0.05);
+  position: relative;
+  margin: 1.5rem 0 !important;
+  padding: 1.25rem 1.5rem 1.25rem 0.5rem !important;
+  background-color: rgba(15, 98, 254, 0.04);
+  border-left: 6px solid #0f62fe;
+  font-family: 'IBM Plex Serif', Georgia, serif;
+  font-size: 0.625rem;
+  line-height: 1.6;
+  font-style: normal;
+  color: var(--v0plex-text-primary);
+  transition: background-color 0.15s ease;
 }
 
-/* Light Theme */
-:global(html[v0plex-theme="white"]) .blockquote {
-    background-color: #f4f4f4; /* Gray 10 - Dim background for white theme */
+.blockquote:hover {
+  background-color: rgba(15, 98, 254, 0.08);
 }
 
-:global(html[v0plex-theme="white"]) .blockquote h5 {
-    font-size: 0.7rem;
-    font-family: 'IBM Plex Mono', serif;
-    color: #00539a;
-}
-
-/* Dark Theme */
+/* Dark theme */
 :global(html[v0plex-theme="g100"]) .blockquote {
-    background-color: #262626; /* Gray 90 - Dim background for g100 theme (if bg is g100 #161616) */
+  background-color: rgba(69, 137, 255, 0.06);
+  border-left-color: #4589ff;
 }
 
-:global(html[v0plex-theme="g100"]) .blockquote h5 {
-    font-size: 0.7rem;
-    font-family: 'IBM Plex Mono', serif;
-    color: #82cfff;
+:global(html[v0plex-theme="g100"]) .blockquote:hover {
+  background-color: rgba(69, 137, 255, 0.1);
+}
+
+/* Quote content */
+.blockquote p {
+  margin: 0;
+  display: block;
+  font-family: 'IBM Plex Serif', Georgia, serif;
+  font-style: normal !important;
+}
+
+/* Remove default quote marks */
+.blockquote::before {
+  content: none;
+}
+
+:global(html[v0plex-theme="g100"]) .blockquote::before {
+  content: none;
+}
+
+/* VMD color variations for the left border */
+.blockquote.color0 { border-left-color: #0f62fe; }
+.blockquote.color1 { border-left-color: #8a3ffc; }
+.blockquote.color2 { border-left-color: #1192e8; }
+.blockquote.color3 { border-left-color: #005d5d; }
+.blockquote.color4 { border-left-color: #9f1853; }
+.blockquote.color5 { border-left-color: #fa4d56; }
+.blockquote.color6 { border-left-color: #198038; }
+.blockquote.color7 { border-left-color: #002d9c; }
+.blockquote.color8 { border-left-color: #ee538b; }
+.blockquote.color9 { border-left-color: #b28600; }
+
+:global(html[v0plex-theme="g100"]) .blockquote.color0 { border-left-color: #4589ff; }
+:global(html[v0plex-theme="g100"]) .blockquote.color1 { border-left-color: #a78afb; }
+:global(html[v0plex-theme="g100"]) .blockquote.color2 { border-left-color: #33b1ff; }
+:global(html[v0plex-theme="g100"]) .blockquote.color3 { border-left-color: #009d9d; }
+:global(html[v0plex-theme="g100"]) .blockquote.color4 { border-left-color: #ff7eb6; }
+:global(html[v0plex-theme="g100"]) .blockquote.color5 { border-left-color: #ff8389; }
+:global(html[v0plex-theme="g100"]) .blockquote.color6 { border-left-color: #42be65; }
+:global(html[v0plex-theme="g100"]) .blockquote.color7 { border-left-color: #78a9ff; }
+:global(html[v0plex-theme="g100"]) .blockquote.color8 { border-left-color: #ffafd2; }
+:global(html[v0plex-theme="g100"]) .blockquote.color9 { border-left-color: #fddc69; }
+
+/* Reset nested styles */
+.blockquote * {
+  text-indent: 0 !important;
+}
+
+/* Ensure all text in blockquote uses serif and normal style */
+.blockquote,
+.blockquote *,
+.blockquote p,
+.blockquote span {
+  font-family: 'IBM Plex Serif', Georgia, serif !important;
+  font-style: normal !important;
 }

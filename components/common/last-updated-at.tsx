@@ -83,19 +83,6 @@ export default function PageDates({publishedAt, updatedAt, author}: PageDatesPro
 
     return (
         <div className={styles.metadataContainer}>
-            <div className={styles.metadataRow}>
-                <div className={styles.metadataItem}>
-                    <CalendarAdd size={14} className={styles.icon}/>
-                    <span className={styles.label}>{strings.pageMeta.created}</span>
-                    <span className={styles.date}>{publishedAt}</span>
-                </div>
-                <div className={styles.divider}/>
-                <div className={styles.metadataItem}>
-                    <UpdateNow size={14} className={styles.icon}/>
-                    <span className={styles.label}>{strings.pageMeta.updated}</span>
-                    <span className={styles.date}>{updatedAt}</span>
-                </div>
-            </div>
             {maintainers.length > 0 && (
                 <div className={styles.maintainersRow}>
                     <span className={styles.maintainersLabel}>{strings.pageMeta.author}</span>
@@ -148,6 +135,20 @@ export default function PageDates({publishedAt, updatedAt, author}: PageDatesPro
                     </div>
                 </div>
             )}
+            <div className={styles.metadataRow}>
+                <span className={styles.timeLabel}>{strings.pageMeta.timeLabel}</span>
+                <div className={styles.metadataItem}>
+                    <CalendarAdd size={10} className={styles.icon}/>
+                    <span className={styles.label}>{strings.pageMeta.created}</span>
+                    <span className={styles.date}>{publishedAt}</span>
+                </div>
+                <div className={styles.divider}/>
+                <div className={styles.metadataItem}>
+                    <UpdateNow size={10} className={styles.icon}/>
+                    <span className={styles.label}>{strings.pageMeta.updated}</span>
+                    <span className={styles.date}>{updatedAt}</span>
+                </div>
+            </div>
         </div>
     )
 }

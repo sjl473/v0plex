@@ -285,7 +285,7 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
         const isActive = isActivePage(pathname, item)
         const isExpanded = shouldExpand(pathname, item, itemId, manuallyExpandedItems, manuallyCollapsedItems)
         const hasChildren = item.children && item.children.length > 0
-        const paddingLeft = `${0.75 + level}rem`
+        const paddingLeft = `${0.3 + (level * 0.1)}rem`
 
         return (<div key={itemId}>
             <div
@@ -299,7 +299,7 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
                 >
                     <span className={styles.navItemText}>{item.title}</span>
                     <span className={styles.navItemChevron}>
-                {isExpanded ? <ChevronDown size={12}/> : <ChevronRight size={12}/>}
+                {isExpanded ? <ChevronDown size={8}/> : <ChevronRight size={8}/>}
               </span>
                 </button>) : item.path ? (
                     <Link href={`${SITE_CONFIG.URL_PREFIX}${item.path}`} className={styles.navItemLink} onClick={onCloseMobile}>
@@ -320,7 +320,7 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
         >
             <div className={styles.searchSection}>
                 <div className={styles.searchContainer}>
-                    <Search className={styles.searchIcon}/>
+                    <Search size={10} className={styles.searchIcon} strokeWidth={1.5}/>
                     <input
                         type="text"
                         placeholder={strings.sidebar.searchPlaceholder}
@@ -330,7 +330,7 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
                     />
                     {searchQuery && (<button onClick={clearSearch} className={styles.searchClearButton}
                                              aria-label={strings.sidebar.clearSearch}>
-                        <X size={12}/>
+                        <X size={10} strokeWidth={1.5}/>
                     </button>)}
                 </div>
             </div>
@@ -349,7 +349,7 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
                                     <div className={styles.searchResultTitle}>
                                         {item.title}
                                         {item.hits ? (
-                                            <span style={{marginLeft: '8px', fontSize: '0.65rem', color: 'var(--v0plex-text-secondary)'}}>
+                                            <span style={{marginLeft: '8px', fontSize: '0.455rem', color: 'var(--v0plex-text-secondary)'}}>
                                                 ({item.hits} {strings.sidebar.hits})
                                             </span>
                                         ) : null}

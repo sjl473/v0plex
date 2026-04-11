@@ -1,55 +1,110 @@
 .header {
     font-family: 'IBM Plex Sans', sans-serif;
-    /* Request: "bold enough" -> using 900 (Black) and !important to override any global conflicts */
     font-weight: 400 !important;
-    margin-top: 2rem;
-    margin-bottom: 1rem;
-    line-height: 1.6;
+    margin-top: 1.4rem;
+    margin-bottom: 0.7rem;
+    line-height: 1.15;
 }
 
-/* Override weights for specific headers */
+/* H1: Moderate size, responsive */
 .h1 {
-    font-size: 2.625rem;
+    font-size: 1.5rem;
     font-weight: 400 !important;
+    color: #262626;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+    .h1 {
+        font-size: 1.25rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .h1 {
+        font-size: 1.125rem;
+    }
 }
 
 .h2 {
-    font-size: 2rem;
+    font-size: 0.85rem;
     font-weight: 400 !important;
+    margin-top: 2.5rem;
+    margin-bottom: 1.25rem;
 }
 
 .h3 {
-    font-size: 1.5rem;
+    font-size: 0.75rem;
     font-weight: 400 !important;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
 }
 
 .h4 {
-    font-size: 1.25rem;
+    font-size: 0.65rem;
     font-weight: 400 !important;
+    margin-top: 1.75rem;
+    margin-bottom: 0.875rem;
 }
 
 .h5 {
-    font-size: 1rem;
+    font-size: 0.6rem;
     font-weight: 400 !important;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .h6 {
-    font-size: 0.875rem;
+    font-size: 0.55rem;
     font-weight: 400 !important;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    margin-top: 1.25rem;
+    margin-bottom: 0.625rem;
 }
 
-/*
-   IBM Carbon Inspired Palette
-   Light Theme: Use '60' or '70' values for text contrast.
-   Dark Theme: Use '40' or '50' values for text contrast.
-*/
+/* Section icon for headers h2-h6 */
+.sectionIcon {
+    display: inline-flex;
+    align-items: center;
+    margin-right: 0.5rem;
+    color: var(--v0plex-text-secondary);
+    opacity: 0.6;
+    vertical-align: baseline;
+    position: relative;
+    top: 0.15em;
+}
+
+.anchorIcon {
+    width: 1em;
+    height: 1em;
+    vertical-align: baseline;
+    opacity: 0.7;
+    flex-shrink: 0;
+}
+
+.anchorLink:hover {
+    opacity: 1;
+    color: var(--v0plex-link-primary);
+}
+
+/* h2-h6 use IBM Blue */
+.h2, .h3, .h4, .h5, .h6 {
+    color: #002d9c;
+}
+
+:global([v0plex-theme="g100"]) .h2,
+:global([v0plex-theme="g100"]) .h3,
+:global([v0plex-theme="g100"]) .h4,
+:global([v0plex-theme="g100"]) .h5,
+:global([v0plex-theme="g100"]) .h6 {
+    color: #78a9ff;
+}
 
 .navItem.active:not(.hasChildren) {
     background: var(--v0plex-background-active);
     color: var(--v0plex-text-primary);
-    border-left: 3px solid var(--v0plex-link-primary); /* Ensure this color is visible */
+    border-left: 3px solid var(--v0plex-link-primary);
     font-weight: 600;
 }
 
@@ -59,38 +114,17 @@ div.navItem.active:not(.hasChildren) {
     border-left-color: var(--v0plex-link-primary) !important;
 }
 
-/* 0: Purple */
-.headerColor0 {
-    color: #0F62FE !important;
-}
-
-:global([v0plex-theme="g100"]) .headerColor0 {
-    color: #4589ff !important;
-}
-
-/* 1: Blue */
-.headerColor1 {
-    color: #0F62FE !important;
-}
-
-:global([v0plex-theme="g100"]) .headerColor1 {
-    color: #4589ff !important;
-}
-
-/*!* 2: Yellow/Orange/Gold *!*/
-.headerColor2 {
-    color: #0F62FE !important;
-}
-
-:global([v0plex-theme="g100"]) .headerColor2 {
-    color: #4589ff !important;
-}
-
-/* 3: Green */
+/* Header colors */
+.headerColor0,
+.headerColor1,
+.headerColor2,
 .headerColor3 {
-    color: #0F62FE !important;
+    color: #262626 !important;
 }
 
+:global([v0plex-theme="g100"]) .headerColor0,
+:global([v0plex-theme="g100"]) .headerColor1,
+:global([v0plex-theme="g100"]) .headerColor2,
 :global([v0plex-theme="g100"]) .headerColor3 {
-    color: #4589ff !important;
+    color: #ffffff !important;
 }

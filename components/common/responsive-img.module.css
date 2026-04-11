@@ -1,24 +1,21 @@
+/* IBM Design Language - Responsive Image */
 
 .container {
     width: 100%;
     margin: 1.5rem 0;
-    border-radius: 4px;
     overflow: hidden;
-    transition: all 0.2s cubic-bezier(0.2, 0, 0.38, 0.9);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.15s ease;
     position: relative;
 }
 
 
 .container.theme-white {
-    background-color: #f4f4f4;
-    border: 1px solid #e0e0e0;
+    background-color: var(--v0plex-background-hover, #f4f4f4);
 }
 
 
 .container.theme-g100 {
-    background-color: #161616;
-    border: 1px solid #393939;
+    background-color: var(--v0plex-background-hover, #262626);
 }
 
 
@@ -118,7 +115,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.875rem;
+    font-size: 0.625rem;
     font-family: 'IBM Plex Sans', sans-serif;
 }
 
@@ -129,33 +126,31 @@
 
 
 .placeholder.theme-white {
-    background-color: #e8e8e8;
-    color: #6f6f6f;
+    background-color: var(--v0plex-background-hover, #f4f4f4);
+    color: var(--v0plex-text-secondary, #525252);
 }
 
 .placeholder.theme-g100 {
-    background-color: #262626;
-    color: #a8a8a8;
+    background-color: var(--v0plex-background-hover, #262626);
+    color: var(--v0plex-text-secondary, #c6c6c6);
 }
 
 
 .caption {
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 0;
     font-size: 0.75rem;
-    line-height: 1.33;
+    line-height: 1.4;
     font-family: 'IBM Plex Sans', sans-serif;
 }
 
 .caption.theme-white {
-    color: #525252;
-    background-color: #f4f4f4;
-    border-top: 1px solid #e0e0e0;
+    color: var(--v0plex-text-secondary, #525252);
+    background-color: var(--v0plex-background-hover, #f4f4f4);
 }
 
 .caption.theme-g100 {
-    color: #c6c6c6;
-    background-color: #262626;
-    border-top: 1px solid #393939;
+    color: var(--v0plex-text-secondary, #c6c6c6);
+    background-color: var(--v0plex-background-hover, #262626);
 }
 
 
@@ -165,8 +160,8 @@
     }
 
     .caption {
-        padding: 0.5rem 0.75rem;
-        font-size: 0.6875rem;
+        padding: 0.5rem 0;
+        font-size: 0.75rem;
     }
 }
 

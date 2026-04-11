@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, Children, ReactElement, useEffect, useCallback } from 'react';
+import React, { useState, Children, ReactElement, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { ChevronLeft, ChevronRight, ZoomOut } from '@carbon/icons-react'; // Removed ZoomIn import
+import { CaretLeft, CaretRight, ZoomOut } from '@carbon/icons-react';
+import { Button } from '@carbon/react';
 import styles from './postvmd.module.css';
 import { Pvmd } from './pvmd';
 import {useLanguage} from '@/components/common/language-provider';
@@ -50,6 +51,23 @@ export function Rtvmd({ children }: { children: React.ReactNode }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [useVerticalNav, setUseVerticalNav] = useState(false);
+    const imageWrapperRef = useRef<HTMLDivElement>(null);
+
+    // Check if we need to use vertical navigation based on container width
+    useEffect(() => {
+        const checkWidth = () => {
+            if (imageWrapperRef.current) {
+                const width = imageWrapperRef.current.offsetWidth;
+                // If container is less than 120px (roughly 2 * 3rem arrow width + margins), use vertical nav
+                setUseVerticalNav(width < 120);
+            }
+        };
+
+        checkWidth();
+        window.addEventListener('resize', checkWidth);
+        return () => window.removeEventListener('resize', checkWidth);
+    }, []);
 
     if (images.length === 0) {
         return <div className={styles.rightColumn}>No images found</div>;
@@ -115,14 +133,14 @@ export function Rtvmd({ children }: { children: React.ReactNode }) {
         return createPortal(
             <div className={styles.modalOverlay} onClick={closeModal}>
                 <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-                    <button className={styles.modalCloseBtn} onClick={closeModal} title={strings.postModal.zoomBack}>
+                    <Button className={styles.modalCloseBtn} onClick={closeModal} kind="ghost" size="lg">
                         <ZoomOut size={32} />
-                    </button>
+                    </Button>
                     
                     {hasMultiple && (
-                        <button className={`${styles.modalNavBtn} ${styles.modalPrev}`} onClick={prevImage} title={strings.postModal.previousImage}>
-                            <ChevronLeft size={32} />
-                        </button>
+                        <Button className={`${styles.modalNavBtn} ${styles.modalPrev}`} onClick={prevImage} kind="ghost" size="lg">
+                            <CaretLeft size={32} />
+                        </Button>
                     )}
 
                     <img
@@ -132,9 +150,9 @@ export function Rtvmd({ children }: { children: React.ReactNode }) {
                     />
 
                     {hasMultiple && (
-                        <button className={`${styles.modalNavBtn} ${styles.modalNext}`} onClick={nextImage} title={strings.postModal.nextImage}>
-                            <ChevronRight size={32} />
-                        </button>
+                        <Button className={`${styles.modalNavBtn} ${styles.modalNext}`} onClick={nextImage} kind="ghost" size="lg">
+                            <CaretRight size={32} />
+                        </Button>
                     )}
                     
                     <div className={styles.modalCaption}>
@@ -151,7 +169,7 @@ export function Rtvmd({ children }: { children: React.ReactNode }) {
 
     return (
         <div className={styles.rightColumn}>
-            <div className={styles.imageWrapper}>
+            <div className={styles.imageWrapper} ref={imageWrapperRef}>
                 <img
                     src={currentImage.src}
                     alt={currentImage.alt}
@@ -171,12 +189,17 @@ export function Rtvmd({ children }: { children: React.ReactNode }) {
 
                 {hasMultiple && (
                     <>
-                        <div className={`${styles.navOverlay} ${styles.navLeft}`} onClick={prevImage} title={strings.postModal.previous}>
-                            <ChevronLeft className={styles.arrow} />
-                        </div>
-                        <div className={`${styles.navOverlay} ${styles.navRight}`} onClick={nextImage} title={strings.postModal.next}>
-                            <ChevronRight className={styles.arrow} />
-                        </div>
+                        {useVerticalNav ? (
+                            <>
+                                <div className={`${styles.navArrow} ${styles.navArrowUp}`} onClick={prevImage} />
+                                <div className={`${styles.navArrow} ${styles.navArrowDown}`} onClick={nextImage} />
+                            </>
+                        ) : (
+                            <>
+                                <div className={`${styles.navArrow} ${styles.navArrowLeft}`} onClick={prevImage} />
+                                <div className={`${styles.navArrow} ${styles.navArrowRight}`} onClick={nextImage} />
+                            </>
+                        )}
                     </>
                 )}
             </div>

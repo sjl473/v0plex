@@ -2,44 +2,45 @@
 
 import React from 'react';
 import styles from './hvmd.module.css';
-import {useVmdColorIndex} from './vmd-theme-context';
+import { SquareOutline } from '@carbon/icons-react';
 
 interface HeaderProps {
     children: React.ReactNode;
     id?: string;
 }
 
-const Header = ({tag: Tag, children, id}: HeaderProps & { tag: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6' }) => {
-    const colorIndex = useVmdColorIndex();
-    const colorClass = styles[`headerColor${colorIndex}`];
-
+const H1Header = ({ children, id }: HeaderProps) => {
     return (
-        <Tag id={id} className={`${styles.header} ${colorClass} ${styles[Tag]}`}>
+        <h1 id={id} className={`${styles.header} ${styles.h1}`}>
             {children}
-        </Tag>
+        </h1>
     );
 };
 
 export function H1vmd(props: HeaderProps) {
-    return <Header tag="h1" {...props} />;
+    return <H1Header {...props} />;
 }
 
-export function H2vmd(props: HeaderProps) {
-    return <Header tag="h2" {...props} />;
-}
+const Icon = () => (
+    <span className={styles.sectionIcon}>
+        <SquareOutline className={styles.anchorIcon} />
+    </span>
+);
 
-export function H3vmd(props: HeaderProps) {
-    return <Header tag="h3" {...props} />;
-}
+const H2 = ({ children, id }: HeaderProps) => (
+    <h2 id={id} className={`${styles.header} ${styles.h2}`}><Icon />{children}</h2>
+);
+const H3 = ({ children, id }: HeaderProps) => (
+    <h3 id={id} className={`${styles.header} ${styles.h3}`}><Icon />{children}</h3>
+);
+const H4 = ({ children, id }: HeaderProps) => (
+    <h4 id={id} className={`${styles.header} ${styles.h4}`}><Icon />{children}</h4>
+);
+const H5 = ({ children, id }: HeaderProps) => (
+    <h5 id={id} className={`${styles.header} ${styles.h5}`}><Icon />{children}</h5>
+);
+const H6 = ({ children, id }: HeaderProps) => (
+    <h6 id={id} className={`${styles.header} ${styles.h6}`}><Icon />{children}</h6>
+);
 
-export function H4vmd(props: HeaderProps) {
-    return <Header tag="h4" {...props} />;
-}
-
-export function H5vmd(props: HeaderProps) {
-    return <Header tag="h5" {...props} />;
-}
-
-export function H6vmd(props: HeaderProps) {
-    return <Header tag="h6" {...props} />;
-}
+export const H2vmd = H2, H3vmd = H3, H4vmd = H4, H5vmd = H5, H6vmd = H6;

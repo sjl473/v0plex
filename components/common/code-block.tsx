@@ -133,7 +133,7 @@ export default function CodeBlock({
                     title={strings.codeBlock.copyCode}
                     aria-label={strings.codeBlock.copyCode}
                 >
-                    {copied ? <Checkmark size={16}/> : <Copy size={16}/>}
+                    {copied ? <Checkmark size={10}/> : <Copy size={10}/>}
                 </button>
             </div>
 
