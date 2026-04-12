@@ -187,12 +187,12 @@ html[v0plex-theme="g100"] .sidebar {
 }
 
 .searchResults {
-    margin-bottom: 0;
+    margin: 0;
     background: var(--sidebar-results-bg);
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
-    height: 200px;
+    max-height: 200px;
     overflow: hidden !important;
     position: relative;
     z-index: 20;
@@ -204,13 +204,14 @@ html[v0plex-theme="g100"] .sidebar {
     background: var(--sidebar-results-bg);
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    max-height: none;
     scrollbar-gutter: stable;
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .searchResultsList::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
 }
 
 .searchResultsList::-webkit-scrollbar-track {
@@ -235,7 +236,7 @@ html[v0plex-theme="g100"] .searchResultsList::-webkit-scrollbar-thumb:hover {
 }
 
 .searchResultsHeader {
-    padding: 0.105rem 0.5rem;
+    padding: 0.105rem 0.75rem 0.105rem 0.5rem;
     font-size: 0.48125rem;
     font-weight: 400;
     color: var(--v0plex-text-secondary);
@@ -247,6 +248,9 @@ html[v0plex-theme="g100"] .searchResultsList::-webkit-scrollbar-thumb:hover {
     margin: 0;
     flex-shrink: 0;
     box-sizing: border-box;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .searchResultItem {
@@ -321,10 +325,12 @@ html[v0plex-theme="g100"] .searchResultsList::-webkit-scrollbar-thumb:hover {
     padding: 0;
     scrollbar-gutter: stable;
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .directoryStructureContent::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
 }
 
 .directoryStructureContent::-webkit-scrollbar-track {
@@ -349,7 +355,7 @@ html[v0plex-theme="g100"] .directoryStructureContent::-webkit-scrollbar-thumb:ho
 }
 
 .allArticlesHeader {
-    padding: 0.14rem 0.5rem;
+    padding: 0.14rem 0.75rem 0.14rem 0.5rem;
     font-size: 0.48125rem;
     font-weight: 400;
     color: var(--v0plex-text-secondary);
@@ -363,6 +369,9 @@ html[v0plex-theme="g100"] .directoryStructureContent::-webkit-scrollbar-thumb:ho
     background: var(--sidebar-header-bg);
     flex-shrink: 0;
     box-sizing: border-box;
+    position: sticky;
+    top: 0;
+    z-index: 10;
 }
 
 .navItem {

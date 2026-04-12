@@ -98,9 +98,17 @@ def _make_tokenizer(
         return [t for t in tokens if t and not t.isspace()]
 
     def is_punctuation(tok: str) -> bool:
-        if len(tok) == 1 and not tok.isalnum() and tok != "_":
-            return True
-        if tok in {"，", "。", "！", "？", "；", "：", "、", "（", "）", "《", "》", "“", "”", "‘", "’"}:
+        # Only treat common ASCII and CJK punctuation as punctuation
+        # Don't treat CJK characters (like Chinese single chars) as punctuation
+        if tok in {
+            # ASCII punctuation
+            ".", ",", "!", "?", ";", ":", "-", "_", "(", ")", "[", "]", "{", "}",
+            '"', "'", "`", "~", "@", "#", "$", "%", "^", "&", "*", "+", "=", "|", "\\",
+            "/", "<", ">",
+            # CJK punctuation
+            "，", "。", "！", "？", "；", "：", "、", "（", "）", "《", "》", "“", "”", "‘", "'",
+            "【", "】", "「", "」", "『", "』", "－", "—", "…",
+        }:
             return True
         return False
 
@@ -353,18 +361,19 @@ def _main():
     parser.add_argument("--ignore-files", default=os.path.join(here, "ignore_files.txt"))
     parser.add_argument("--no-jieba", action="store_true")
     parser.add_argument("--keep-punctuation", action="store_true")
+    parser.add_argument("--compress", action="store_true", help="Output minified JSON (no indentation). Default: False")
 
     # Length limit parameters - lowered defaults to be more permissive
     parser.add_argument("--min-token-len", type=int, default=1, help="Minimum token length. Default: 1")
-    parser.add_argument("--min-ascii-len", type=int, default=2, help="Minimum length for ASCII words. Default: 2")
+    parser.add_argument("--min-ascii-len", type=int, default=1, help="Minimum length for ASCII words. Default: 1")
 
     parser.add_argument("--encoding", default="utf-8")
     parser.add_argument("--exts", default=".md", help="Comma-separated extensions to include (default: .md)")
     parser.add_argument(
         "--max-words-per-page",
         type=int,
-        default=1500,
-        help="Cap words counted per page (0 = no limit). Default: 1500",
+        default=0,
+        help="Cap words counted per page (0 = no limit). Default: 0 (no limit)",
     )
 
     # Shannon filter parameters
@@ -387,14 +396,14 @@ def _main():
     parser.add_argument(
         "--top-pages-per-word",
         type=int,
-        default=10,
-        help="Maximum number of top occurrence pages to store per word (0 = no limit). Default: 10",
+        default=0,
+        help="Maximum number of top occurrence pages to store per word (0 = no limit). Default: 0 (no limit)",
     )
     parser.add_argument(
         "--max-words-global",
         type=int,
-        default=3000,
-        help="Maximum number of global words to keep, prioritized by entropy. Default: 3000",
+        default=0,
+        help="Maximum number of global words to keep (0 = no limit). Default: 0 (no limit)",
     )
 
     args = parser.parse_args()
@@ -434,10 +443,13 @@ def _main():
 
     os.makedirs(os.path.dirname(site_data_json_abs) or ".", exist_ok=True)
     with open(site_data_json_abs, "w", encoding="utf-8") as f:
-        json.dump(site_data, f, ensure_ascii=False, indent=2)
+        # Compress if --compress flag is set
+        indent = None if args.compress else 2
+        separators = (',', ':') if args.compress else (', ', ': ')
+        json.dump(site_data, f, ensure_ascii=False, indent=indent, separators=separators)
         f.write("\n")
 
-    print(f"[lex] updated site-data.json with lexemeStats(shrinked): {site_data_json_abs}")
+    print(f"[lex] updated site-data.json with lexemeStats{'(compressed)' if args.compress else '(formatted)'}: {site_data_json_abs}")
 
 
 if __name__ == "__main__":

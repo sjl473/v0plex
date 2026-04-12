@@ -198,36 +198,60 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
     };
     collectPaths(navStructure);
 
-    // Only search lexeme words, ignoring standard title match
+    // Search both lexeme words and page titles
     if (normalizedQuery) {
+        const seenPaths = new Set<string>();
+        const pageHits: Record<string, { title: string; hits: number; fromTitle: boolean }> = {};
+
+        // 1. Search lexeme words (content search)
         if (siteData?.lexemeStats?.byWord && siteData?.lexemeStats?.pageIndex) {
             const matchedWords = Object.keys(siteData.lexemeStats.byWord).filter(w => w.toLowerCase().includes(normalizedQuery));
 
-            const pageHits: Record<string, number> = {};
             for (const word of matchedWords) {
                 const wordData = siteData.lexemeStats.byWord[word];
                 if (wordData && wordData.p) {
                     for (const pageRef of wordData.p) {
-                        pageHits[pageRef.h] = (pageHits[pageRef.h] || 0) + pageRef.c;
+                        const pageMeta = siteData.lexemeStats.pageIndex[pageRef.h];
+                        if (pageMeta && validPathsForLocale.has(pageMeta.path)) {
+                            if (!pageHits[pageMeta.path]) {
+                                pageHits[pageMeta.path] = { title: pageMeta.title, hits: 0, fromTitle: false };
+                            }
+                            pageHits[pageMeta.path].hits += pageRef.c;
+                        }
                     }
                 }
             }
+        }
 
-            for (const [hash, hits] of Object.entries(pageHits)) {
-                const pageMeta = siteData.lexemeStats.pageIndex[hash];
-                // Only include results for pages in current locale
-                if (pageMeta && validPathsForLocale.has(pageMeta.path)) {
-                    searchResults.push({
-                        title: pageMeta.title,
-                        path: pageMeta.path,
-                        hits: hits
-                    });
+        // 2. Search page titles directly (fuzzy match)
+        const searchInNav = (nodes: NavItem[]) => {
+            for (const node of nodes) {
+                if (node.path && node.title.toLowerCase().includes(normalizedQuery)) {
+                    if (!pageHits[node.path]) {
+                        pageHits[node.path] = { title: node.title, hits: 0, fromTitle: true };
+                    }
+                    // Boost score for title matches
+                    pageHits[node.path].hits += 10;
+                    pageHits[node.path].fromTitle = true;
+                }
+                if (node.children) {
+                    searchInNav(node.children);
                 }
             }
+        };
+        searchInNav(navStructure);
 
-            // Sort by hits (highest first)
-            searchResults.sort((a, b) => (b.hits || 0) - (a.hits || 0));
+        // Convert to results array
+        for (const [path, data] of Object.entries(pageHits)) {
+            searchResults.push({
+                title: data.title,
+                path: path,
+                hits: data.hits
+            });
         }
+
+        // Sort by hits (highest first)
+        searchResults.sort((a, b) => (b.hits || 0) - (a.hits || 0));
     }
 
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
