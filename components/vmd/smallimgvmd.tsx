@@ -1,6 +1,7 @@
 "use client"
 
 import React from 'react';
+import styles from './smallimgvmd.module.css';
 
 interface SmallimgvmdProps {
     src: string;
@@ -12,13 +13,7 @@ export function Smallimgvmd({ src, alt }: SmallimgvmdProps) {
         <img
             src={src}
             alt={alt || ""}
-            style={{
-                height: "1.2em",
-                width: "auto",
-                display: "inline-block",
-                verticalAlign: "text-bottom",
-                margin: "0 2px"
-            }}
+            className={styles.smallImage}
         />
     );
 }

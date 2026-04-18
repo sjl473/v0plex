@@ -13,8 +13,51 @@ import { VmdErrorCode, createVmdError, ErrorReporter, VmdError } from '../errors
 import { scanDirectoryForImages } from './directory_scanner';
 import { processFile } from './file_processor';
 import { writeSiteData } from './site_data_writer';
-import { cleanTitle } from '../utils';
+import { cleanTitle, isGitAvailable } from '../utils';
 import { AVAILABLE_LANGUAGES, type Locale, DEFAULT_LOCALE } from '../../config/site.config';
+
+/**
+ * Scan markdown files to check if @git placeholder is used
+ */
+function scanForGitPlaceholders(inputPath: string): boolean {
+  const gitPlaceholderPattern = /@git/;
+  
+  function scanDir(dirPath: string): boolean {
+    const items = fs.readdirSync(dirPath);
+    
+    for (const item of items) {
+      const itemPath = path.join(dirPath, item);
+      const stat = fs.statSync(itemPath);
+      
+      if (stat.isDirectory() && !item.startsWith('.') && item !== 'node_modules') {
+        if (scanDir(itemPath)) {
+          return true;
+        }
+      } else if (stat.isFile() && (item.endsWith('.md') || item.endsWith('.mdx'))) {
+        const content = fs.readFileSync(itemPath, 'utf8');
+        if (gitPlaceholderPattern.test(content)) {
+          return true;
+        }
+      }
+    }
+    
+    return false;
+  }
+  
+  try {
+    const stats = fs.statSync(inputPath);
+    if (stats.isDirectory()) {
+      return scanDir(inputPath);
+    } else if (stats.isFile()) {
+      const content = fs.readFileSync(inputPath, 'utf8');
+      return gitPlaceholderPattern.test(content);
+    }
+  } catch {
+    return false;
+  }
+  
+  return false;
+}
 
 // Get valid language codes from config
 const VALID_LOCALES = new Set(AVAILABLE_LANGUAGES.map(lang => lang.code));
@@ -46,6 +89,27 @@ export class SiteBuilder {
       );
       this.errorReporter.printReports();
       return false;
+    }
+
+    // Check if @git placeholder is used and validate git environment
+    const usesGitPlaceholder = scanForGitPlaceholders(inputPath);
+    if (usesGitPlaceholder) {
+      console.log('  🔍 Detected @git placeholder in frontmatter, validating git environment...');
+      if (!isGitAvailable()) {
+        const error = createVmdError(
+          VmdErrorCode.CONFIG_ERROR,
+          {
+            message: 'Git environment is not available. ' +
+                     'Git is required when using @git placeholder in frontmatter for created_at or last_updated_at. ' +
+                     'Please install git or use explicit dates (YYYY-MM-DD format).'
+          }
+        );
+        console.error(`\n❌ ${error.format()}\n`);
+        this.errorReporter.report(error);
+        this.errorReporter.printReports();
+        return false;
+      }
+      console.log('  ✅ Git environment validated');
     }
 
     try {

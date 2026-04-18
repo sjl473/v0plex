@@ -2,6 +2,7 @@
 
 import {useEffect, useRef} from "react"
 import {useMathJax} from "./mathjax-provider"
+import styles from "./math-formula.module.css"
 
 interface SimpleMathFormulaProps {
     formula: string
@@ -37,17 +38,16 @@ export default function MathFormula({formula, display = false, inline = false}: 
         }
     }
 
+    // Determine which style class to use
+    const className = inline
+        ? `${styles.mathFormulaInline} math-formula`
+        : display
+            ? `${styles.mathFormulaDisplay} math-formula-display`
+            : `${styles.mathFormula} math-formula`
+
     return (<span
             ref={mathRef}
-            className={inline ? "math-formula" : display ? "math-formula-display" : "math-formula"}
-            style={{
-                color: "var(--v0plex-text-primary)",
-                display: inline ? "inline" : display ? "block" : "inline-block",
-                textAlign: display ? "center" : "inherit",
-                margin: display ? "1.5rem 0" : inline ? "0" : "0 0.25rem",
-                minHeight: display ? "2rem" : "1rem",
-                verticalAlign: inline ? "baseline" : "inherit",
-            }}
+            className={className}
         >
       {mathContent}
     </span>)

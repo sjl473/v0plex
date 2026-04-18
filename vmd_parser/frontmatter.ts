@@ -78,34 +78,40 @@ export class FrontMatterParser {
       );
     }
 
-    // Validate date format: YYYY-MM-DD
+    // Validate date format: YYYY-MM-DD or @git
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    const gitPlaceholder = /^@git$/;
     const createdAt = attributes.created_at as string;
     const lastUpdatedAt = attributes.last_updated_at as string;
     
-    if (!dateRegex.test(createdAt)) {
+    if (!dateRegex.test(createdAt) && !gitPlaceholder.test(createdAt)) {
       throw createVmdError(
         VmdErrorCode.FRONTMATTER_INVALID_VALUE,
-        { field: 'created_at', value: createdAt, expected: 'YYYY-MM-DD format' },
+        { field: 'created_at', value: createdAt, expected: 'YYYY-MM-DD format or @git' },
         { file: filePath }
       );
     }
 
-    if (!dateRegex.test(lastUpdatedAt)) {
+    if (!dateRegex.test(lastUpdatedAt) && !gitPlaceholder.test(lastUpdatedAt)) {
       throw createVmdError(
         VmdErrorCode.FRONTMATTER_INVALID_VALUE,
-        { field: 'last_updated_at', value: lastUpdatedAt, expected: 'YYYY-MM-DD format' },
+        { field: 'last_updated_at', value: lastUpdatedAt, expected: 'YYYY-MM-DD format or @git' },
         { file: filePath }
       );
     }
 
-    // Validate author format: pipe-separated list of "name" or "name->email"
+    // Validate author format: pipe-separated list of "name" or "name->email", or @git
     const author = attributes.author as string;
     this.validateAuthorFormat(author, filePath);
   }
 
   private static validateAuthorFormat(author: string, filePath: string): void {
     if (!author) return;
+
+    // Allow @git as a special placeholder (entire field is just @git)
+    if (author === '@git') {
+      return;
+    }
 
     const authors = author.split('|').map(a => a.trim()).filter(Boolean);
     
@@ -117,12 +123,27 @@ export class FrontMatterParser {
       );
     }
 
+    // Count @git occurrences - only allowed once in a list with other authors
+    const gitCount = authors.filter(a => a === '@git').length;
+    if (gitCount > 1) {
+      throw createVmdError(
+        VmdErrorCode.FRONTMATTER_INVALID_AUTHOR_FORMAT,
+        { message: 'Only one @git placeholder is allowed in author field' },
+        { file: filePath }
+      );
+    }
+
     // Email regex pattern
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     // URL regex pattern (basic validation for http/https URLs)
     const urlRegex = /^https?:\/\/.+/;
 
     for (const authorEntry of authors) {
+      // Allow @git as a special placeholder in individual entries (max 1, already checked above)
+      if (authorEntry === '@git') {
+        continue;
+      }
+      
       // Check for arrow format
       if (authorEntry.includes('->')) {
         const parts = authorEntry.split('->').map(p => p.trim());

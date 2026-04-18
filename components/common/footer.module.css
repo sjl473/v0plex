@@ -2,6 +2,7 @@
     background: var(--bg-primary, #161616);
     margin: 0;
     padding: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0);
     width: 100%;
     border-top: 1px solid var(--border-subtle, #393939);
     margin-top: auto;

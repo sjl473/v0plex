@@ -19,15 +19,18 @@ interface NavItem {
 }
 
 interface LexemePageRef {
-    h: string;
-    c: number;
+    h: string;       // page hash
+    c: number;       // raw count
+    s?: number;      // TF-IDF score (scaled by 10000)
+    t?: number;      // title match flag (1 if in title, 0 otherwise)
 }
 
 interface LexemeWordData {
-    t: number;
-    df: number;
-    dfr: number;
-    H: number;
+    t: number;       // total count
+    df: number;      // document frequency
+    dfr: number;     // document frequency ratio
+    H: number;       // Shannon entropy
+    idf?: number;    // IDF value
     p: LexemePageRef[];
 }
 
@@ -179,7 +182,10 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
     interface SearchResult {
         title: string;
         path?: string;
-        hits?: number;
+        hits?: number;         // Raw occurrence count for display
+        score?: number;        // Internal TF-IDF score for sorting
+        fromTitle?: boolean;   // Match found in title
+        exactMatch?: boolean;  // Query exactly matches word/title
     }
 
     const searchResults: SearchResult[] = [];
@@ -198,41 +204,110 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
     };
     collectPaths(navStructure);
 
-    // Search both lexeme words and page titles
+    // Search both lexeme words and page titles with TF-IDF scoring
     if (normalizedQuery) {
-        const seenPaths = new Set<string>();
-        const pageHits: Record<string, { title: string; hits: number; fromTitle: boolean }> = {};
+        interface PageHitData {
+            title: string;
+            score: number;      // TF-IDF based score (scaled)
+            rawHits: number;    // Raw occurrence count for display
+            fromTitle: boolean;
+            exactMatch: boolean; // Query exactly matches a word
+        }
+        const pageHits: Record<string, PageHitData> = {};
 
-        // 1. Search lexeme words (content search)
+        // Helper: calculate word match relevance
+        // - Exact match: 1.0
+        // - Prefix match: 0.8
+        // - Contains match: 0.5
+        const getMatchRelevance = (word: string, query: string): number => {
+            const w = word.toLowerCase();
+            const q = query.toLowerCase();
+            if (w === q) return 1.0;
+            if (w.startsWith(q)) return 0.8;
+            if (w.includes(q)) return 0.5;
+            return 0.3;
+        };
+
+        // 1. Search lexeme words (content search with TF-IDF weights)
         if (siteData?.lexemeStats?.byWord && siteData?.lexemeStats?.pageIndex) {
             const matchedWords = Object.keys(siteData.lexemeStats.byWord).filter(w => w.toLowerCase().includes(normalizedQuery));
 
             for (const word of matchedWords) {
                 const wordData = siteData.lexemeStats.byWord[word];
                 if (wordData && wordData.p) {
+                    // Calculate how relevant this word match is
+                    const matchRelevance = getMatchRelevance(word, normalizedQuery);
+                    
                     for (const pageRef of wordData.p) {
                         const pageMeta = siteData.lexemeStats.pageIndex[pageRef.h];
                         if (pageMeta && validPathsForLocale.has(pageMeta.path)) {
                             if (!pageHits[pageMeta.path]) {
-                                pageHits[pageMeta.path] = { title: pageMeta.title, hits: 0, fromTitle: false };
+                                pageHits[pageMeta.path] = {
+                                    title: pageMeta.title,
+                                    score: 0,
+                                    rawHits: 0,
+                                    fromTitle: false,
+                                    exactMatch: false
+                                };
                             }
-                            pageHits[pageMeta.path].hits += pageRef.c;
+                            
+                            // Use TF-IDF score if available (version 4+), otherwise fall back to count
+                            const tfidfScore = pageRef.s ?? (pageRef.c * 100); // Scale legacy count
+                            
+                            // Apply match relevance to the score
+                            const weightedScore = tfidfScore * matchRelevance;
+                            
+                            pageHits[pageMeta.path].score += weightedScore;
+                            pageHits[pageMeta.path].rawHits += pageRef.c;
+                            
+                            // Track if this is an exact word match
+                            if (matchRelevance === 1.0) {
+                                pageHits[pageMeta.path].exactMatch = true;
+                            }
+                            
+                            // Check if word is in title (use pre-calculated flag if available)
+                            if (pageRef.t === 1) {
+                                pageHits[pageMeta.path].fromTitle = true;
+                            }
                         }
                     }
                 }
             }
         }
 
-        // 2. Search page titles directly (fuzzy match)
+        // 2. Search page titles directly (high priority)
         const searchInNav = (nodes: NavItem[]) => {
             for (const node of nodes) {
                 if (node.path && node.title.toLowerCase().includes(normalizedQuery)) {
                     if (!pageHits[node.path]) {
-                        pageHits[node.path] = { title: node.title, hits: 0, fromTitle: true };
+                        pageHits[node.path] = {
+                            title: node.title,
+                            score: 0,
+                            rawHits: 0,
+                            fromTitle: true,
+                            exactMatch: false
+                        };
                     }
-                    // Boost score for title matches
-                    pageHits[node.path].hits += 10;
+                    
+                    // Calculate title match relevance
+                    const titleMatchRelevance = getMatchRelevance(node.title, normalizedQuery);
+                    
+                    // Title matches get significant boost (equivalent to high TF-IDF)
+                    // Scale: 50000 = roughly equivalent to a word with IDF=5 appearing prominently
+                    const titleBoost = 50000 * titleMatchRelevance;
+                    pageHits[node.path].score += titleBoost;
                     pageHits[node.path].fromTitle = true;
+                    
+                    // For title-only matches, show at least 1 hit for display
+                    // This makes sense because the query was found in the title
+                    if (pageHits[node.path].rawHits === 0) {
+                        pageHits[node.path].rawHits = 1;
+                    }
+                    
+                    // Mark exact title matches
+                    if (node.title.toLowerCase() === normalizedQuery) {
+                        pageHits[node.path].exactMatch = true;
+                    }
                 }
                 if (node.children) {
                     searchInNav(node.children);
@@ -246,12 +321,21 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
             searchResults.push({
                 title: data.title,
                 path: path,
-                hits: data.hits
+                hits: data.rawHits, // Use raw occurrence count for display
+                score: data.score,  // Use TF-IDF score for sorting only
+                fromTitle: data.fromTitle,
+                exactMatch: data.exactMatch
             });
         }
 
-        // Sort by hits (highest first)
-        searchResults.sort((a, b) => (b.hits || 0) - (a.hits || 0));
+        // Sort by score (highest first), with exact matches prioritized
+        searchResults.sort((a, b) => {
+            // Exact matches first
+            if (a.exactMatch && !b.exactMatch) return -1;
+            if (!a.exactMatch && b.exactMatch) return 1;
+            // Then by score
+            return (b.score || 0) - (a.score || 0);
+        });
     }
 
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -373,7 +457,7 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
                                     <div className={styles.searchResultTitle}>
                                         {item.title}
                                         {item.hits ? (
-                                            <span style={{marginLeft: '8px', fontSize: '0.455rem', color: 'var(--v0plex-text-secondary)'}}>
+                                            <span className={styles.searchHits}>
                                                 ({item.hits} {strings.sidebar.hits})
                                             </span>
                                         ) : null}

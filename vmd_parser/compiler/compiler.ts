@@ -18,11 +18,14 @@ import {
   boldItalicExtension,
   blockMathExtension,
   inlineMathExtension,
+  tableExtension,
   setCompilationContext,
   clearCompilationContext,
   clearLineTracker,
   scanVmdBlocks,
-  resetBlockIndices
+  resetBlockIndices,
+  setTableExtensionContext,
+  clearTableExtensionContext
 } from '../extensions';
 import { VmdErrorCode, createVmdError, ErrorLocation, VmdError } from '../errors';
 import { createRenderer } from './renderer';
@@ -89,6 +92,8 @@ export class MarkdownCompiler {
       resetBlockIndices();
       scanVmdBlocks(markdownBody, this.frontmatterLineOffset);
 
+      // Set up table extension context for inline code processing
+      setTableExtensionContext(this.assetProcessor, this.generatedFiles);
 
       this.configureMarked();
 
@@ -98,12 +103,14 @@ export class MarkdownCompiler {
       // Post-validation: check for empty markup elements
       this.detectEmptyMarkup(vmdHtml);
 
-      vmdHtml = this.injectMetaComponent(vmdHtml, attributes);
+      // Note: PageDates component is injected by file_processor.ts in generatePageComponent
+      // to ensure @git placeholders are resolved to actual dates
 
-      // Clean up full source storage
+      // Clean up contexts
       if (filePath) {
         clearCompilationContext(filePath);
       }
+      clearTableExtensionContext();
 
       return {
         html: vmdHtml,
@@ -111,10 +118,11 @@ export class MarkdownCompiler {
         usedImages: [...this.usedImages]
       };
     } catch (err) {
-      // Clean up full source storage on error too
+      // Clean up contexts on error too
       if (filePath) {
         clearCompilationContext(filePath);
       }
+      clearTableExtensionContext();
 
       if (err instanceof VmdError) {
         throw err;
@@ -148,6 +156,7 @@ export class MarkdownCompiler {
 
     marked.use({
       renderer,
+      gfm: false, // Disable GFM to prevent built-in table parsing
       extensions: [
         createCustomBlock('info'),
         createCustomBlock('warning'),
@@ -156,7 +165,8 @@ export class MarkdownCompiler {
         smallImageExtension(this.assetProcessor, CONFIG.IMAGE_WEB_PREFIX, this.currentFile),
         boldItalicExtension,
         blockMathExtension,
-        inlineMathExtension
+        inlineMathExtension,
+        tableExtension
       ]
     });
   }

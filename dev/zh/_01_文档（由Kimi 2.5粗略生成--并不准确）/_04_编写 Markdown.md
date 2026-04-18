@@ -15,7 +15,7 @@ v0plex 的内容完全基于 Markdown 格式，这是一种轻量级标记语言
 
 v0plex 使用文件系统来组织内容层次结构。所有内容存储在 `dev/` 目录中，支持无限层级的文件夹嵌套。
 
-文件和文件夹的命名遵循特定约定：以 `_NN_` 前缀开头，其中 `NN` 是两位数字（不足两位需补零），用于控制内容在导航树中的排序。前缀之后是内容的标识名称，可以包含空格和中文。例如：
+文件和文件夹的命名遵循特定约定: 以 `_NN_` 前缀开头，其中 `NN` 是两位数字（不足两位需补零），用于控制内容在导航树中的排序。前缀之后是内容的标识名称，可以包含空格和中文。例如: 
 
 ```
 dev/
@@ -35,7 +35,7 @@ dev/
 
 ## Frontmatter 格式
 
-每个 Markdown 文件必须以 YAML frontmatter 开头，用三对短横线 `---` 包围。Frontmatter 定义了文档的元数据，v0plex 支持以下字段：
+每个 Markdown 文件必须以 YAML frontmatter 开头，用三对短横线 `---` 包围。Frontmatter 定义了文档的元数据，v0plex 支持以下字段: 
 
 ```yaml
 ---
@@ -66,7 +66,7 @@ v0plex 完整支持 CommonMark 规范的基础语法。
 ### 三级标题
 ```
 
-强调样式有三种：用双星号或双下划线包裹的文本显示为粗体，用单星号或单下划线包裹的显示为斜体，用三个星号包裹的同时显示为粗斜体。删除线用双波浪线表示。
+强调样式有三种: 用双星号或双下划线包裹的文本显示为粗体，用单星号或单下划线包裹的显示为斜体，用三个星号包裹的同时显示为粗斜体。删除线用双波浪线表示。
 
 ```markdown
 **粗体文本** 或 __粗体文本__
@@ -111,7 +111,7 @@ v0plex 完整支持 CommonMark 规范的基础语法。
 代码分为行内代码和代码块。行内代码用单个反引号包裹。代码块用三个反引号包围，可以在开头指定语言以获得语法高亮。
 
 ```markdown
-行内代码：`const x = 1`
+行内代码: `const x = 1`
 
 ```javascript
 function example() {
@@ -124,13 +124,13 @@ function example() {
 
 v0plex 支持 LaTeX 格式的数学公式，使用 MathJax 进行渲染。
 
-行内公式用单个美元符号包裹：
+行内公式用单个美元符号包裹: 
 
 ```markdown
 质能方程 $E = mc^2$ 由爱因斯坦提出。
 ```
 
-块级公式用双美元符号包裹：
+块级公式用双美元符号包裹: 
 
 ```markdown
 $$
@@ -170,7 +170,7 @@ v0plex 使用 MathJax 的 `tex-chtml` 输出格式，支持绝大多数标准 La
 
 ### 启用自定义组件
 
-要使用自定义 TSX 组件，首先将文档 frontmatter 中的 `has_custom_tsx` 字段设置为 `true`：
+要使用自定义 TSX 组件，首先将文档 frontmatter 中的 `has_custom_tsx` 字段设置为 `true`: 
 
 ```yaml
 ---
@@ -186,7 +186,7 @@ has_custom_tsx: true
 
 ### TSX 组件结构
 
-自定义 TSX 组件是一个标准的 React 组件，需要遵循特定的结构以确保与 v0plex 的主题系统正确集成：
+自定义 TSX 组件是一个标准的 React 组件，需要遵循特定的结构以确保与 v0plex 的主题系统正确集成: 
 
 ```tsx
 "use client"
@@ -215,7 +215,7 @@ export default function CustomPage() {
 
 ### 从 Markdown 迁移到自定义组件
 
-如果你已经编写了一份 Markdown 文档，后来需要添加只能通过 React 组件实现的功能（如复杂的交互式表格、数据可视化图表等），迁移过程如下：
+如果你已经编写了一份 Markdown 文档，后来需要添加只能通过 React 组件实现的功能（如复杂的交互式表格、数据可视化图表等），迁移过程如下: 
 
 首先，保留原有的 Markdown 文件，但将 `has_custom_tsx` 改为 `true`。然后，创建同名的 TSX 文件，按照上述结构编写组件。此时，v0plex 会完全忽略 Markdown 文件的内容（除了 frontmatter 用于生成导航），页面将由 TSX 组件渲染。
 
@@ -223,7 +223,7 @@ export default function CustomPage() {
 
 ### 使用 Carbon 组件
 
-由于 v0plex 基于 IBM Carbon Design System，你可以直接使用 Carbon React 组件来构建界面。例如，创建一个结构化的数据表格：
+由于 v0plex 基于 IBM Carbon Design System，你可以直接使用 Carbon React 组件来构建界面。例如，创建一个结构化的数据表格: 
 
 ```tsx
 import { DataTable, Table, TableHead, TableRow, TableHeader, TableBody, TableCell } from "@carbon/react"
@@ -257,6 +257,6 @@ import { DataTable, Table, TableHead, TableRow, TableHeader, TableBody, TableCel
 
 ### 注意事项
 
-使用自定义 TSX 组件后，该页面将失去 Markdown 的便利性：无法使用 VMD 扩展标签，需要直接使用对应的 React 组件；无法享受 Markdown 的自动链接处理和格式转换；需要手动处理响应式布局和移动适配。
+使用自定义 TSX 组件后，该页面将失去 Markdown 的便利性: 无法使用 VMD 扩展标签，需要直接使用对应的 React 组件；无法享受 Markdown 的自动链接处理和格式转换；需要手动处理响应式布局和移动适配。
 
 因此，建议仅在必要时使用自定义组件。对于大部分内容，标准 Markdown 配合 VMD 扩展已经足够；只有当需要复杂的客户端交互或特定的布局结构时，才考虑切换到 TSX 组件。

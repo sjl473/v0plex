@@ -6,7 +6,7 @@
 import fs from 'fs';
 import path from 'path';
 import { CONFIG } from '../config';
-import { cleanTitle, calculatePathHash } from '../utils';
+import { cleanTitle, calculatePathHash, resolveDate, resolveAuthor, validateGitEnvironment } from '../utils';
 import { AssetProcessor } from '../asset_processor';
 import { FrontMatterParser } from '../frontmatter';
 import { NavigationNode } from '../types';
@@ -112,6 +112,11 @@ function processMarkdownFile(
     const hasCustomTsx = FrontMatterParser.hasCustomTsx(attributes);
     const tags = parseTags(attributes.tags as string);
 
+    // Resolve @git dates to actual dates and @git author
+    const createdAt = resolveDate(attributes.created_at as string, srcPath, 'earliest');
+    const lastUpdatedAt = resolveDate(attributes.last_updated_at as string, srcPath, 'latest');
+    const resolvedAuthor = resolveAuthor(attributes.author as string);
+
     if (hasCustomTsx) {
       const mdBaseName = path.basename(srcPath, ext);
       const expectedTsxPath = path.join(path.dirname(srcPath), `${mdBaseName}.tsx`);
@@ -159,7 +164,7 @@ function processMarkdownFile(
     const reactSafeHtml = html.replace(/class="/g, 'className="');
     const editUrl = `${CONFIG.GITHUB_REPO_BASE_URL}${CONFIG.URL_PREFIX}/${hash}`;
 
-    const tsxContent = generatePageComponent(reactSafeHtml, editUrl);
+    const tsxContent = generatePageComponent(reactSafeHtml, editUrl, createdAt, lastUpdatedAt, resolvedAuthor);
     fs.writeFileSync(destFile, tsxContent.trim());
 
     navContainer.push({
@@ -272,7 +277,20 @@ function processTsxFile(
 /**
  * Generate page component TSX content
  */
-function generatePageComponent(reactSafeHtml: string, editUrl: string): string {
+function generatePageComponent(reactSafeHtml: string, editUrl: string, createdAt: string, lastUpdatedAt: string, author: string): string {
+  // Inject PageDates right after the H1 heading in the content
+  const pageDatesComponent = `<PageDates publishedAt="${createdAt}" updatedAt="${lastUpdatedAt}" author="${author}" />`;
+  
+  // Find the first H1vmd tag and inject PageDates after it
+  const h1Regex = /(<H1vmd[^>]*>[\s\S]*?<\/H1vmd>)/;
+  let contentWithMeta = reactSafeHtml;
+  if (h1Regex.test(reactSafeHtml)) {
+    contentWithMeta = reactSafeHtml.replace(h1Regex, `$1\n${pageDatesComponent}`);
+  } else {
+    // If no H1, prepend PageDates at the beginning
+    contentWithMeta = pageDatesComponent + '\n' + reactSafeHtml;
+  }
+  
   return `
 "use client"
 
@@ -288,7 +306,8 @@ import {
   Blockquotevmd,
   Infovmd, Warningvmd, Successvmd, Titlevmd, Contentvmd,
   Postvmd, Lftvmd, Rtvmd,
-  Olvmd
+  Olvmd,
+  Tablevmd, Tableheadvmd, Tablebodyvmd, Tablerowvmd, Tablecellvmd
 } from '${CONFIG.COMPONENT_IMPORT_PATH}';
 import { VmdThemeProvider } from '@/components/vmd/vmd-theme-context';
 import PageDates from '@/components/common/last-updated-at';
@@ -299,7 +318,7 @@ export default function GeneratedPage() {
     <VmdThemeProvider>
       <div className="v0plex-content" style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
         <div className="page-typography-content" style={{ flex: 1 }}>
-${reactSafeHtml}
+${contentWithMeta}
         </div>
         <div style={{ marginTop: 'auto', paddingTop: '0.5rem' }}>
           <EditThisPage url="${editUrl}" />

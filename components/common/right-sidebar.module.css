@@ -4,7 +4,7 @@
     right: 0;
     z-index: 100;
     height: calc(100vh - 32px);
-    height: calc(100dvh - 32px);
+    height: calc(100dvh - 32px - env(safe-area-inset-bottom, 0px));
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
     background: var(--sidebar-bg);
@@ -12,6 +12,7 @@
     overflow: hidden;
     margin: 0;
     padding: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0);
     border-top: none;
     box-sizing: border-box;
     display: flex;

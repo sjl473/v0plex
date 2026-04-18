@@ -76,9 +76,6 @@ export default function ResponsiveImage({
                         }}
                         priority={priority}
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
-                        style={{
-                            objectFit: 'contain'
-                        }}
                     />
                 </>)}
             </div>

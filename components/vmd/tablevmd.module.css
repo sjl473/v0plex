@@ -1,0 +1,20 @@
+/* Table styles */
+
+.tableContainer {
+    margin: 1rem 0;
+    width: 100%;
+}
+
+.tableResponsiveWrapper {
+    overflow-x: auto;
+    width: 100%;
+}
+
+.tablePaginatedContainer {
+    min-width: fit-content;
+}
+
+.paginationWrapper {
+    margin-top: 0.5rem;
+    width: 100%;
+}

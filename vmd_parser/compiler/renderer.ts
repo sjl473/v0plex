@@ -16,7 +16,8 @@ import {
   smallImageExtension,
   boldItalicExtension,
   blockMathExtension,
-  inlineMathExtension
+  inlineMathExtension,
+  tableExtension
 } from '../extensions';
 
 /**
@@ -122,7 +123,7 @@ export function createRenderer(
 
     paragraph(this: any, token: any) {
       const text = (typeof token === 'string') ? token : this.parser.parseInline(token.tokens);
-      const blockTags = ['Imgvmd', 'Ulvmd', 'Olvmd', 'Blockcodevmd', 'Blockmathvmd', 'Blockquotevmd', 'Infovmd', 'Warningvmd', 'Successvmd', 'Postvmd', 'Lftvmd', 'Rtvmd'];
+      const blockTags = ['Imgvmd', 'Ulvmd', 'Olvmd', 'Blockcodevmd', 'Blockmathvmd', 'Blockquotevmd', 'Infovmd', 'Warningvmd', 'Successvmd', 'Postvmd', 'Lftvmd', 'Rtvmd', 'Tablevmd'];
       const blockTagPattern = blockTags.join('|');
       const blockRegex = new RegExp(`^\\s*<(${blockTagPattern})[\\s\\S]*?>`, 'i');
 
@@ -130,6 +131,26 @@ export function createRenderer(
         return `${text}\n`;
       }
       return `<p>${text}</p>\n`;
+    },
+
+    heading(this: any, token: any) {
+      const text = this.parser.parseInline(token.tokens);
+      const depth = token.depth;
+      const headingTags = ['H1vmd', 'H2vmd', 'H3vmd', 'H4vmd', 'H5vmd', 'H6vmd'];
+      const tag = headingTags[depth - 1] || 'H6vmd';
+      return `<${tag}>${text}</${tag}>\n`;
+    },
+
+    // Disable marked's built-in table rendering
+    table(this: any, token: any) {
+      // Return empty string - table is handled by our extension
+      return '';
+    },
+    tablerow(this: any, token: any) {
+      return '';
+    },
+    tablecell(this: any, token: any) {
+      return '';
     }
   };
 }
@@ -147,6 +168,7 @@ export function configureMarked(
 
   marked.use({
     renderer,
+    gfm: false, // Disable GFM to prevent built-in table parsing
     extensions: [
       createCustomBlock('info'),
       createCustomBlock('warning'),
@@ -155,7 +177,8 @@ export function configureMarked(
       smallImageExtension(assetProcessor, CONFIG.IMAGE_WEB_PREFIX, currentFile),
       boldItalicExtension,
       blockMathExtension,
-      inlineMathExtension
+      inlineMathExtension,
+      tableExtension
     ]
   });
 }

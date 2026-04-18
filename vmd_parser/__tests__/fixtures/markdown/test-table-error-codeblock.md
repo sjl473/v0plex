@@ -1,0 +1,16 @@
+---
+title: Table Error Test - Code Block
+created_at: 2024-01-01
+last_updated_at: 2024-01-01
+author: test-author->test@example.com
+has_custom_tsx: false
+tags: [test, table, error]
+---
+
+# Table Error Test - Code Block in Cell
+
+This file should fail compilation because it contains a code block inside a table cell.
+
+| Header 1 | Header 2 |
+|----------|----------|
+| ```code``` | Normal text |

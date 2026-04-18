@@ -1,0 +1,12 @@
+# Files to ignore during search indexing
+# One file pattern per line, lines starting with # are ignored
+# Supports basename matching and relative path matching
+
+# Common files to ignore
+README.md
+CHANGELOG.md
+LICENSE
+CONTRIBUTING.md
+
+# Draft/unpublished content
+# draft/

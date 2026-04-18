@@ -17,7 +17,7 @@ export function addVmdSuffix(
   usedImages: Array<{ originalName: string; hashName: string }>
 ): string {
   const voidTags = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
-  const customTags = ['blockcodevmd', 'inlinecodevmd', 'blockmathvmd', 'inlinemathvmd', 'imgvmd', 'infovmd', 'warningvmd', 'successvmd', 'postvmd', 'lftvmd', 'rtvmd'];
+  const customTags = ['blockcodevmd', 'inlinecodevmd', 'blockmathvmd', 'inlinemathvmd', 'imgvmd', 'infovmd', 'warningvmd', 'successvmd', 'postvmd', 'lftvmd', 'rtvmd', 'tablevmd', 'tableheadvmd', 'tablebodyvmd', 'tablerowvmd', 'tablecellvmd'];
 
   return html.replace(/<\/?([a-zA-Z0-9]+)([^>]*)>/g, (match, tagName, rest) => {
     const tagLower = tagName.toLowerCase();
@@ -110,7 +110,7 @@ export function fixLinkedImages(html: string): string {
  * Unwrap invalid nesting of block elements inside paragraphs
  */
 export function unwrapInvalidNesting(html: string): string {
-  const blockTags = ['Imgvmd', 'Ulvmd', 'Olvmd', 'Blockcodevmd', 'Blockmathvmd', 'Blockquotevmd', 'Infovmd', 'Warningvmd', 'Successvmd', 'Postvmd', 'Lftvmd', 'Rtvmd', 'Divvmd'];
+  const blockTags = ['Imgvmd', 'Ulvmd', 'Olvmd', 'Blockcodevmd', 'Blockmathvmd', 'Blockquotevmd', 'Infovmd', 'Warningvmd', 'Successvmd', 'Postvmd', 'Lftvmd', 'Rtvmd', 'Divvmd', 'Tablevmd'];
   const blockPattern = blockTags.join('|');
 
   let processedHtml = html;

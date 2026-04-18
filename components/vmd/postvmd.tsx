@@ -157,7 +157,7 @@ export function Rtvmd({ children }: { children: React.ReactNode }) {
                     
                     <div className={styles.modalCaption}>
                         {hasMultiple && <span className={styles.modalCounter}>{counterText}</span>}
-                        <div style={{ color: '#fff' }}>
+                        <div className={styles.modalCaptionText}>
                             {currentImage.title || currentImage.alt}
                         </div>
                     </div>
@@ -175,7 +175,6 @@ export function Rtvmd({ children }: { children: React.ReactNode }) {
                     alt={currentImage.alt}
                     className={styles.activeImage}
                     onClick={openModal}
-                    style={{ cursor: 'pointer' }}
                 />
 
                 {/* Image Counter */}

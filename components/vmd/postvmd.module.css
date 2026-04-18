@@ -57,6 +57,7 @@
     height: auto;
     display: block;
     object-fit: contain;
+    cursor: pointer;
 }
 
 /* Triangle Navigation Arrows - IBM Carbon Design System */
@@ -265,6 +266,10 @@
     font-family: 'IBM Plex Mono', monospace;
     border-radius: 2px;
     backdrop-filter: blur(4px);
+}
+
+.modalCaptionText {
+    color: #fff;
 }
 
 @keyframes fadeIn {

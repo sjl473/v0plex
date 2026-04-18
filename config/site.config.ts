@@ -110,6 +110,11 @@ export interface I18nStrings {
   editThisPage: {
     label: string;
   };
+  tablePagination: {
+    itemsPerPage: string;
+    previous: string;
+    next: string;
+  };
 }
 
 export const EN_STRINGS: I18nStrings = {
@@ -149,10 +154,10 @@ export const EN_STRINGS: I18nStrings = {
     from: 'from',
   },
   boxes: {
-    infoDefault: 'Notice：',
-    warningDefault: 'Warning',
-    successDefault: 'Success',
-    errorDefault: 'Error',
+    infoDefault: 'Notice: ',
+    warningDefault: 'Warning: ',
+    successDefault: 'Success: ',
+    errorDefault: 'Error: ',
   },
   code: {
     loading: 'Loading code...',
@@ -173,6 +178,11 @@ export const EN_STRINGS: I18nStrings = {
   },
   editThisPage: {
     label: 'Edit Page on Github / Gitlab ↵',
+  },
+  tablePagination: {
+    itemsPerPage: 'items',
+    previous: 'Previous',
+    next: 'Next',
   },
 };
 
@@ -213,9 +223,9 @@ export const ZH_STRINGS: I18nStrings = {
     from: '来源',
   },
   boxes: {
-    infoDefault: '注意：',
-    warningDefault: '警告：',
-    successDefault: '关于：',
+    infoDefault: '注意: ',
+    warningDefault: '警告: ',
+    successDefault: '关于: ',
     errorDefault: '错误',
   },
   code: {
@@ -232,11 +242,16 @@ export const ZH_STRINGS: I18nStrings = {
   pageMeta: {
     created: '创建时间',
     updated: '更新时间',
-    author: '作者：',
-    timeLabel: '时间：',
+    author: '作者: ',
+    timeLabel: '时间: ',
   },
   editThisPage: {
     label: '在 Github / Gitlab 上编辑 ↵',
+  },
+  tablePagination: {
+    itemsPerPage: '条数',
+    previous: '上一页',
+    next: '下一页',
   },
 };
 

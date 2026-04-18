@@ -27,6 +27,9 @@ import {Contentvmd, Infovmd, Successvmd, Titlevmd, Warningvmd} from './boxvmd';
 // 7. Post Layout
 import {Lftvmd, Postvmd, Rtvmd} from './postvmd';
 
+// 8. Table
+import {Tablevmd, Tableheadvmd, Tablebodyvmd, Tablerowvmd, Tablecellvmd} from './tablevmd';
+
 // Export all individually
 export {
     H1vmd,
@@ -59,7 +62,12 @@ export {
     Contentvmd,
     Postvmd,
     Lftvmd,
-    Rtvmd
+    Rtvmd,
+    Tablevmd,
+    Tableheadvmd,
+    Tablebodyvmd,
+    Tablerowvmd,
+    Tablecellvmd
 };
 
 const VmdComponents = {
@@ -93,7 +101,12 @@ const VmdComponents = {
     Contentvmd,
     Postvmd,
     Lftvmd,
-    Rtvmd
+    Rtvmd,
+    Tablevmd,
+    Tableheadvmd,
+    Tablebodyvmd,
+    Tablerowvmd,
+    Tablecellvmd
 };
 
 export default VmdComponents;

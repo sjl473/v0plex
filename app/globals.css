@@ -222,50 +222,176 @@ html[v0plex-theme="g100"] .page-typography-content h4 {
     margin-bottom: 0.08rem;
 }
 
-@media (max-width: 768px) {
-    .table-responsive-wrapper {
-        width: 100%;
-        overflow-x: auto;
-        margin-bottom: 1.5rem;
-        border: 1px solid var(--v0plex-border-subtle);
-        border-radius: 0;
-    }
+/* Table responsive wrapper - horizontal scroll for all screen sizes */
+.table-responsive-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    margin-bottom: 1rem;
+}
 
-    .table-responsive-wrapper .cds--data-table-container,
-    .table-responsive-wrapper .cds--table-container {
-        overflow-x: visible;
-    }
+.table-responsive-wrapper .cds--data-table-container,
+.table-responsive-wrapper .cds--table-container {
+    overflow-x: visible;
+}
 
-    .table-responsive-wrapper .cds--data-table,
-    .table-responsive-wrapper .cds--table {
-        min-width: max-content;
-        table-layout: auto;
-    }
+.table-responsive-wrapper .cds--data-table,
+.table-responsive-wrapper .cds--table {
+    min-width: max-content;
+    table-layout: auto;
+}
 
-    .table-responsive-wrapper .cds--data-table th,
-    .table-responsive-wrapper .cds--data-table td,
-    .table-responsive-wrapper .cds--table th,
-    .table-responsive-wrapper .cds--table td {
-        white-space: nowrap;
-        min-width: fit-content;
-    }
+.table-responsive-wrapper .cds--data-table th,
+.table-responsive-wrapper .cds--data-table td,
+.table-responsive-wrapper .cds--table th,
+.table-responsive-wrapper .cds--table td {
+    white-space: nowrap;
+    min-width: fit-content;
+}
 
-    .table-responsive-wrapper::-webkit-scrollbar {
-        height: 8px;
-    }
+.table-responsive-wrapper::-webkit-scrollbar {
+    height: 6px;
+}
 
-    .table-responsive-wrapper::-webkit-scrollbar-track {
-        background: var(--v0plex-scrollbar-track);
-    }
+.table-responsive-wrapper::-webkit-scrollbar-track {
+    background: var(--v0plex-scrollbar-track);
+}
 
-    .table-responsive-wrapper::-webkit-scrollbar-thumb {
-        background: var(--v0plex-scrollbar-thumb);
-        border-radius: 4px;
-    }
+.table-responsive-wrapper::-webkit-scrollbar-thumb {
+    background: var(--v0plex-scrollbar-thumb);
+    border-radius: 3px;
+}
 
-    .table-responsive-wrapper::-webkit-scrollbar-thumb:hover {
-        background: var(--v0plex-scrollbar-thumb-hover);
-    }
+.table-responsive-wrapper::-webkit-scrollbar-thumb:hover {
+    background: var(--v0plex-scrollbar-thumb-hover);
+}
+
+/* Table responsive wrapper - horizontal scroll */
+.page-typography-content .table-responsive-wrapper {
+    overflow-x: auto;
+    overflow-y: hidden;
+    max-width: 100%;
+}
+
+.page-typography-content .table-responsive-wrapper .cds--data-table,
+.page-typography-content .table-responsive-wrapper .cds--table {
+    width: auto;
+    max-width: none;
+    table-layout: auto;
+}
+
+/* Table pagination container */
+.page-typography-content .table-responsive-wrapper .table-paginated-container {
+    display: flex;
+    flex-direction: column;
+    min-width: fit-content;
+    width: fit-content;
+}
+
+/* Table pagination styling - Carbon Design System */
+.page-typography-content .table-responsive-wrapper .cds--pagination {
+    font-size: 0.625rem;
+    min-height: auto;
+    height: auto;
+    width: 100%;
+    min-width: auto;
+    box-sizing: border-box;
+}
+
+/* Force pagination to shrink */
+.page-typography-content .table-responsive-wrapper .cds--pagination > div {
+    min-width: auto !important;
+}
+
+.page-typography-content .table-responsive-wrapper .cds--pagination .cds--pagination__left,
+.page-typography-content .table-responsive-wrapper .cds--pagination .cds--pagination__right {
+    min-width: auto !important;
+    flex-shrink: 1;
+}
+
+.page-typography-content .table-responsive-wrapper .cds--pagination .cds--pagination__text {
+    white-space: nowrap;
+}
+
+.page-typography-content .table-responsive-wrapper .cds--pagination__text,
+.page-typography-content .table-responsive-wrapper .cds--pagination__button {
+    font-size: 0.625rem;
+}
+
+.page-typography-content .table-responsive-wrapper .cds--select-input {
+    font-size: 0.625rem;
+    height: auto;
+}
+
+/* IBM Carbon Style Pagination Tooltips */
+/* The pagination is now inside table-responsive-wrapper */
+.page-typography-content .table-responsive-wrapper .cds--pagination {
+    position: relative;
+}
+
+/* Style the tooltip content to match IBM Carbon Design System */
+.page-typography-content .table-responsive-wrapper .cds--pagination .cds--tooltip-content,
+.page-typography-content .table-responsive-wrapper .cds--pagination .cds--assistive-text {
+    font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif !important;
+    font-size: 0.75rem !important;
+    font-weight: 400 !important;
+    line-height: 1.33 !important;
+    letter-spacing: 0.32px !important;
+    padding: 0.5rem 1rem !important;
+    border-radius: 2px !important;
+    background-color: var(--v0plex-background-inverse, #393939) !important;
+    color: var(--v0plex-text-inverse, #ffffff) !important;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2) !important;
+    max-width: 200px !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+}
+
+/* Tooltip arrow styling */
+.page-typography-content .table-responsive-wrapper .cds--pagination .cds--tooltip__caret,
+.page-typography-content .table-responsive-wrapper .cds--pagination .cds--tooltip-content::before {
+    border-color: var(--v0plex-background-inverse, #393939) transparent transparent transparent !important;
+}
+
+/* Dark theme adjustments */
+html[v0plex-theme="g100"] .page-typography-content .table-responsive-wrapper .cds--pagination .cds--tooltip-content,
+html[v0plex-theme="g100"] .page-typography-content .table-responsive-wrapper .cds--pagination .cds--assistive-text {
+    background-color: var(--v0plex-background-inverse, #f4f4f4) !important;
+    color: var(--v0plex-text-inverse, #161616) !important;
+}
+
+html[v0plex-theme="g100"] .page-typography-content .table-responsive-wrapper .cds--pagination .cds--tooltip__caret,
+html[v0plex-theme="g100"] .page-typography-content .table-responsive-wrapper .cds--pagination .cds--tooltip-content::before {
+    border-color: var(--v0plex-background-inverse, #f4f4f4) transparent transparent transparent !important;
+}
+
+/* Table font size - match main article text (0.625rem) */
+.page-typography-content .cds--data-table,
+.page-typography-content .cds--table {
+    font-size: 0.625rem;
+    line-height: 1.05;
+    min-width: max-content;
+    width: auto;
+    margin: 0;
+}
+
+.page-typography-content .cds--data-table th,
+.page-typography-content .cds--data-table td,
+.page-typography-content .cds--table th,
+.page-typography-content .cds--table td {
+    font-size: 0.625rem;
+    line-height: 1.05;
+    padding: 0.35rem 0.75rem;
+    white-space: nowrap;
+}
+
+.page-typography-content .cds--data-table-header,
+.page-typography-content .cds--table-header {
+    font-size: 0.625rem;
+}
+
+.page-typography-content .cds--data-table-header__title,
+.page-typography-content .cds--table-header__title {
+    font-size: 0.625rem;
 }
 
 * {
@@ -657,12 +783,6 @@ aside::-webkit-scrollbar-thumb:hover {
     overflow-y: visible !important;
 }
 
-@media (max-width: 768px) {
-    .table-responsive-wrapper {
-        overflow-x: auto !important;
-        overflow-y: visible !important;
-    }
-}
 
 /* Force mobile content alignment - override everything */
 @media (max-width: 600px) {

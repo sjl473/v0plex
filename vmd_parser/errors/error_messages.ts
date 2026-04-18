@@ -76,6 +76,24 @@ export const ErrorMessages: Record<VmdErrorCode, (details?: Record<string, any>)
   [VmdErrorCode.EXTENSION_EMPTY_CUSTOM_BLOCK]: (d) =>
     `Empty <${d?.blockName || 'custom'}> block detected at line ${d?.line || 'unknown'}. Custom blocks cannot be empty.`,
 
+  // Table errors
+  [VmdErrorCode.TABLE_INVALID_CONTENT]: (d) =>
+    `Table cell contains invalid content at line ${d?.line || 'unknown'}: ${d?.message || 'unsupported element'}`,
+  [VmdErrorCode.TABLE_DISALLOWED_BLOCK_ELEMENT]: (d) =>
+    `Table cells cannot contain block-level elements. Found <${d?.tag}> at line ${d?.line || 'unknown'}. Only inline formatting (bold, italic, code, math) is allowed in table cells.`,
+  [VmdErrorCode.TABLE_DISALLOWED_IMAGE]: (d) =>
+    `Table cells cannot contain images (![...](...)) at line ${d?.line || 'unknown'}. Only inline formatting (bold, italic, code, math) is allowed in table cells.`,
+  [VmdErrorCode.TABLE_DISALLOWED_LIST]: (d) =>
+    `Table cells cannot contain lists (- or 1.) at line ${d?.line || 'unknown'}. Only inline formatting (bold, italic, code, math) is allowed in table cells.`,
+  [VmdErrorCode.TABLE_DISALLOWED_BLOCKQUOTE]: (d) =>
+    `Table cells cannot contain blockquotes (> ...) at line ${d?.line || 'unknown'}. Only inline formatting (bold, italic, code, math) is allowed in table cells.`,
+  [VmdErrorCode.TABLE_DISALLOWED_CODE_BLOCK]: (d) =>
+    `Table cells cannot contain code blocks (\`\`\`...\`\`\`) at line ${d?.line || 'unknown'}. Use inline code (\`...\`) instead.`,
+  [VmdErrorCode.TABLE_DISALLOWED_BLOCK_MATH]: (d) =>
+    `Table cells cannot contain block math ($$...$$) at line ${d?.line || 'unknown'}. Use inline math ($...$) instead.`,
+  [VmdErrorCode.TABLE_INVALID_FORMAT]: (d) =>
+    `Invalid table format at line ${d?.line || 'unknown'}: ${d?.message || 'malformed table syntax'}`,
+
   [VmdErrorCode.ASSET_PROCESS_ERROR]: (d) => `Asset processing failed: ${d?.asset || 'unknown asset'}`,
   [VmdErrorCode.IMAGE_NOT_FOUND]: (d) => `Image not found: ${d?.imageName || 'unknown image'}`,
   [VmdErrorCode.IMAGE_PROCESS_FAILED]: (d) => `Image processing failed: ${d?.imagePath || 'unknown path'}`,

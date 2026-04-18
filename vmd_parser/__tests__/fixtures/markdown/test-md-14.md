@@ -39,7 +39,7 @@ Use with LaTeX: $\forall x \in \mathbb{R}$
 ## CJK Characters in Success
 
 <success>
-**多语言支持：**
+**多语言支持: **
 
 - 中文 (Chinese)
 - 日本語 (Japanese)

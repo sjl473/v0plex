@@ -1,10 +1,12 @@
 .container {
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     background: var(--v0plex-background);
     margin: 0;
     padding: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .layout {
@@ -28,6 +30,7 @@
     padding-top: 0;
     /* Force footer to bottom: ensure minimum height fills viewport minus header */
     min-height: calc(100vh - 32px);
+    min-height: calc(100dvh - 32px - env(safe-area-inset-bottom, 0px));
 }
 
 .contentWrapper {
@@ -58,6 +61,12 @@
     box-sizing: border-box;
 }
 
+/* Exception for table wrapper to allow horizontal scroll */
+.contentWrapper .table-responsive-wrapper,
+.contentWrapper .table-responsive-wrapper * {
+    max-width: none;
+}
+
 .contentWrapper p,
 .contentWrapper h1,
 .contentWrapper h2,
@@ -74,6 +83,13 @@
     width: 100%;
     max-width: 100%;
     table-layout: fixed;
+}
+
+/* Exception for tables inside responsive wrapper */
+.contentWrapper .table-responsive-wrapper table {
+    width: auto;
+    max-width: none;
+    table-layout: auto;
 }
 
 .contentWrapper pre,

@@ -1,0 +1,9 @@
+/* Small inline image styles */
+
+.smallImage {
+    height: 1.2em;
+    width: auto;
+    display: inline-block;
+    vertical-align: text-bottom;
+    margin: 0 2px;
+}
