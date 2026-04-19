@@ -19,9 +19,6 @@ gh-page-output/
 # --- TypeScript build info ---
 *.tsbuildinfo
 
-# VMD compile/build logs (in test folder)
-vmd_parser/__tests__/logs/
-
 # Python virtual environment
 .venv/
 venv/
@@ -38,8 +35,4 @@ coverage/
 *.temp
 .cache/
 
-# VMD test output (no longer generated, but ignore if present)
-vmd_parser/__tests__/fixtures/public/
-
-dev/zh/_99_测试文章/
-dev/en/_99_TestArticles/
+dev/

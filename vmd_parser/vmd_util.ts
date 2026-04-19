@@ -1707,6 +1707,9 @@ export class VmdUtil {
     const configuredLanguages = new Set(AVAILABLE_LANGUAGES.map(l => l.folder));
     const requiredLanguages = AVAILABLE_LANGUAGES.map(l => l.folder);
 
+    // Folders that are allowed to exist alongside language folders (e.g., assets)
+    const ALLOWED_NON_LANGUAGE_FOLDERS = new Set(['assets']);
+
     // Separate folders and files
     const folders = entries.filter(e => e.isDirectory() && !e.name.startsWith('.') && e.name !== '.git');
     const files = entries.filter(e => e.isFile());
@@ -1724,8 +1727,8 @@ export class VmdUtil {
       return false;
     }
 
-    // Check for non-language folders
-    const nonLanguageFolders = folderNames.filter(name => !configuredLanguages.has(name));
+    // Check for non-language folders (exclude allowed folders like 'assets')
+    const nonLanguageFolders = folderNames.filter(name => !configuredLanguages.has(name) && !ALLOWED_NON_LANGUAGE_FOLDERS.has(name));
     if (nonLanguageFolders.length > 0) {
       console.error(`[Error] Found unconfigured language folder(s): ${nonLanguageFolders.join(', ')}`);
       console.error(`       Allowed language folders: ${requiredLanguages.join(', ')}`);

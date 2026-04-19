@@ -40,7 +40,7 @@ export const CONTENT_SOURCE_CONFIG = {
    * Whether to use local markdown files in the dev folder
    * If false, content will be pulled from a remote git repository
    */
-  USE_LOCAL_MARKDOWN: true,
+  USE_LOCAL_MARKDOWN: false,
 
   /**
    * Git repository configuration (only used when USE_LOCAL_MARKDOWN is false)
@@ -51,7 +51,7 @@ export const CONTENT_SOURCE_CONFIG = {
      * REQUIRED when USE_LOCAL_MARKDOWN is false
      * Example: 'https://github.com/username/repo.git' or 'git@gitlab.com:username/repo.git'
      */
-    REPO_URL: '',
+    REPO_URL: 'https://github.com/sjl473/v0plex-markdown',
 
     /**
      * Branch to clone from
