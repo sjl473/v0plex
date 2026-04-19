@@ -1,0 +1,344 @@
+/**
+ * Convert to VMD
+ * All transformation logic for converting markdown/HTML to VMD format
+ */
+
+import crypto from 'crypto';
+import path from 'path';
+import { marked } from 'marked';
+import { VmdUtil, VmdErrorCode, createVmdError, VmdError } from './vmd_util';
+import { BUILD_CONFIG } from '../config/site.config';
+
+/**
+ * Escape HTML special characters
+ */
+function escapeHtml(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/&/g, '&')
+    .replace(/</g, '<')
+    .replace(/>/g, '>')
+    .replace(/"/g, '"')
+    .replace(/'/g, '&#039;');
+}
+
+/**
+ * Capitalize first letter
+ */
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/**
+ * Transform HTML by adding VMD suffixes to all tags
+ */
+export function addVmdSuffix(
+  html: string,
+  util: VmdUtil,
+  usedImages: Array<{ originalName: string; hashName: string }>
+): string {
+  const voidTags = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
+  // Custom VMD tags that already have vmd suffix or are special
+  const customTagsWithSuffix = ['blockcodevmd', 'inlinecodevmd', 'blockmathvmd', 'inlinemathvmd', 'imgvmd', 'infovmd', 'warningvmd', 'successvmd', 'postvmd', 'lftvmd', 'rtvmd', 'tablevmd', 'tableheadvmd', 'tablebodyvmd', 'tablerowvmd', 'tablecellvmd'];
+  // Custom block tags without vmd suffix (these come from extensions like <info>, <warning>, etc.)
+  const customBlockTags = ['info', 'warning', 'success', 'post', 'lft', 'rt'];
+
+  return html.replace(/<\/?([a-zA-Z0-9]+)([^>]*)>/g, (match, tagName, rest) => {
+    const tagLower = tagName.toLowerCase();
+
+    if (tagLower === 'img' || tagLower === 'imgvmd') {
+      rest = rest.replace(/src=(["'])(.*?)\1/, (srcMatch: string, quote: string, srcValue: string) => {
+        const originalName = decodeURIComponent(path.basename(srcValue));
+        const hashName = util.getHashedImageName(originalName);
+        if (hashName) {
+          usedImages.push({ originalName, hashName });
+          return `src=${quote}${BUILD_CONFIG.IMAGE_WEB_PREFIX}${hashName}${quote}`;
+        }
+        return srcMatch;
+      });
+    }
+
+    // Handle tags that already have vmd suffix
+    if (customTagsWithSuffix.includes(tagLower)) {
+      const capitalizedTag = capitalize(tagLower);
+      return tagName !== capitalizedTag ? match.replace(tagName, capitalizedTag) : match;
+    }
+
+    // Handle custom block tags (like info, warning, etc.) - add vmd suffix
+    if (customBlockTags.includes(tagLower)) {
+      const newTagName = capitalize(tagLower) + 'vmd';
+      if (match.startsWith('</')) {
+        return `</${newTagName}>`;
+      } else {
+        return `<${newTagName}${rest}>`;
+      }
+    }
+
+    if (tagLower.endsWith('vmd')) {
+      const capitalizedTag = capitalize(tagLower);
+      return tagName !== capitalizedTag ? match.replace(tagName, capitalizedTag) : match;
+    }
+
+    const newTagName = capitalize(tagLower) + 'vmd';
+
+    if (match.startsWith('</')) {
+      return `</${newTagName}>`;
+    } else {
+      if (voidTags.includes(tagLower)) {
+        let attrs = rest;
+        if (attrs.trim().endsWith('/')) {
+          attrs = attrs.substring(0, attrs.lastIndexOf('/'));
+        }
+        return `<${newTagName}${attrs}></${newTagName}>`;
+      }
+      return `<${newTagName}${rest}>`;
+    }
+  });
+}
+
+/**
+ * Fix the order of linked images
+ */
+export function fixLinkedImages(html: string): string {
+  // Pattern to match incorrectly ordered tags
+  // const brokenPattern = /<Pvmd><\/Avmd><Imgvmd([^>]*)><\/Imgvmd><\/Pvmd><Pvmd><Avmd([^>]*)>/g;
+
+  // html = html.replace(brokenPattern, (match, imgAttrs, linkAttrs) => {
+  //   return `<Avmd${linkAttrs}><Imgvmd${imgAttrs}></Imgvmd></Avmd>`;
+  // });
+
+  // Fix cases where Imgvmd appears outside of Avmd
+  const imgPattern = /<Imgvmd([^>]*)><\/Imgvmd>/g;
+  const imgMatches: Array<{ full: string; attrs: string; index: number }> = [];
+  let imgMatch;
+  while ((imgMatch = imgPattern.exec(html)) !== null) {
+    imgMatches.push({ full: imgMatch[0], attrs: imgMatch[1], index: imgMatch.index });
+  }
+
+  for (const img of imgMatches.reverse()) {
+    const beforeImg = html.substring(0, img.index);
+    const afterImg = html.substring(img.index + img.full.length);
+
+    const linkPattern = /<Avmd([^>]*)><\/Avmd>\s*$/;
+    const linkMatch = beforeImg.match(linkPattern);
+
+    if (linkMatch) {
+      const linkAttrs = linkMatch[1];
+      const beforeLink = beforeImg.substring(0, beforeImg.length - linkMatch[0].length);
+      html = beforeLink + `<Avmd${linkAttrs}>${img.full}</Avmd>` + afterImg;
+    }
+  }
+
+  return html;
+}
+
+/**
+ * Unwrap invalid nesting of block elements inside paragraphs
+ * When block elements are found inside <Pvmd> or incorrectly nested, fix them
+ * This is called AFTER addVmdSuffix, so tags already have vmd suffix
+ */
+export function unwrapInvalidNesting(html: string): string {
+  // First, fix the case where </Blockvmd></Pvmd> should be </Pvmd></Blockvmd>
+  // This happens when marked wraps block content in <p>
+  const blockTags = ['Infovmd', 'Warningvmd', 'Successvmd', 'Postvmd', 'Blockquotevmd'];
+  
+  // for (const tag of blockTags) {
+  //   // Fix: <tag>...<Pvmd>...</tag></Pvmd> -> <tag>...<Pvmd>...</Pvmd></tag>
+  //   const wrongOrderPattern = new RegExp(`<${tag}([\\s\\S]*?)<Pvmd>([\\s\\S]*?)<\\/${tag}><\\/Pvmd>`, 'gi');
+  //   html = html.replace(wrongOrderPattern, `<${tag}$1<Pvmd>$2</Pvmd></${tag}>`);
+  // }
+
+  // Now handle block elements that are inside paragraphs
+  const allBlockTags = [...blockTags, 'Imgvmd', 'Ulvmd', 'Olvmd', 'Blockcodevmd', 'Blockmathvmd', 'Lftvmd', 'Rtvmd', 'Tablevmd'];
+  const blockPattern = allBlockTags.join('|');
+  const pvmdRegex = /<Pvmd>([\s\S]*?)<\/Pvmd>/g;
+
+  html = html.replace(pvmdRegex, (match, content) => {
+    // Check if this paragraph contains any block-level elements
+    const hasBlock = new RegExp(`<(${blockPattern})\\b[^>]*>`, 'i').test(content);
+    if (!hasBlock) return match;
+
+    // Match complete block elements (including their content)
+    const tagRegex = new RegExp(`<(${blockPattern})\\b[^>]*>[\\s\\S]*?<\\/\\1>`, 'gi');
+    const newContent = content.replace(tagRegex, (blockMatch: string) => {
+      return `</Pvmd>\n${blockMatch}\n<Pvmd>`;
+    });
+    return `<Pvmd>${newContent}</Pvmd>`;
+  });
+
+  // Remove empty paragraphs
+  return html.replace(/<Pvmd>\s*<\/Pvmd>/g, '');
+}
+
+/**
+ * Transform HTML to VMD format
+ */
+export function transformHtml(
+  html: string,
+  util: VmdUtil,
+  usedImages: Array<{ originalName: string; hashName: string }>
+): string {
+  // Convert to VMD components first
+  let vmdHtml = addVmdSuffix(html, util, usedImages);
+  vmdHtml = fixLinkedImages(vmdHtml);
+  // Then unwrap invalid nesting
+  vmdHtml = unwrapInvalidNesting(vmdHtml);
+  // Convert <Smallimgvmd><Imgvmd src="..." alt="..."></Imgvmd></Smallimgvmd> to <Smallimgvmd src="..." alt="..."></Smallimgvmd>
+  // vmdHtml = vmdHtml.replace(/<Smallimgvmd><Imgvmd src="([^"]*)" alt="([^"]*)"><\/Imgvmd><\/Smallimgvmd>/g,
+  //   '<Smallimgvmd src="$1" alt="$2"></Smallimgvmd>');
+  
+  // // Convert <Smallimgvmd>![alt](src)</Smallimgvmd> to <Smallimgvmd src="hash" alt="alt"></Smallimgvmd>
+  // vmdHtml = vmdHtml.replace(/<Smallimgvmd>!\[([^\]]*)\]\(([^)]+)\)<\/Smallimgvmd>/g,
+  //   (match: string, alt: string, src: string) => {
+
+  //     const hash = util.processImageAndGetHash(src);
+  //     if (hash) {
+  //       const ext = path.extname(src).toLowerCase();
+  //       const hashName = `${hash}${ext}`;
+  //       usedImages.push({ originalName: path.basename(src), hashName });
+  //       return `<Smallimgvmd src="${BUILD_CONFIG.IMAGE_WEB_PREFIX}${hashName}" alt="${alt}"></Smallimgvmd>`;
+  //     }
+  //     return `<Smallimgvmd src="${src}" alt="${alt}"></Smallimgvmd>`;
+  //   });
+  return vmdHtml;
+}
+
+/**
+ * Create marked renderer configuration
+ */
+export function createRenderer(
+  util: VmdUtil,
+  usedImages: Array<{ originalName: string; hashName: string }>,
+  generatedFiles: string[],
+  currentFile: string
+) {
+  const self = { util, usedImages, generatedFiles, currentFile };
+
+  return {
+    strong(this: any, token: any) {
+      return `<bold>${this.parser.parseInline(token.tokens)}</bold>`;
+    },
+
+    em(this: any, token: any) {
+      return `<italic>${this.parser.parseInline(token.tokens)}</italic>`;
+    },
+
+    del(this: any, token: any) {
+      return `<strike>${this.parser.parseInline(token.tokens)}</strike>`;
+    },
+
+    image(this: any, token: any) {
+      const href = token.href;
+      const title = token.title;
+      const text = token.text;
+
+      // Validate image exists
+      const location = self.currentFile ? { file: self.currentFile } : {};
+      self.util.validateImageExists(href, location);
+
+      let src = href;
+      const hash = self.util.processImageAndGetHash(href, self.currentFile);
+      if (hash) {
+        const ext = path.extname(href).toLowerCase();
+        const hashName = `${hash}${ext}`;
+        src = `${BUILD_CONFIG.IMAGE_WEB_PREFIX}${hashName}`;
+        self.usedImages.push({ originalName: path.basename(href), hashName });
+      }
+
+      const titleAttr = title ? ` title="${escapeHtml(title)}"` : '';
+      const altAttr = text ? ` alt="${escapeHtml(text)}"` : '';
+
+      return `<Imgvmd src="${src}"${altAttr}${titleAttr}></Imgvmd>`;
+    },
+
+    list(this: any, token: any) {
+      let body = '';
+      for (let i = 0; i < token.items.length; i++) {
+        const item = token.items[i];
+        const itemContent = this.parser.parse(item.tokens);
+        body += `<Livmd>${itemContent}</Livmd>\n`;
+      }
+      return token.ordered ? `<Olvmd>${body}</Olvmd>\n` : `<Ulvmd>${body}</Ulvmd>\n`;
+    },
+
+    codespan(this: any, token: any) {
+      try {
+        const text = (typeof token === 'string') ? token : token.text;
+        const hash = crypto.createHash('sha256').update(text).digest('hex');
+
+        self.util.writeCodeFile(text, hash);
+        self.generatedFiles.push(`${hash}.txt`);
+
+        return `<Inlinecodevmd filePath="${hash}"></Inlinecodevmd>`;
+      } catch (err) {
+        if (err instanceof VmdError) {
+          throw err;
+        }
+        const location = self.currentFile ? { file: self.currentFile } : {};
+        throw createVmdError(
+          VmdErrorCode.CODE_FILE_WRITE_ERROR,
+          { details: err instanceof Error ? err.message : String(err) },
+          location
+        );
+      }
+    },
+
+    code(this: any, token: any) {
+      try {
+        const text = (typeof token === 'string') ? token : token.text;
+        const lang = (typeof token === 'string') ? null : token.lang;
+        const hash = crypto.createHash('sha256').update(text).digest('hex');
+
+        self.util.writeCodeFile(text, hash);
+        self.generatedFiles.push(`${hash}.txt`);
+
+        return `<Blockcodevmd language="${escapeHtml(lang || 'text')}" filePath="${hash}"></Blockcodevmd>\n`;
+      } catch (err) {
+        if (err instanceof VmdError) {
+          throw err;
+        }
+        const location = self.currentFile ? { file: self.currentFile } : {};
+        throw createVmdError(
+          VmdErrorCode.CODE_FILE_WRITE_ERROR,
+          { details: err instanceof Error ? err.message : String(err) },
+          location
+        );
+      }
+    },
+
+    paragraph(this: any, token: any) {
+      const text = (typeof token === 'string') ? token : this.parser.parseInline(token.tokens);
+      // Check for block-level VMD components that should not be wrapped in <p>
+      // Note: Custom blocks like <info> are processed by extensions and output <Infovmd>
+      const blockTags = ['Imgvmd', 'Ulvmd', 'Olvmd', 'Blockcodevmd', 'Blockmathvmd', 'Blockquotevmd', 'Infovmd', 'Warningvmd', 'Successvmd', 'Postvmd', 'Lftvmd', 'Rtvmd', 'Tablevmd'];
+      const blockTagPattern = blockTags.join('|');
+      const blockRegex = new RegExp(`^\\s*<(${blockTagPattern})\\b[^>]*>`, 'i');
+
+      if (blockRegex.test(text)) {
+        return `${text}\n`;
+      }
+      return `<p>${text}</p>\n`;
+    },
+
+    heading(this: any, token: any) {
+      const text = this.parser.parseInline(token.tokens);
+      const depth = token.depth;
+      const headingTags = ['H1vmd', 'H2vmd', 'H3vmd', 'H4vmd', 'H5vmd', 'H6vmd'];
+      const tag = headingTags[depth - 1] || 'H6vmd';
+      return `<${tag}>${text}</${tag}>\n`;
+    },
+
+    // Disable marked's built-in table rendering
+    table(this: any, token: any) {
+      return '';
+    },
+
+    tablerow(this: any, token: any) {
+      return '';
+    },
+
+    tablecell(this: any, token: any) {
+      return '';
+    }
+  };
+}

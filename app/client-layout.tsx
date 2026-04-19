@@ -70,21 +70,21 @@ export default function ClientLayout({
     // Debug: check actual offsets after mount
     useEffect(() => {
         const checkOffsets = () => {
-            const mainContent = document.querySelector('[class*="mainContent"]');
-            const contentWrapper = document.querySelector('[class*="contentWrapper"]');
-            const footerMain = document.querySelector('[class*="footer_main__"]');
-            const footerContainer = document.querySelector('[class*="footer_container__"]');
-            const navContainer = document.querySelector('[class*="page-navigation_navContainer__"]');
-            const navFirstChild = document.querySelector('[class*="page-navigation_navContainer__"] > :first-child');
+            // const mainContent = document.querySelector('[class*="mainContent"]');
+            // const contentWrapper = document.querySelector('[class*="contentWrapper"]');
+            // const footerMain = document.querySelector('[class*="footer_main__"]');
+            // const footerContainer = document.querySelector('[class*="footer_container__"]');
+            // const navContainer = document.querySelector('[class*="page-navigation_navContainer__"]');
+            // const navFirstChild = document.querySelector('[class*="page-navigation_navContainer__"] > :first-child');
             
-            console.log('=== OFFSET DEBUG ===');
-            console.log('mainContent:', mainContent?.getBoundingClientRect().left);
-            console.log('contentWrapper:', contentWrapper?.getBoundingClientRect().left);
-            console.log('footerMain:', footerMain?.getBoundingClientRect().left);
-            console.log('footerContainer:', footerContainer?.getBoundingClientRect().left);
-            console.log('navContainer:', navContainer?.getBoundingClientRect().left);
-            console.log('navFirstChild:', navFirstChild?.getBoundingClientRect().left);
-            console.log('===================');
+            // console.log('=== OFFSET DEBUG ===');
+            // console.log('mainContent:', mainContent?.getBoundingClientRect().left);
+            // console.log('contentWrapper:', contentWrapper?.getBoundingClientRect().left);
+            // console.log('footerMain:', footerMain?.getBoundingClientRect().left);
+            // console.log('footerContainer:', footerContainer?.getBoundingClientRect().left);
+            // console.log('navContainer:', navContainer?.getBoundingClientRect().left);
+            // console.log('navFirstChild:', navFirstChild?.getBoundingClientRect().left);
+            // console.log('===================');
         };
         
         // Check after a short delay to ensure DOM is ready

@@ -1,0 +1,986 @@
+/**
+ * VMD Extensions
+ * All markdown extensions for VMD
+ */
+
+import path from 'path';
+import crypto from 'crypto';
+import { VmdUtil, ErrorLocation } from './vmd_util';
+import {
+  getFileLocation,
+  isPositionInCode,
+  getBlockLineNumber,
+  calculateSubContentLine,
+  getMarkdownSource,
+  getFrontmatterLineCount,
+  getLineAtPosition,
+  setCompilationContext as setCtx,
+  clearCompilationContext as clearCtx,
+  clearLineTracker,
+  scanVmdBlocks,
+  resetBlockIndices,
+  VmdErrorCode,
+  createVmdError
+} from './syntax_validator';
+
+// Re-export for backwards compatibility
+export {
+  getFileLocation,
+  isPositionInCode,
+  getBlockLineNumber,
+  calculateSubContentLine,
+  getMarkdownSource,
+  getFrontmatterLineCount,
+  hasCompilationContext,
+  getLineAtPosition,
+  clearLineTracker,
+  scanVmdBlocks,
+  resetBlockIndices
+} from './syntax_validator';
+
+// Export compilation context functions
+export function setCompilationContext(filePath: string, markdownSource: string, frontmatterLineCount: number = 0): void {
+  setCtx(filePath, markdownSource, frontmatterLineCount);
+}
+
+export function clearCompilationContext(filePath: string): void {
+  clearCtx(filePath);
+}
+
+// ============================================================================
+// Post Block Extension
+// ============================================================================
+
+function escapeHtml(text: string): string {
+  if (!text) return '';
+  return text
+    .replace(/&/g, '&')
+    .replace(/</g, '<')
+    .replace(/>/g, '>')
+    .replace(/"/g, '"')
+    .replace(/'/g, '&#039;');
+}
+
+export const createPostBlock = (assetProcessor?: any, imageWebPrefix?: string, filePath?: string) => {
+  return {
+    name: 'post',
+    level: 'block' as const,
+    start(src: string) {
+      let pos = src.indexOf('<post>');
+      while (pos !== -1) {
+        if (!isPositionInCode(src, pos)) {
+          return pos;
+        }
+        const nextPos = src.indexOf('<post>', pos + 1);
+        if (nextPos === pos) break;
+        pos = nextPos;
+      }
+      return -1;
+    },
+    tokenizer(this: any, src: string, tokens: any[]) {
+      if (filePath && this.lexer && !this.lexer.filePath) {
+        this.lexer.filePath = filePath;
+      }
+      const rule = /^<post>([\s\S]*?)<\/post>/;
+      const match = rule.exec(src);
+      if (match) {
+        const location: ErrorLocation = getFileLocation(this);
+        let isInCodeBlock = false;
+
+        if (location.file) {
+          const fullSource = getMarkdownSource(location.file);
+          if (fullSource) {
+            const matchText = match[0];
+            const pos = fullSource.indexOf(matchText);
+            if (pos !== -1) {
+              isInCodeBlock = isPositionInCode(fullSource, pos);
+            }
+          }
+        }
+
+        if (!isInCodeBlock) {
+          const postPos = src.indexOf('<post>');
+          if (postPos !== -1) {
+            isInCodeBlock = isPositionInCode(src, postPos);
+          }
+        }
+
+        if (isInCodeBlock) {
+          return undefined;
+        }
+
+        const fullContent = match[1];
+        const postBlockLine = getBlockLineNumber();
+        if (postBlockLine !== undefined) {
+          location.line = postBlockLine;
+        }
+
+        const lftRegex = /<lft>([\s\S]*?)<\/lft>/;
+        const rtRegex = /<rt>([\s\S]*?)<\/rt>/;
+
+        const lftMatch = lftRegex.exec(fullContent);
+        const rtMatch = rtRegex.exec(fullContent);
+
+        if (!lftMatch || !rtMatch) {
+          throw createVmdError(
+            VmdErrorCode.EXTENSION_POST_MISSING_TAGS,
+            {},
+            location
+          );
+        }
+
+        const beforeLft = fullContent.substring(0, fullContent.indexOf('<lft>'));
+        if (beforeLft !== ' ' && beforeLft !== '\n') {
+          throw createVmdError(
+            VmdErrorCode.EXTENSION_POST_INVALID_FORMAT,
+            { type: 'post_to_lft_spacing' },
+            location
+          );
+        }
+
+        const afterLft = fullContent.substring(
+          fullContent.indexOf('</lft>') + 6,
+          fullContent.indexOf('<rt>')
+        );
+        if (afterLft !== ' ' && afterLft !== '\n') {
+          throw createVmdError(
+            VmdErrorCode.EXTENSION_POST_INVALID_FORMAT,
+            { type: 'lft_to_rt_spacing' },
+            location
+          );
+        }
+
+        const afterRt = fullContent.substring(fullContent.indexOf('</rt>') + 5);
+        if (afterRt !== ' ' && afterRt !== '\n' && afterRt !== '') {
+          throw createVmdError(
+            VmdErrorCode.EXTENSION_POST_INVALID_FORMAT,
+            { type: 'rt_to_post_spacing' },
+            location
+          );
+        }
+
+        const lftContent = lftMatch[1];
+        const rtContent = rtMatch[1];
+
+        let lftLineNumber = (location.line || 1) + 1;
+        const lftLocation: ErrorLocation = { ...location, line: lftLineNumber };
+
+        const codeBlockRegex = /```[\s\S]*?```/g;
+        let codeBlockMatch;
+        while ((codeBlockMatch = codeBlockRegex.exec(lftContent)) !== null) {
+          const blockContent = codeBlockMatch[0];
+          if (blockContent.includes('\n')) {
+            const codeBlockStartInLft = codeBlockMatch.index;
+            const linesBeforeCodeBlock = (lftContent.substring(0, codeBlockStartInLft).match(/\n/g) || []).length;
+            const actualCodeBlockLine = lftLineNumber + linesBeforeCodeBlock;
+            const codeBlockLocation: ErrorLocation = { ...location, line: actualCodeBlockLine };
+            throw createVmdError(
+              VmdErrorCode.EXTENSION_POST_LFT_CODE_BLOCK,
+              { line: actualCodeBlockLine },
+              codeBlockLocation
+            );
+          }
+        }
+
+        const blockMathRegex = /\$\$[\s\S]*?\$\$/g;
+        if (blockMathRegex.test(lftContent)) {
+          throw createVmdError(
+            VmdErrorCode.EXTENSION_POST_LFT_BLOCK_MATH,
+            { line: lftLineNumber },
+            lftLocation
+          );
+        }
+
+        const lftImageRegex = /!\[.*?\]\(.*?\)/g;
+        const imageMatch = lftImageRegex.exec(lftContent);
+        if (imageMatch) {
+          const imageStartInLft = imageMatch.index;
+          const linesBeforeImage = (lftContent.substring(0, imageStartInLft).match(/\n/g) || []).length;
+          const actualImageLine = lftLineNumber + linesBeforeImage;
+          const imageLocation: ErrorLocation = { ...location, line: actualImageLine };
+          throw createVmdError(
+            VmdErrorCode.EXTENSION_POST_LFT_IMAGE,
+            { line: actualImageLine },
+            imageLocation
+          );
+        }
+
+        const blockquoteRegex = /^[ \t]*>/m;
+        const blockquoteMatch = blockquoteRegex.exec(lftContent);
+        if (blockquoteMatch) {
+          const blockquoteStartInLft = blockquoteMatch.index;
+          const linesBeforeBlockquote = (lftContent.substring(0, blockquoteStartInLft).match(/\n/g) || []).length;
+          const actualBlockquoteLine = lftLineNumber + linesBeforeBlockquote;
+          const blockquoteLocation: ErrorLocation = { ...location, line: actualBlockquoteLine };
+          throw createVmdError(
+            VmdErrorCode.EXTENSION_POST_LFT_BLOCKQUOTE,
+            { line: actualBlockquoteLine },
+            blockquoteLocation
+          );
+        }
+
+        const disallowedTags = ['post', 'lft', 'rt', 'info', 'warning', 'success', 'smallimg'];
+        const tagRegex = /<(\/?)([a-zA-Z][a-zA-Z0-9]*)[^>]*>/g;
+        let tagMatch;
+        while ((tagMatch = tagRegex.exec(lftContent)) !== null) {
+          const tagName = tagMatch[2].toLowerCase();
+          if (disallowedTags.includes(tagName)) {
+            throw createVmdError(
+              VmdErrorCode.EXTENSION_POST_LFT_DISALLOWED_TAG,
+              { tag: tagName },
+              lftLocation
+            );
+          }
+        }
+
+        const lftTrimmedStart = lftContent.match(/^(\s*)/)?.[0] || '';
+        const lftTrimmedEnd = lftContent.match(/(\s*)$/)?.[0] || '';
+
+        if (lftTrimmedStart !== '\n\n') {
+          throw createVmdError(
+            VmdErrorCode.EXTENSION_POST_LFT_INVALID_SPACING,
+            { type: 'after_lft', line: lftLineNumber },
+            lftLocation
+          );
+        }
+
+        if (lftTrimmedEnd !== '\n\n') {
+          throw createVmdError(
+            VmdErrorCode.EXTENSION_POST_LFT_INVALID_SPACING,
+            { type: 'before_lft', line: lftLineNumber },
+            lftLocation
+          );
+        }
+
+        let rtLineNumber = location.line || 1;
+        const rtRelativePos = match[0].indexOf('<rt>');
+        if (rtRelativePos !== -1) {
+          rtLineNumber = calculateSubContentLine(rtLineNumber, match[0], rtRelativePos);
+        }
+        const rtLocation: ErrorLocation = { ...location, line: rtLineNumber };
+
+        let rtTokens: any[] = [];
+        const imageRegex = /!\[(.*?)\]\((.*?)\)/g;
+        let manualMatch;
+        let manualCount = 0;
+        let lastIndex = 0;
+
+        const tempImageRegex = /!\[(.*?)\]\((.*?)\)/g;
+        let hasAnyImage = false;
+        while (tempImageRegex.exec(rtContent) !== null) {
+          hasAnyImage = true;
+          break;
+        }
+
+        if (!hasAnyImage) {
+          throw createVmdError(
+            VmdErrorCode.EXTENSION_POST_LFT_INVALID_SPACING,
+            { type: 'no_images' },
+            rtLocation
+          );
+        }
+
+        const rtTrimmedStart = rtContent.match(/^(\s*)/)?.[0] || '';
+        const rtTrimmedEnd = rtContent.match(/(\s*)$/)?.[0] || '';
+
+        if (rtTrimmedStart !== '\n\n') {
+          throw createVmdError(
+            VmdErrorCode.EXTENSION_POST_LFT_INVALID_SPACING,
+            { type: 'after_rt' },
+            rtLocation
+          );
+        }
+
+        if (rtTrimmedEnd !== '\n\n') {
+          throw createVmdError(
+            VmdErrorCode.EXTENSION_POST_LFT_INVALID_SPACING,
+            { type: 'before_rt' },
+            rtLocation
+          );
+        }
+
+        while ((manualMatch = imageRegex.exec(rtContent)) !== null) {
+          const preText = rtContent.substring(lastIndex, manualMatch.index);
+          const preTextTrimmedEnd = preText.replace(/[ \t]+$/gm, '');
+
+          if (manualCount === 0) {
+            if (!/^[ \t\n]*$/.test(preText)) {
+              throw createVmdError(
+                VmdErrorCode.EXTENSION_POST_INVALID_CONTENT,
+                { type: 'text_not_allowed', content: preText.trim() },
+                rtLocation
+              );
+            }
+          } else {
+            if (!/\n$/.test(preTextTrimmedEnd)) {
+              throw createVmdError(
+                VmdErrorCode.EXTENSION_POST_INVALID_CONTENT,
+                { type: 'missing_newline_between_images' },
+                rtLocation
+              );
+            }
+            const textBetweenImages = preTextTrimmedEnd.replace(/\n/g, '').trim();
+            if (textBetweenImages) {
+              throw createVmdError(
+                VmdErrorCode.EXTENSION_POST_INVALID_CONTENT,
+                { type: 'text_between_images', content: textBetweenImages },
+                rtLocation
+              );
+            }
+          }
+
+          const altText = manualMatch[1];
+          const srcUrl = manualMatch[2];
+
+          if (!altText) {
+            throw createVmdError(
+              VmdErrorCode.EXTENSION_POST_INVALID_CONTENT,
+              { type: 'missing_alt', src: srcUrl },
+              rtLocation
+            );
+          }
+
+          if (assetProcessor) {
+            try {
+              assetProcessor.validateImageExists(srcUrl, rtLocation);
+            } catch (err) {
+              throw err;
+            }
+          }
+
+          rtTokens.push({
+            type: 'postImage',
+            alt: altText,
+            src: srcUrl,
+            raw: manualMatch[0]
+          });
+
+          manualCount++;
+          lastIndex = manualMatch.index + manualMatch[0].length;
+        }
+
+        const remainingText = rtContent.substring(lastIndex);
+        if (!/^[ \t\n]*$/.test(remainingText)) {
+          const trimmedRemaining = remainingText.trim();
+          const hasNewlineBefore = remainingText.match(/^[^\n]*/)?.[0]?.length === 0 || remainingText.startsWith('\n');
+          if (hasNewlineBefore) {
+            throw createVmdError(
+              VmdErrorCode.EXTENSION_POST_INVALID_CONTENT,
+              { type: 'text_not_allowed', content: trimmedRemaining },
+              rtLocation
+            );
+          } else {
+            throw createVmdError(
+              VmdErrorCode.EXTENSION_POST_INVALID_CONTENT,
+              { type: 'text_after_image', content: trimmedRemaining },
+              rtLocation
+            );
+          }
+        }
+
+        const lftTokens = this.lexer.blockTokens(lftContent.trim());
+
+        return {
+          type: 'post',
+          raw: match[0],
+          lft: lftTokens,
+          rt: rtTokens,
+          text: match[0]
+        };
+      }
+      return undefined;
+    },
+    renderer(this: any, token: any) {
+      const lftParsed = this.parser.parse(token.lft);
+      const rtImages = token.rt
+        .map((img: any) => {
+          let src = img.src;
+          if (assetProcessor && imageWebPrefix) {
+            // 每次引用都处理图片并生成新的哈希文件名
+            const hash = assetProcessor.processImageAndGetHash(img.src, filePath);
+            if (hash) {
+              const ext = path.extname(img.src).toLowerCase();
+              const hashName = `${hash}${ext}`;
+              src = `${imageWebPrefix}${hashName}`;
+            }
+          }
+          return `<Imgvmd src="${src}" alt="${img.alt}"></Imgvmd>`;
+        })
+        .join('\n');
+
+      return `<Postvmd>\n<Lftvmd>\n${lftParsed}</Lftvmd>\n<Rtvmd>\n${rtImages}\n</Rtvmd>\n</Postvmd>\n`;
+    }
+  };
+};
+
+// ============================================================================
+// Custom Block Extension
+// ============================================================================
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+export const createCustomBlock = (name: string) => {
+  return {
+    name: name,
+    level: 'block' as const,
+    start(src: string) {
+      const pattern = new RegExp(`<${name}>`, 'g');
+      let match;
+      while ((match = pattern.exec(src)) !== null) {
+        const pos = match.index;
+        if (!isPositionInCode(src, pos)) {
+          return pos;
+        }
+      }
+      return -1;
+    },
+    tokenizer(this: any, src: string, tokens: any[]) {
+      const pattern = new RegExp(`^<${name}>([\\s\\S]*?)<\\/${name}>`);
+      const match = pattern.exec(src);
+      if (match) {
+        const location = getFileLocation(this);
+        const matchText = match[0];
+        let matchPos = -1;
+        let inCodeBlock = false;
+        let fullSource: string | undefined;
+
+        if (location.file) {
+          fullSource = getMarkdownSource(location.file);
+          if (fullSource) {
+            let searchPos = 0;
+            let occurrenceCount = 0;
+            while ((matchPos = fullSource.indexOf(matchText, searchPos)) !== -1) {
+              occurrenceCount++;
+              const isInCode = isPositionInCode(fullSource, matchPos);
+              if (!isInCode) {
+                break;
+              }
+              searchPos = matchPos + 1;
+            }
+
+            if (matchPos !== -1) {
+              inCodeBlock = isPositionInCode(fullSource, matchPos);
+            }
+          }
+        }
+
+        const contentStr = match[1].trim();
+
+        if (!contentStr && !inCodeBlock) {
+          let line = location.line || 1;
+          if (fullSource && matchPos !== -1) {
+            line = getLineAtPosition(fullSource, matchPos, location.file);
+          }
+          throw createVmdError(
+            VmdErrorCode.EXTENSION_EMPTY_CUSTOM_BLOCK,
+            { blockName: name, line },
+            { ...location, line }
+          );
+        }
+
+        if (inCodeBlock) {
+          return undefined;
+        }
+
+        const contentTokens = this.lexer.blockTokens(contentStr);
+        return {
+          type: name,
+          raw: match[0],
+          tokens: contentTokens,
+          text: contentStr
+        };
+      }
+      return undefined;
+    },
+    renderer(this: any, token: any) {
+      const parsedContent = this.parser.parse(token.tokens);
+      const componentName = capitalize(name) + 'vmd';
+      return `<${componentName}>${parsedContent}</${componentName}>\n`;
+    }
+  };
+};
+
+// ============================================================================
+// Small Image Extension
+// ============================================================================
+
+export const smallImageExtension = (assetProcessor: any, imageWebPrefix: string, filePath?: string) => {
+  return {
+    name: 'smallimg',
+    level: 'inline' as const,
+    start(src: string) {
+      return src.match(/^<smallimg>/m) ? src.indexOf('<smallimg>') : -1;
+    },
+    tokenizer(this: any, src: string, tokens: any[]) {
+      if (filePath && this.lexer && !this.lexer.filePath) {
+        this.lexer.filePath = filePath;
+      }
+      const rule = /^<smallimg>(.*?)<\/smallimg>/;
+      const match = rule.exec(src);
+      if (match) {
+        const inner = match[1];
+        const imgMatch = /^!\[(.*?)\]\((.*?)\)$/.exec(inner.trim());
+        if (imgMatch) {
+          const location = getFileLocation(this);
+          const srcUrl = imgMatch[2];
+
+          if (assetProcessor) {
+            try {
+              assetProcessor.validateImageExists(srcUrl, location);
+            } catch (err) {
+              throw err;
+            }
+          }
+
+          return {
+            type: 'smallimg',
+            raw: match[0],
+            alt: imgMatch[1],
+            src: srcUrl,
+            text: match[0]
+          };
+        }
+      }
+      return undefined;
+    },
+    renderer(token: any) {
+      let src = token.src;
+      if (assetProcessor && imageWebPrefix) {
+        const hash = assetProcessor.processImageAndGetHash(token.src, filePath);
+        if (hash) {
+          const ext = path.extname(token.src).toLowerCase();
+          const hashName = `${hash}${ext}`;
+          src = `${imageWebPrefix}${hashName}`;
+        }
+      }
+      return `<Smallimgvmd src="${src}" alt="${token.alt}"></Smallimgvmd>`;
+    }
+  };
+};
+
+// ============================================================================
+// Text Formatting Extensions
+// ============================================================================
+
+export const boldItalicExtension = {
+  name: 'bolditalic',
+  level: 'inline' as const,
+  start(src: string) {
+    return src.indexOf('***');
+  },
+  tokenizer(this: any, src: string, tokens: any[]) {
+    const rule = /^\*\*\*(.+?)\*\*\*/;
+    const match = rule.exec(src);
+    if (match) {
+      return {
+        type: 'bolditalic',
+        raw: match[0],
+        text: match[1]
+      };
+    }
+    return undefined;
+  },
+  renderer(token: any) {
+    return `<Bolditvmd>${escapeHtml(token.text)}</Bolditvmd>`;
+  }
+};
+
+export const strikethroughExtension = {
+  name: 'strikethrough',
+  level: 'inline' as const,
+  start(src: string) {
+    return src.indexOf('~~');
+  },
+  tokenizer(this: any, src: string, tokens: any[]) {
+    const rule = /^~~(.+?)~~/;
+    const match = rule.exec(src);
+    if (match) {
+      return {
+        type: 'strikethrough',
+        raw: match[0],
+        text: match[1]
+      };
+    }
+    return undefined;
+  },
+  renderer(token: any) {
+    return `<Strikevmd>${escapeHtml(token.text)}</Strikevmd>`;
+  }
+};
+
+// ============================================================================
+// Math Extensions
+// ============================================================================
+
+const dangerousPatterns = [
+  { pattern: /<script\b[^>]*>/i, name: 'script tag' },
+  { pattern: /javascript:/i, name: 'javascript protocol' },
+  { pattern: /on\w+\s*=/i, name: 'event handler' },
+  { pattern: /<script/i, name: 'encoded script tag' },
+  { pattern: /&#x?\d+;/i, name: 'HTML entity' },
+];
+
+function checkXssInMath(formula: string, location: ErrorLocation): void {
+  for (const { pattern, name } of dangerousPatterns) {
+    if (pattern.test(formula)) {
+      throw createVmdError(
+        VmdErrorCode.MARKDOWN_XSS_DETECTED,
+        { formula, pattern: name },
+        location
+      );
+    }
+  }
+}
+
+function isInsideBackticks(src: string, position: number): boolean {
+  const codePattern = /(?<!`)`([^`]+)`(?!`)|``([^`]+)``/g;
+  let match;
+
+  while ((match = codePattern.exec(src)) !== null) {
+    const start = match.index;
+    const end = match.index + match[0].length;
+
+    if (position >= start && position < end) {
+      return true;
+    }
+
+    if (start > position) {
+      break;
+    }
+  }
+
+  return false;
+}
+
+export const blockMathExtension = {
+  name: 'blockMath',
+  level: 'block' as const,
+  start(src: string) {
+    let pos = src.indexOf('$$');
+    while (pos !== -1 && isInsideBackticks(src, pos)) {
+      pos = src.indexOf('$$', pos + 2);
+    }
+    return pos;
+  },
+  tokenizer(this: any, src: string, tokens: any[]) {
+    const rule = /^\$\$([\s\S]+?)\$\$/;
+    const match = rule.exec(src);
+    if (match) {
+      const formula = match[1].trim();
+      const location = getFileLocation(this);
+      checkXssInMath(formula, location);
+      return {
+        type: 'blockMath',
+        raw: match[0],
+        formula: formula,
+        text: match[0]
+      };
+    }
+    return undefined;
+  },
+  renderer(token: any) {
+    return `<Blockmathvmd formula="${escapeHtml(token.formula)}"></Blockmathvmd>`;
+  }
+};
+
+export const inlineMathExtension = {
+  name: 'inlineMath',
+  level: 'inline' as const,
+  start(src: string) {
+    let pos = src.indexOf('$');
+    while (pos !== -1 && isInsideBackticks(src, pos)) {
+      pos = src.indexOf('$', pos + 1);
+    }
+    return pos;
+  },
+  tokenizer(this: any, src: string, tokens: any[]) {
+    const rule = /^\$(.+?)\$/;
+    const match = rule.exec(src);
+    if (match) {
+      const formula = match[1].trim();
+
+      if (formula.includes('`')) {
+        return undefined;
+      }
+
+      const location = getFileLocation(this);
+      checkXssInMath(formula, location);
+      return {
+        type: 'inlineMath',
+        raw: match[0],
+        formula: formula,
+        text: match[0]
+      };
+    }
+    return undefined;
+  },
+  renderer(token: any) {
+    return `<Inlinemathvmd formula="${escapeHtml(token.formula)}"></Inlinemathvmd>`;
+  }
+};
+
+// ============================================================================
+// Table Extension
+// ============================================================================
+
+let utilInstance: VmdUtil | null = null;
+let generatedFilesInstance: string[] = [];
+
+export function setTableExtensionContext(util: VmdUtil, generatedFiles: string[]) {
+  utilInstance = util;
+  generatedFilesInstance = generatedFiles;
+}
+
+export function clearTableExtensionContext() {
+  utilInstance = null;
+  generatedFilesInstance = [];
+}
+
+function validateTableCellContent(content: string, baseLine: number, location: ErrorLocation): null | { code: VmdErrorCode; details: Record<string, any> } {
+  const trimmedContent = content.trim();
+
+  if (/```[\s\S]*?```/.test(trimmedContent)) {
+    return {
+      code: VmdErrorCode.TABLE_DISALLOWED_CODE_BLOCK,
+      details: { line: baseLine }
+    };
+  }
+
+  if (/\$\$[\s\S]*?\$\$/.test(trimmedContent)) {
+    return {
+      code: VmdErrorCode.TABLE_DISALLOWED_BLOCK_MATH,
+      details: { line: baseLine }
+    };
+  }
+
+  if (/^\s*>\s/m.test(trimmedContent)) {
+    return {
+      code: VmdErrorCode.TABLE_DISALLOWED_BLOCKQUOTE,
+      details: { line: baseLine }
+    };
+  }
+
+  if (/!\[.*?\]\(.*?\)/.test(trimmedContent)) {
+    return {
+      code: VmdErrorCode.TABLE_DISALLOWED_IMAGE,
+      details: { line: baseLine }
+    };
+  }
+
+  if (/^[\s]*[-*+]\s/m.test(trimmedContent)) {
+    return {
+      code: VmdErrorCode.TABLE_DISALLOWED_LIST,
+      details: { line: baseLine }
+    };
+  }
+
+  if (/^[\s]*\d+\.\s/m.test(trimmedContent)) {
+    return {
+      code: VmdErrorCode.TABLE_DISALLOWED_LIST,
+      details: { line: baseLine }
+    };
+  }
+
+  const blockTags = ['div', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'pre', 'ul', 'ol', 'blockquote'];
+  for (const tag of blockTags) {
+    const regex = new RegExp(`<${tag}\\b`, 'i');
+    if (regex.test(trimmedContent)) {
+      return {
+        code: VmdErrorCode.TABLE_DISALLOWED_BLOCK_ELEMENT,
+        details: { tag, line: baseLine }
+      };
+    }
+  }
+
+  return null;
+}
+
+function parseTableRow(row: string): string[] {
+  const trimmed = row.trim().replace(/^\|/, '').replace(/\|$/, '');
+  return trimmed.split('|').map(cell => cell.trim());
+}
+
+function isSeparatorRow(row: string): boolean {
+  const trimmed = row.trim();
+  if (!/^\|?[\s|:|-]+\|?$/.test(trimmed)) {
+    return false;
+  }
+  if (!trimmed.includes('|')) {
+    return false;
+  }
+  const parts = trimmed.split('|').map(p => p.trim()).filter(p => p.length > 0);
+  return parts.every(part => /^[\s:-]+$/.test(part));
+}
+
+function extractTableContent(tableLines: string[]): {
+  headers: string[];
+  alignments: ('left' | 'center' | 'right' | null)[];
+  rows: string[][];
+} | null {
+  if (tableLines.length < 2) {
+    return null;
+  }
+
+  const headers = parseTableRow(tableLines[0]);
+
+  if (!isSeparatorRow(tableLines[1])) {
+    return null;
+  }
+
+  const alignments = parseTableRow(tableLines[1]).map(cell => {
+    const trimmed = cell.trim();
+    if (trimmed.startsWith(':') && trimmed.endsWith(':')) {
+      return 'center';
+    } else if (trimmed.endsWith(':')) {
+      return 'right';
+    } else if (trimmed.startsWith(':')) {
+      return 'left';
+    }
+    return null;
+  });
+
+  const rows: string[][] = [];
+  for (let i = 2; i < tableLines.length; i++) {
+    const rowCells = parseTableRow(tableLines[i]);
+    while (rowCells.length < headers.length) {
+      rowCells.push('');
+    }
+    rows.push(rowCells.slice(0, headers.length));
+  }
+
+  return { headers, alignments, rows };
+}
+
+export const tableExtension = {
+  name: 'vmd_table',
+  level: 'block' as const,
+
+  start(src: string) {
+    const pattern = /\n<table>\n\n/;
+    const match = src.match(pattern);
+    if (match && match.index !== undefined) {
+      return match.index;
+    }
+    return -1;
+  },
+
+  tokenizer(this: any, src: string, tokens: any[]) {
+    const tablePattern = /^<table>\n\n([\s\S]*?)\n\n<\/table>/;
+    const match = src.match(tablePattern);
+
+    if (!match) {
+      return undefined;
+    }
+
+    const raw = match[0];
+    const tableContent = match[1];
+
+    const lines = tableContent.split('\n').filter(line => line.trim().length > 0);
+
+    if (lines.length < 2) {
+      return undefined;
+    }
+
+    const tableData = extractTableContent(lines);
+    if (!tableData) {
+      return undefined;
+    }
+
+    const location = getFileLocation(this);
+    let line = location.line || 1;
+
+    const fullSource = location.file ? getMarkdownSource(location.file) : undefined;
+    if (fullSource) {
+      const matchPos = fullSource.indexOf(raw);
+      if (matchPos !== -1) {
+        line = getLineAtPosition(fullSource, matchPos, location.file);
+      }
+    }
+
+    let currentLine = line + 2;
+
+    for (let i = 0; i < tableData.headers.length; i++) {
+      const error = validateTableCellContent(tableData.headers[i], currentLine, location);
+      if (error) {
+        throw createVmdError(error.code, { ...error.details, line: currentLine }, { ...location, line: currentLine });
+      }
+    }
+    currentLine++;
+
+    for (let r = 0; r < tableData.rows.length; r++) {
+      currentLine++;
+      for (let c = 0; c < tableData.rows[r].length; c++) {
+        const error = validateTableCellContent(tableData.rows[r][c], currentLine, location);
+        if (error) {
+          throw createVmdError(error.code, { ...error.details, line: currentLine }, { ...location, line: currentLine });
+        }
+      }
+    }
+
+    return {
+      type: 'vmd_table',
+      raw: raw,
+      text: tableContent,
+      headers: tableData.headers,
+      alignments: tableData.alignments,
+      rows: tableData.rows,
+      line: line
+    };
+  },
+
+  renderer: {
+    vmd_table(token: any) {
+      const { headers, alignments, rows } = token;
+
+      const processInlineCode = (code: string): string => {
+        if (!utilInstance) {
+          return `<code>${code}</code>`;
+        }
+        try {
+          const hash = crypto.createHash('sha256').update(code).digest('hex');
+          utilInstance.writeCodeFile(code, hash);
+          generatedFilesInstance.push(`${hash}.txt`);
+          return `<Inlinecodevmd filePath="${hash}"></Inlinecodevmd>`;
+        } catch (err) {
+          return `<code>${code}</code>`;
+        }
+      };
+
+      const parseInline = (text: string): string => {
+        let result = text
+          .replace(/\*\*\*(.+?)\*\*\*/g, '<bold><italic>$1</italic></bold>')
+          .replace(/\*\*(.+?)\*\*/g, '<bold>$1</bold>')
+          .replace(/\*(.+?)\*/g, '<italic>$1</italic>')
+          .replace(/~~(.+?)~~/g, '<strike>$1</strike>')
+          .replace(/`([^`]+)`/g, (match, code) => processInlineCode(code))
+          .replace(/\$([^$]+)\$/g, '<Inlinemathvmd formula="$1"></Inlinemathvmd>');
+
+        return result;
+      };
+
+      let headerHtml = '<Tableheadvmd><Tablerowvmd>';
+      for (let i = 0; i < headers.length; i++) {
+        const align = alignments[i] ? ` align="${alignments[i]}"` : '';
+        const headerContent = parseInline(headers[i]);
+        headerHtml += `<Tablecellvmd header="true"${align}>${headerContent}</Tablecellvmd>`;
+      }
+      headerHtml += '</Tablerowvmd></Tableheadvmd>';
+
+      let bodyHtml = '<Tablebodyvmd>';
+      for (const row of rows) {
+        bodyHtml += '<Tablerowvmd>';
+        for (let i = 0; i < row.length; i++) {
+          const align = alignments[i] ? ` align="${alignments[i]}"` : '';
+          const cellContent = parseInline(row[i]);
+          bodyHtml += `<Tablecellvmd${align}>${cellContent}</Tablecellvmd>`;
+        }
+        bodyHtml += '</Tablerowvmd>';
+      }
+      bodyHtml += '</Tablebodyvmd>';
+
+      return `<Tablevmd>\n${headerHtml}\n${bodyHtml}\n</Tablevmd>\n`;
+    }
+  }
+};

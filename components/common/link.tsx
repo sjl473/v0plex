@@ -1,3 +1,5 @@
+"use client"
+
 import NextLink from 'next/link';
 import React, {ReactNode} from 'react';
 import {useTheme} from "@/components/common/theme-provider";

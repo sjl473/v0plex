@@ -5,28 +5,18 @@
  */
 
 import path from 'path';
-import { SiteBuilder } from './builder';
-import { DirectoryCleaner } from './directory_cleaner';
+import { VmdUtil } from './vmd_util';
 
 async function main() {
   const args = process.argv.slice(2);
   const inputPath = args[0] || 'dev';
   const projectRoot = path.resolve(__dirname, '..');
-  const fullInputPath = path.resolve(inputPath);
 
-  // Clean previous build
-  const cleaner = new DirectoryCleaner(projectRoot);
-  cleaner.clean();
+  // Create VmdUtil instance and run
+  const util = new VmdUtil(projectRoot);
+  const success = util.run(inputPath);
 
-  // Build site
-  const builder = new SiteBuilder(projectRoot);
-  const success = builder.build(fullInputPath);
-
-  if (success) {
-    console.log('✅ Build completed successfully');
-    process.exit(0);
-  } else {
-    console.error('❌ Build failed');
+  if (!success) {
     process.exit(1);
   }
 }

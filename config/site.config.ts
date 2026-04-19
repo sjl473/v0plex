@@ -1,5 +1,68 @@
 export const URL_PREFIX = 'page';
 
+/**
+ * Content Source Configuration
+ * ============================================================================
+ *
+ * USE_LOCAL_MARKDOWN:
+ *   - true: Use local dev folder for markdown content
+ *   - false: Pull content from a remote git repository
+ *
+ * When USE_LOCAL_MARKDOWN is false, the dev folder will be:
+ *   1. Completely deleted before each build/dev
+ *   2. Re-populated from the remote git repository (full clone)
+ *   3. .git folder will be kept for git history access
+ *
+ * =============================================================================
+ * REMOTE GIT MODE VALIDATION
+ * =============================================================================
+ *
+ * When USE_LOCAL_MARKDOWN is false:
+ *   1. REPO_URL is REQUIRED
+ *   2. Full git clone is always performed (no shallow clone)
+ *   3. Directory structure must follow: dev/{language}/... format
+ *   4. Language folders must match AVAILABLE_LANGUAGES configuration
+ *   5. @git in frontmatter will use the downloaded repository's git history
+ *
+ * =============================================================================
+ * LOCAL MODE VALIDATION (USE_LOCAL_MARKDOWN: true)
+ * =============================================================================
+ *
+ * When using local mode, the dev folder must satisfy:
+ *   1. Must contain at least one language folder (e.g., 'en', 'zh')
+ *   2. Must contain at least one file (not just folders)
+ *   3. @git in frontmatter will use the v0plex project's git history
+ *
+ * If validation fails, the build will error with a descriptive message.
+ */
+export const CONTENT_SOURCE_CONFIG = {
+  /**
+   * Whether to use local markdown files in the dev folder
+   * If false, content will be pulled from a remote git repository
+   */
+  USE_LOCAL_MARKDOWN: true,
+
+  /**
+   * Git repository configuration (only used when USE_LOCAL_MARKDOWN is false)
+   */
+  GIT_CONFIG: {
+    /**
+     * Git repository URL (supports GitHub, GitLab, etc.)
+     * REQUIRED when USE_LOCAL_MARKDOWN is false
+     * Example: 'https://github.com/username/repo.git' or 'git@gitlab.com:username/repo.git'
+     */
+    REPO_URL: '',
+
+    /**
+     * Branch to clone from
+     * Default: 'main'
+     */
+    BRANCH: 'main',
+  },
+} as const;
+
+export type ContentSourceConfig = typeof CONTENT_SOURCE_CONFIG;
+
 export const LAYOUT_CONFIG = {
   SIDEBAR_WIDTH: 300,
   RIGHT_SIDEBAR_WIDTH: 300, // New right sidebar width
@@ -21,6 +84,60 @@ export const SITE_CONFIG = {
   },
   GITHUB_PAGES_URL: 'https://sjl473.github.io/v0plex',
   BUILD_DATE: process.env.NEXT_PUBLIC_BUILD_DATE || new Date().toISOString(),
+} as const;
+
+/**
+ * VMD Parser Build Configuration
+ * ============================================================================
+ */
+export const BUILD_CONFIG = {
+  /** Public directory for static assets */
+  PUBLIC_DIR: 'public',
+  /** Next.js app directory */
+  APP_DIR: 'app',
+  /** Output directory for generated pages (uses URL_PREFIX) */
+  OUT_DIR: URL_PREFIX,
+  /** Directory for code files */
+  VMD_CODE_DIR: 'vmdcode',
+  /** Directory for processed images */
+  VMD_IMAGE_DIR: 'vmdimage',
+  /** Directory for JSON data */
+  VMD_JSON_DIR: 'vmdjson',
+  /** URL prefix for routing */
+  URL_PREFIX: `/${URL_PREFIX}`,
+  /** Directories to exclude from scanning */
+  EXCLUDED_DIRS: ['node_modules', 'libs', 'vmd', 'dist', 'build', '.git', '.idea', 'assets', URL_PREFIX] as string[],
+  /** Site data JSON filename */
+  SITE_DATA_JSON: 'site-data.json',
+  /** Component import path for generated pages */
+  COMPONENT_IMPORT_PATH: '@/components/vmd/vmdimporter',
+  /** Web path prefix for images */
+  IMAGE_WEB_PREFIX: SITE_CONFIG.DATA_PATHS.VMD_IMAGE,
+  /** GitHub repo base URL for edit links */
+  GITHUB_REPO_BASE_URL: '',
+} as const;
+
+/**
+ * VMD Tags Configuration
+ * Allowed tags for markdown frontmatter
+ */
+export const TAGS_CONFIG = {
+  description: 'VMD Compiler - Allowed Tags Configuration',
+  tags: [
+    'welcome',
+    'tutorial',
+    'test',
+    'combo',
+    'final',
+    'guide',
+    'reference',
+    'api',
+    'getting-started',
+    'advanced',
+    'troubleshooting',
+    'release-notes',
+    'changelog'
+  ] as string[],
 } as const;
 
 export const DEFAULT_LOCALE: Locale = 'zh';

@@ -1,3 +1,5 @@
+"use client"
+
 import {CalendarAdd, UpdateNow, Email, Link} from "@carbon/icons-react"
 import {useLanguage} from "./language-provider"
 import styles from "./last-updated-at.module.css"
