@@ -1,62 +1,189 @@
-export const URL_PREFIX = 'page';
-
 /**
- * Content Source Configuration
+ * ============================================================================
+ * site.config.ts - v0plex Site Configuration
  * ============================================================================
  *
- * USE_LOCAL_MARKDOWN:
- *   - true: Use local dev folder for markdown content
- *   - false: Pull content from a remote git repository
+ * Central configuration file defining all site-wide constants, build settings,
+ * content source options, internationalization, and localization strings.
+ * This is the single source of truth for site behavior across the application.
  *
- * When USE_LOCAL_MARKDOWN is false, the dev folder will be:
- *   1. Completely deleted before each build/dev
- *   2. Re-populated from the remote git repository (full clone)
- *   3. .git folder will be kept for git history access
+ * THE BIG PICTURE
+ * ----------------------------------------------------------------------------
  *
- * =============================================================================
- * REMOTE GIT MODE VALIDATION
- * =============================================================================
+ * Configuration is organized into functional domains:
  *
- * When USE_LOCAL_MARKDOWN is false:
- *   1. REPO_URL is REQUIRED
- *   2. Full git clone is always performed (no shallow clone)
- *   3. Directory structure must follow: dev/{language}/... format
- *   4. Language folders must match AVAILABLE_LANGUAGES configuration
- *   5. @git in frontmatter will use the downloaded repository's git history
+ *   1. URL & PATH CONSTANTS .... Routing prefixes and directory naming
+ *   2. CONTENT SOURCE .......... Local vs remote git repository mode
+ *   3. LAYOUT SETTINGS ......... UI dimensions and responsive breakpoints
+ *   4. SITE METADATA ........... URLs, build info, data paths
+ *   5. BUILD CONFIG ............ VMD parser output directories and exclusions
+ *   6. TAGS .................... Allowed frontmatter tag values
+ *   7. I18N .................... Language configs, translations, date formats
  *
- * =============================================================================
- * LOCAL MODE VALIDATION (USE_LOCAL_MARKDOWN: true)
- * =============================================================================
+ * MODULE COMPOSITION
+ * ----------------------------------------------------------------------------
  *
- * When using local mode, the dev folder must satisfy:
- *   1. Must contain at least one language folder (e.g., 'en', 'zh')
- *   2. Must contain at least one file (not just folders)
- *   3. @git in frontmatter will use the v0plex project's git history
+ * BASE CONSTANTS
+ *   URL_PREFIX ................. Base route prefix for generated pages ('page')
+ *   URL_PREFIX_PATH ............ URL_PREFIX with leading slash
+ *   VMD_CODE_DIR_NAME .......... Directory name for code assets ('vmdcode')
+ *   VMD_IMAGE_DIR_NAME ......... Directory name for processed images ('vmdimage')
+ *   VMD_JSON_DIR_NAME .......... Directory name for JSON data ('vmdjson')
+ *   VMD_CODE_PATH .............. Web path for code assets ('/vmdcode/')
+ *   VMD_IMAGE_PATH ............. Web path for images ('/vmdimage/')
+ *   VMD_JSON_PATH .............. Web path for JSON ('/vmdjson/')
+ *   SITE_DATA_FILENAME ......... Navigation data file ('site-data.json')
  *
- * If validation fails, the build will error with a descriptive message.
+ * CONTENT_SOURCE_CONFIG
+ *   USE_LOCAL_MARKDOWN ......... Toggle between local dev folder (true) or
+ *                                remote git clone (false)
+ *   GIT_CONFIG ................. Repository settings when remote mode:
+ *     - REPO_URL ............... Git repository URL (required in remote mode)
+ *     - BRANCH ................. Target branch to clone (default: 'main')
+ *
+ *   Remote Mode Behavior:
+ *     - dev folder deleted before each build
+ *     - Full git clone performed (preserves .git for history)
+ *     - Structure validated: dev/{language}/ required
+ *     - Language folders must match AVAILABLE_LANGUAGES
+ *     - @git placeholders use cloned repo's git history
+ *
+ *   Local Mode Behavior:
+ *     - Uses existing dev/ folder content
+ *     - Requires at least one language folder
+ *     - Requires at least one file in content tree
+ *     - @git placeholders use v0plex project's git history
+ *
+ * LAYOUT_CONFIG
+ *   SIDEBAR_WIDTH .............. Left sidebar width in pixels (300)
+ *   RIGHT_SIDEBAR_WIDTH ........ Right sidebar width in pixels (300)
+ *   LEFT_CONTENT_OFFSET ........ Responsive left margins:
+ *     - pc: '1.25rem' .......... Desktop (≥1025px)
+ *     - tablet: '1rem' ......... Tablet (601px-1024px)
+ *     - mobile: '0.5rem' ....... Mobile (≤600px)
+ *
+ * SITE_CONFIG
+ *   Aggregated site metadata object:
+ *   - URL_PREFIX ............... Routing base path
+ *   - OUT_DIR .................. Output directory name
+ *   - DATA_PATHS ............... Constructed paths to vmd assets
+ *   - GITHUB_PAGES_URL ......... Deployment URL for edit links
+ *   - BUILD_DATE ............... Build timestamp
+ *
+ * BUILD_CONFIG
+ *   VMD parser build settings:
+ *   - PUBLIC_DIR ............... Static assets directory ('public')
+ *   - APP_DIR .................. Next.js app directory ('app')
+ *   - OUT_DIR .................. Page output directory
+ *   - VMD_*_DIR ................ Asset subdirectory names
+ *   - URL_PREFIX ............... Routing prefix
+ *   - EXCLUDED_DIRS ............ Paths to skip during scanning
+ *   - SITE_DATA_JSON ........... Navigation filename
+ *   - COMPONENT_IMPORT_PATH .... VMD components import path
+ *   - IMAGE_WEB_PREFIX ......... Web URL prefix for images
+ *   - GITHUB_REPO_BASE_URL ..... Base URL for edit links
+ *
+ * TAGS_CONFIG
+ *   tags ....................... Array of allowed frontmatter tag strings
+ *                              (welcome, tutorial, api, guide, etc.)
+ *
+ * INTERNATIONALIZATION
+ *   DEFAULT_LOCALE ............. Fallback language code ('zh')
+ *   LOCALE_STORAGE_KEY ......... localStorage key for user preference
+ *   Locale ..................... Type union of supported locales
+ *                                ('en' | 'zh' | 'es' | 'fr' | 'de' | 'ja' | 'ko' | 'ru' | 'pt')
+ *
+ *   LanguageConfig ............. Interface for language metadata:
+ *     - code ................... Locale identifier
+ *     - name ................... English language name
+ *     - nativeName ............. Localized language name
+ *     - folder ................. Content folder name
+ *
+ *   AVAILABLE_LANGUAGES ........ Array of configured LanguageConfig objects:
+ *     - Chinese:    code='zh', folder='zh', nativeName='中文'
+ *     - English:    code='en', folder='en', nativeName='English'
+ *     - Spanish:    code='es', folder='es', nativeName='Español'
+ *     - French:     code='fr', folder='fr', nativeName='Français'
+ *     - German:     code='de', folder='de', nativeName='Deutsch'
+ *     - Japanese:   code='ja', folder='ja', nativeName='日本語'
+ *     - Korean:     code='ko', folder='ko', nativeName='한국어'
+ *     - Russian:    code='ru', folder='ru', nativeName='Русский'
+ *     - Portuguese: code='pt', folder='pt', nativeName='Português'
+ *
+ *   getLanguageConfig(locale) .. Lookup function for language metadata
+ *   isValidLocale(string) ...... Type guard for locale validation
+ *
+ *   I18nStrings ................ Interface defining all translatable UI text:
+ *     - sidebar ................ Search, catalog, navigation labels
+ *     - header ................. Site title, theme toggle labels
+ *     - footer ................. Copyright, version info
+ *     - pageNav ................ Previous/next navigation
+ *     - codeBlock .............. Copy code, source attribution
+ *     - boxes .................. Info/warning/success/error defaults
+ *     - code ................... Loading states
+ *     - postModal .............. Image gallery navigation
+ *     - pageMeta ............... Created/updated/author labels
+ *     - editThisPage ........... Edit link label
+ *     - tablePagination ........ Table navigation labels
+ *
+ *   EN_STRINGS / ZH_STRINGS .... Complete translation objects for each locale
+ *   TRANSLATIONS ............... Map of locale to translation object
+ *   DATE_FORMATS ............... Intl.DateTimeFormatOptions per locale
+ *
+ *   getStrings(locale) ......... Retrieve translation object for locale
+ *   formatDate(date, locale) ... Format date according to locale conventions
+ *   interpolateString(template, values) ... Replace {placeholders} in strings
+ *
+ * USAGE
+ * ----------------------------------------------------------------------------
+ *
+ * Import specific configs:
+ *
+ *   import { BUILD_CONFIG, SITE_CONFIG } from '@/config/site.config';
+ *   import { getStrings, DEFAULT_LOCALE } from '@/config/site.config';
+ *
+ * Check content source mode:
+ *
+ *   if (CONTENT_SOURCE_CONFIG.USE_LOCAL_MARKDOWN) {
+ *     // Use local dev/ folder
+ *   } else {
+ *     // Clone from CONTENT_SOURCE_CONFIG.GIT_CONFIG.REPO_URL
+ *   }
+ *
+ * Get localized strings:
+ *
+ *   const strings = getStrings('zh');
+ *   console.log(strings.sidebar.searchPlaceholder); // '搜索内容...'
+ *
+ * ============================================================================
  */
+
+// ----------------------------------------------------------------------------
+// BASE CONSTANTS - URL prefixes and directory naming
+// ----------------------------------------------------------------------------
+export const URL_PREFIX = 'page';
+export const URL_PREFIX_PATH = `/${URL_PREFIX}`;
+
+// VMD Directory names (without slashes)
+export const VMD_CODE_DIR_NAME = 'vmdcode';
+export const VMD_IMAGE_DIR_NAME = 'vmdimage';
+export const VMD_JSON_DIR_NAME = 'vmdjson';
+
+// VMD Web paths (with slashes)
+export const VMD_CODE_PATH = `/${VMD_CODE_DIR_NAME}/`;
+export const VMD_IMAGE_PATH = `/${VMD_IMAGE_DIR_NAME}/`;
+export const VMD_JSON_PATH = `/${VMD_JSON_DIR_NAME}/`;
+
+// Site data filename
+export const SITE_DATA_FILENAME = 'site-data.json';
+
+// ----------------------------------------------------------------------------
+// CONTENT SOURCE CONFIGURATION
+// ----------------------------------------------------------------------------
 export const CONTENT_SOURCE_CONFIG = {
-  /**
-   * Whether to use local markdown files in the dev folder
-   * If false, content will be pulled from a remote git repository
-   */
   USE_LOCAL_MARKDOWN: false,
-
-  /**
-   * Git repository configuration (only used when USE_LOCAL_MARKDOWN is false)
-   */
   GIT_CONFIG: {
-    /**
-     * Git repository URL (supports GitHub, GitLab, etc.)
-     * REQUIRED when USE_LOCAL_MARKDOWN is false
-     * Example: 'https://github.com/username/repo.git' or 'git@gitlab.com:username/repo.git'
-     */
     REPO_URL: 'https://github.com/sjl473/v0plex-markdown',
-
-    /**
-     * Branch to clone from
-     * Default: 'main'
-     */
     BRANCH: 'main',
   },
 } as const;
@@ -74,55 +201,40 @@ export const LAYOUT_CONFIG = {
 } as const;
 
 export const SITE_CONFIG = {
-  URL_PREFIX: `/${URL_PREFIX}`,
+  URL_PREFIX: URL_PREFIX_PATH,
   OUT_DIR: URL_PREFIX,
   DATA_PATHS: {
-    SITE_DATA: '/vmdjson/site-data.json',
-    VMD_CODE: '/vmdcode/',
-    VMD_IMAGE: '/vmdimage/',
-    VMD_JSON: '/vmdjson/',
+    SITE_DATA: `${VMD_JSON_PATH}${SITE_DATA_FILENAME}`,
+    VMD_CODE: VMD_CODE_PATH,
+    VMD_IMAGE: VMD_IMAGE_PATH,
+    VMD_JSON: VMD_JSON_PATH,
   },
-  GITHUB_PAGES_URL: 'https://sjl473.github.io/v0plex',
   BUILD_DATE: process.env.NEXT_PUBLIC_BUILD_DATE || new Date().toISOString(),
 } as const;
+
 
 /**
  * VMD Parser Build Configuration
  * ============================================================================
  */
 export const BUILD_CONFIG = {
-  /** Public directory for static assets */
   PUBLIC_DIR: 'public',
-  /** Next.js app directory */
   APP_DIR: 'app',
-  /** Output directory for generated pages (uses URL_PREFIX) */
   OUT_DIR: URL_PREFIX,
-  /** Directory for code files */
-  VMD_CODE_DIR: 'vmdcode',
-  /** Directory for processed images */
-  VMD_IMAGE_DIR: 'vmdimage',
-  /** Directory for JSON data */
-  VMD_JSON_DIR: 'vmdjson',
-  /** URL prefix for routing */
-  URL_PREFIX: `/${URL_PREFIX}`,
-  /** Directories to exclude from scanning */
+  VMD_CODE_DIR: VMD_CODE_DIR_NAME,
+  VMD_IMAGE_DIR: VMD_IMAGE_DIR_NAME,
+  VMD_JSON_DIR: VMD_JSON_DIR_NAME,
+  URL_PREFIX: URL_PREFIX_PATH,
   EXCLUDED_DIRS: ['node_modules', 'libs', 'vmd', 'dist', 'build', '.git', '.idea', 'assets', URL_PREFIX] as string[],
-  /** Site data JSON filename */
-  SITE_DATA_JSON: 'site-data.json',
-  /** Component import path for generated pages */
+  SITE_DATA_JSON: SITE_DATA_FILENAME,
   COMPONENT_IMPORT_PATH: '@/components/vmd/vmdimporter',
-  /** Web path prefix for images */
-  IMAGE_WEB_PREFIX: SITE_CONFIG.DATA_PATHS.VMD_IMAGE,
-  /** GitHub repo base URL for edit links */
-  GITHUB_REPO_BASE_URL: '',
+  IMAGE_WEB_PREFIX: VMD_IMAGE_PATH,
 } as const;
 
-/**
- * VMD Tags Configuration
- * Allowed tags for markdown frontmatter
- */
+// ----------------------------------------------------------------------------
+// TAGS CONFIGURATION - Allowed frontmatter tag values
+// ----------------------------------------------------------------------------
 export const TAGS_CONFIG = {
-  description: 'VMD Compiler - Allowed Tags Configuration',
   tags: [
     'welcome',
     'tutorial',
@@ -140,10 +252,14 @@ export const TAGS_CONFIG = {
   ] as string[],
 } as const;
 
-export const DEFAULT_LOCALE: Locale = 'zh';
+/**
+ * DEFAULT_LOCALE - Default language when none is selected
+ * Must be one of the ENABLED_LANGUAGES
+ */
+export const DEFAULT_LOCALE: Locale = 'en';
 export const LOCALE_STORAGE_KEY = 'v0plex-locale';
 
-export type Locale = 'en' | 'zh';
+export type Locale = 'en' | 'zh' | 'es' | 'fr' | 'de' | 'ja' | 'ko' | 'ru' | 'pt';
 
 export interface LanguageConfig {
   code: Locale;
@@ -152,17 +268,123 @@ export interface LanguageConfig {
   folder: string;
 }
 
-export const AVAILABLE_LANGUAGES: LanguageConfig[] = [
+// ----------------------------------------------------------------------------
+// LANGUAGE CONFIGURATION
+// ----------------------------------------------------------------------------
+
+/**
+ * ENABLED_LANGUAGES - Explicitly enable/disable languages
+ *
+ * ‼️ Edit Language Options Goes Here
+ * Only languages listed here will be available in the site.
+ * This array is validated against:
+ *   1. AVAILABLE_LANGUAGES_SUPPORT (must be a supported language)
+ *   2. Dev folder structure (must have content if USE_LOCAL_MARKDOWN is true)
+ *
+ * To disable a language, remove it from this array.
+ * To add a new language, first add to AVAILABLE_LANGUAGES_SUPPORT, then enable here.
+ */
+// export const ENABLED_LANGUAGES: Locale[] = ['en', 'zh', 'es', 'fr', 'de', 'ja', 'ko', 'ru', 'pt'];
+export const ENABLED_LANGUAGES: Locale[] = ['en', 'zh'];
+
+/**
+ * AVAILABLE_LANGUAGES_SUPPORT - All languages supported by the system
+ *
+ * This defines the complete set of languages that CAN be enabled.
+ * To add a new language:
+ *   1. Add entry here with code, name, nativeName, folder
+ *   2. Add translations to TRANSLATIONS
+ *   3. Add date format to DATE_FORMATS
+ *   4. Add to ENABLED_LANGUAGES to activate
+ */
+export const AVAILABLE_LANGUAGES_SUPPORT: LanguageConfig[] = [
   { code: 'zh', name: 'Chinese', nativeName: '中文', folder: 'zh' },
   { code: 'en', name: 'English', nativeName: 'English', folder: 'en' },
+  { code: 'es', name: 'Spanish', nativeName: 'Español', folder: 'es' },
+  { code: 'fr', name: 'French', nativeName: 'Français', folder: 'fr' },
+  { code: 'de', name: 'German', nativeName: 'Deutsch', folder: 'de' },
+  { code: 'ja', name: 'Japanese', nativeName: '日本語', folder: 'ja' },
+  { code: 'ko', name: 'Korean', nativeName: '한국어', folder: 'ko' },
+  { code: 'ru', name: 'Russian', nativeName: 'Русский', folder: 'ru' },
+  { code: 'pt', name: 'Portuguese', nativeName: 'Português', folder: 'pt' },
 ];
 
+/**
+ * Computed AVAILABLE_LANGUAGES - filters support list by enabled languages
+ * This is the array used throughout the application
+ */
+export const AVAILABLE_LANGUAGES: LanguageConfig[] = AVAILABLE_LANGUAGES_SUPPORT.filter(
+  lang => ENABLED_LANGUAGES.includes(lang.code)
+);
+
+/**
+ * Validate that all enabled languages are supported
+ * Throws error if ENABLED_LANGUAGES contains invalid codes
+ */
+function validateEnabledLanguages(): void {
+  const supportedCodes = AVAILABLE_LANGUAGES_SUPPORT.map(l => l.code);
+  const invalidLanguages = ENABLED_LANGUAGES.filter(code => !supportedCodes.includes(code));
+  
+  if (invalidLanguages.length > 0) {
+    throw new Error(
+      `[Language Config Error] The following languages in ENABLED_LANGUAGES are not supported: ${invalidLanguages.join(', ')}
+      \nSupported languages: ${supportedCodes.join(', ')}
+      \nPlease add the language to AVAILABLE_LANGUAGES_SUPPORT first, or remove from ENABLED_LANGUAGES.`
+    );
+  }
+}
+
+// Run validation on module load
+validateEnabledLanguages();
+
+/**
+ * Validate that DEFAULT_LOCALE is in ENABLED_LANGUAGES
+ */
+function validateDefaultLocale(): void {
+  if (!ENABLED_LANGUAGES.includes(DEFAULT_LOCALE)) {
+    throw new Error(
+      `[Language Config Error] DEFAULT_LOCALE '${DEFAULT_LOCALE}' is not in ENABLED_LANGUAGES. ` +
+      `Please set DEFAULT_LOCALE to one of: ${ENABLED_LANGUAGES.join(', ')}`
+    );
+  }
+}
+
+validateDefaultLocale();
+
+/**
+ * Check if a language is enabled
+ */
+export function isLanguageEnabled(locale: Locale): boolean {
+  return ENABLED_LANGUAGES.includes(locale);
+}
+
 export function getLanguageConfig(locale: Locale): LanguageConfig {
-  return AVAILABLE_LANGUAGES.find(lang => lang.code === locale) || AVAILABLE_LANGUAGES[0];
+  const config = AVAILABLE_LANGUAGES.find(lang => lang.code === locale);
+  if (!config) {
+    // Return the first enabled language as fallback instead of throwing
+    // This handles cases where localStorage has a disabled language
+    return AVAILABLE_LANGUAGES[0];
+  }
+  return config;
 }
 
 export function isValidLocale(locale: string): locale is Locale {
   return AVAILABLE_LANGUAGES.some(lang => lang.code === locale);
+}
+
+/**
+ * Get all supported language codes (including disabled)
+ * For validation purposes
+ */
+export function getSupportedLocales(): Locale[] {
+  return AVAILABLE_LANGUAGES_SUPPORT.map(lang => lang.code);
+}
+
+/**
+ * Get all enabled language codes
+ */
+export function getEnabledLocales(): Locale[] {
+  return [...ENABLED_LANGUAGES];
 }
 
 export interface I18nStrings {
@@ -179,7 +401,6 @@ export interface I18nStrings {
   };
   header: {
     siteTitle: string;
-    siteDescription: string;
     switchToDark: string;
     switchToLight: string;
   };
@@ -248,7 +469,6 @@ export const EN_STRINGS: I18nStrings = {
   },
   header: {
     siteTitle: 'v0plex',
-    siteDescription: 'Commercial Loan Platform Management Handbooks',
     switchToDark: 'switch dark',
     switchToLight: 'switch light',
   },
@@ -317,7 +537,6 @@ export const ZH_STRINGS: I18nStrings = {
   },
   header: {
     siteTitle: 'v0plex',
-    siteDescription: '商业贷款平台管理手册',
     switchToDark: '切换深色模式',
     switchToLight: '切换浅色模式',
   },
@@ -372,9 +591,492 @@ export const ZH_STRINGS: I18nStrings = {
   },
 };
 
+export const ES_STRINGS: I18nStrings = {
+  sidebar: {
+    searchPlaceholder: 'Buscar contenido...',
+    searchResults: 'Resultados de búsqueda',
+    noResults: 'No hay resultados',
+    hits: 'coincidencias',
+    collapse: 'Contraer',
+    expand: 'Expandir',
+    clearSearch: 'Limpiar búsqueda',
+    allPosts: 'Todas las publicaciones',
+    catalog: 'Catálogo',
+  },
+  header: {
+    siteTitle: 'v0plex',
+    switchToDark: 'cambiar a oscuro',
+    switchToLight: 'cambiar a claro',
+  },
+  footer: {
+    siteName: 'v0plex',
+    version: '1.0.0',
+    versionLabel: 'Versión',
+    lastUpdated: '{date}',
+    copyright: '2026 sjl473',
+    copyrightSymbol: '©',
+  },
+  pageNav: {
+    home: 'Inicio',
+    previousPage: 'Página anterior',
+    nextPage: 'Página siguiente',
+    none: 'Ninguna',
+  },
+  codeBlock: {
+    copyCode: 'Copiar código',
+    from: 'de',
+  },
+  boxes: {
+    infoDefault: 'Aviso: ',
+    warningDefault: 'Advertencia: ',
+    successDefault: 'Éxito: ',
+    errorDefault: 'Error: ',
+  },
+  code: {
+    loading: 'Cargando código...',
+    error: 'Error al cargar código',
+  },
+  postModal: {
+    zoomBack: 'Restablecer zoom',
+    previousImage: 'Imagen anterior',
+    nextImage: 'Imagen siguiente',
+    previous: 'Anterior',
+    next: 'Siguiente',
+  },
+  pageMeta: {
+    created: 'Creado',
+    updated: 'Actualizado',
+    author: 'Autor:',
+    timeLabel: 'Hora:',
+  },
+  editThisPage: {
+    label: 'Editar página en Github / Gitlab ↵',
+  },
+  tablePagination: {
+    itemsPerPage: 'elementos',
+    previous: 'Anterior',
+    next: 'Siguiente',
+  },
+};
+
+export const FR_STRINGS: I18nStrings = {
+  sidebar: {
+    searchPlaceholder: 'Rechercher...',
+    searchResults: 'Résultats de recherche',
+    noResults: 'Aucun résultat',
+    hits: 'résultats',
+    collapse: 'Réduire',
+    expand: 'Développer',
+    clearSearch: 'Effacer la recherche',
+    allPosts: 'Tous les articles',
+    catalog: 'Catalogue',
+  },
+  header: {
+    siteTitle: 'v0plex',
+    switchToDark: 'passer au sombre',
+    switchToLight: 'passer au clair',
+  },
+  footer: {
+    siteName: 'v0plex',
+    version: '1.0.0',
+    versionLabel: 'Version',
+    lastUpdated: '{date}',
+    copyright: '2026 sjl473',
+    copyrightSymbol: '©',
+  },
+  pageNav: {
+    home: 'Accueil',
+    previousPage: 'Page précédente',
+    nextPage: 'Page suivante',
+    none: 'Aucun',
+  },
+  codeBlock: {
+    copyCode: 'Copier le code',
+    from: 'de',
+  },
+  boxes: {
+    infoDefault: 'Info: ',
+    warningDefault: 'Avertissement: ',
+    successDefault: 'Succès: ',
+    errorDefault: 'Erreur: ',
+  },
+  code: {
+    loading: 'Chargement du code...',
+    error: 'Erreur de chargement',
+  },
+  postModal: {
+    zoomBack: 'Zoom arrière',
+    previousImage: 'Image précédente',
+    nextImage: 'Image suivante',
+    previous: 'Précédent',
+    next: 'Suivant',
+  },
+  pageMeta: {
+    created: 'Créé',
+    updated: 'Mis à jour',
+    author: 'Auteur :',
+    timeLabel: 'Heure :',
+  },
+  editThisPage: {
+    label: 'Éditer sur Github / Gitlab ↵',
+  },
+  tablePagination: {
+    itemsPerPage: 'éléments',
+    previous: 'Précédent',
+    next: 'Suivant',
+  },
+};
+
+export const DE_STRINGS: I18nStrings = {
+  sidebar: {
+    searchPlaceholder: 'Inhalt suchen...',
+    searchResults: 'Suchergebnisse',
+    noResults: 'Keine Ergebnisse',
+    hits: 'Treffer',
+    collapse: 'Einklappen',
+    expand: 'Aufklappen',
+    clearSearch: 'Suche löschen',
+    allPosts: 'Alle Beiträge',
+    catalog: 'Katalog',
+  },
+  header: {
+    siteTitle: 'v0plex',
+    switchToDark: 'zu dunkel wechseln',
+    switchToLight: 'zu hell wechseln',
+  },
+  footer: {
+    siteName: 'v0plex',
+    version: '1.0.0',
+    versionLabel: 'Version',
+    lastUpdated: '{date}',
+    copyright: '2026 sjl473',
+    copyrightSymbol: '©',
+  },
+  pageNav: {
+    home: 'Startseite',
+    previousPage: 'Vorherige Seite',
+    nextPage: 'Nächste Seite',
+    none: 'Keine',
+  },
+  codeBlock: {
+    copyCode: 'Code kopieren',
+    from: 'von',
+  },
+  boxes: {
+    infoDefault: 'Hinweis: ',
+    warningDefault: 'Warnung: ',
+    successDefault: 'Erfolg: ',
+    errorDefault: 'Fehler: ',
+  },
+  code: {
+    loading: 'Code wird geladen...',
+    error: 'Fehler beim Laden',
+  },
+  postModal: {
+    zoomBack: 'Zoom zurück',
+    previousImage: 'Vorheriges Bild',
+    nextImage: 'Nächstes Bild',
+    previous: 'Vorheriges',
+    next: 'Nächstes',
+  },
+  pageMeta: {
+    created: 'Erstellt',
+    updated: 'Aktualisiert',
+    author: 'Autor:',
+    timeLabel: 'Zeit:',
+  },
+  editThisPage: {
+    label: 'Auf Github / Gitlab bearbeiten ↵',
+  },
+  tablePagination: {
+    itemsPerPage: 'Einträge',
+    previous: 'Vorherige',
+    next: 'Nächste',
+  },
+};
+
+export const JA_STRINGS: I18nStrings = {
+  sidebar: {
+    searchPlaceholder: 'コンテンツを検索...',
+    searchResults: '検索結果',
+    noResults: '検索結果なし',
+    hits: '件',
+    collapse: '折りたたむ',
+    expand: '展開する',
+    clearSearch: '検索をクリア',
+    allPosts: 'すべての記事',
+    catalog: 'カタログ',
+  },
+  header: {
+    siteTitle: 'v0plex',
+    switchToDark: 'ダークモードに切り替え',
+    switchToLight: 'ライトモードに切り替え',
+  },
+  footer: {
+    siteName: 'v0plex',
+    version: '1.0.0',
+    versionLabel: 'バージョン',
+    lastUpdated: '{date}',
+    copyright: '2026 sjl473',
+    copyrightSymbol: '©',
+  },
+  pageNav: {
+    home: 'ホーム',
+    previousPage: '前のページ',
+    nextPage: '次のページ',
+    none: 'なし',
+  },
+  codeBlock: {
+    copyCode: 'コードをコピー',
+    from: '出典',
+  },
+  boxes: {
+    infoDefault: '通知: ',
+    warningDefault: '警告: ',
+    successDefault: '成功: ',
+    errorDefault: 'エラー: ',
+  },
+  code: {
+    loading: 'コードを読み込み中...',
+    error: 'コードの読み込みエラー',
+  },
+  postModal: {
+    zoomBack: 'ズーム戻る',
+    previousImage: '前の画像',
+    nextImage: '次の画像',
+    previous: '前へ',
+    next: '次へ',
+  },
+  pageMeta: {
+    created: '作成日',
+    updated: '更新日',
+    author: '作成者:',
+    timeLabel: '時間:',
+  },
+  editThisPage: {
+    label: 'Github / Gitlab で編集 ↵',
+  },
+  tablePagination: {
+    itemsPerPage: '件',
+    previous: '前へ',
+    next: '次へ',
+  },
+};
+
+export const KO_STRINGS: I18nStrings = {
+  sidebar: {
+    searchPlaceholder: '콘텐츠 검색...',
+    searchResults: '검색 결과',
+    noResults: '검색 결과 없음',
+    hits: '개 일치',
+    collapse: '접기',
+    expand: '펼치기',
+    clearSearch: '검색 지우기',
+    allPosts: '모든 게시물',
+    catalog: '목차',
+  },
+  header: {
+    siteTitle: 'v0plex',
+    switchToDark: '다크 모드로 전환',
+    switchToLight: '라이트 모드로 전환',
+  },
+  footer: {
+    siteName: 'v0plex',
+    version: '1.0.0',
+    versionLabel: '버전',
+    lastUpdated: '{date}',
+    copyright: '2026 sjl473',
+    copyrightSymbol: '©',
+  },
+  pageNav: {
+    home: '홈',
+    previousPage: '이전 페이지',
+    nextPage: '다음 페이지',
+    none: '없음',
+  },
+  codeBlock: {
+    copyCode: '코드 복사',
+    from: '출처',
+  },
+  boxes: {
+    infoDefault: '알림: ',
+    warningDefault: '경고: ',
+    successDefault: '성공: ',
+    errorDefault: '오류: ',
+  },
+  code: {
+    loading: '코드 로딩 중...',
+    error: '코드 로딩 오류',
+  },
+  postModal: {
+    zoomBack: '확대 축소',
+    previousImage: '이전 이미지',
+    nextImage: '다음 이미지',
+    previous: '이전',
+    next: '다음',
+  },
+  pageMeta: {
+    created: '생성일',
+    updated: '수정일',
+    author: '작성자:',
+    timeLabel: '시간:',
+  },
+  editThisPage: {
+    label: 'Github / Gitlab에서 편집 ↵',
+  },
+  tablePagination: {
+    itemsPerPage: '개',
+    previous: '이전',
+    next: '다음',
+  },
+};
+
+export const RU_STRINGS: I18nStrings = {
+  sidebar: {
+    searchPlaceholder: 'Поиск содержимого...',
+    searchResults: 'Результаты поиска',
+    noResults: 'Нет результатов',
+    hits: 'совпадений',
+    collapse: 'Свернуть',
+    expand: 'Развернуть',
+    clearSearch: 'Очистить поиск',
+    allPosts: 'Все записи',
+    catalog: 'Каталог',
+  },
+  header: {
+    siteTitle: 'v0plex',
+    switchToDark: 'переключить на тёмную',
+    switchToLight: 'переключить на светлую',
+  },
+  footer: {
+    siteName: 'v0plex',
+    version: '1.0.0',
+    versionLabel: 'Версия',
+    lastUpdated: '{date}',
+    copyright: '2026 sjl473',
+    copyrightSymbol: '©',
+  },
+  pageNav: {
+    home: 'Главная',
+    previousPage: 'Предыдущая страница',
+    nextPage: 'Следующая страница',
+    none: 'Нет',
+  },
+  codeBlock: {
+    copyCode: 'Копировать код',
+    from: 'из',
+  },
+  boxes: {
+    infoDefault: 'Примечание: ',
+    warningDefault: 'Предупреждение: ',
+    successDefault: 'Успех: ',
+    errorDefault: 'Ошибка: ',
+  },
+  code: {
+    loading: 'Загрузка кода...',
+    error: 'Ошибка загрузки кода',
+  },
+  postModal: {
+    zoomBack: 'Уменьшить',
+    previousImage: 'Предыдущее изображение',
+    nextImage: 'Следующее изображение',
+    previous: 'Предыдущий',
+    next: 'Следующий',
+  },
+  pageMeta: {
+    created: 'Создано',
+    updated: 'Обновлено',
+    author: 'Автор:',
+    timeLabel: 'Время:',
+  },
+  editThisPage: {
+    label: 'Редактировать на Github / Gitlab ↵',
+  },
+  tablePagination: {
+    itemsPerPage: 'записей',
+    previous: 'Предыдущая',
+    next: 'Следующая',
+  },
+};
+
+export const PT_STRINGS: I18nStrings = {
+  sidebar: {
+    searchPlaceholder: 'Pesquisar conteúdo...',
+    searchResults: 'Resultados da pesquisa',
+    noResults: 'Nenhum resultado',
+    hits: 'ocorrências',
+    collapse: 'Recolher',
+    expand: 'Expandir',
+    clearSearch: 'Limpar pesquisa',
+    allPosts: 'Todas as publicações',
+    catalog: 'Catálogo',
+  },
+  header: {
+    siteTitle: 'v0plex',
+    switchToDark: 'mudar para escuro',
+    switchToLight: 'mudar para claro',
+  },
+  footer: {
+    siteName: 'v0plex',
+    version: '1.0.0',
+    versionLabel: 'Versão',
+    lastUpdated: '{date}',
+    copyright: '2026 sjl473',
+    copyrightSymbol: '©',
+  },
+  pageNav: {
+    home: 'Início',
+    previousPage: 'Página anterior',
+    nextPage: 'Página seguinte',
+    none: 'Nenhuma',
+  },
+  codeBlock: {
+    copyCode: 'Copiar código',
+    from: 'de',
+  },
+  boxes: {
+    infoDefault: 'Informação: ',
+    warningDefault: 'Aviso: ',
+    successDefault: 'Sucesso: ',
+    errorDefault: 'Erro: ',
+  },
+  code: {
+    loading: 'Carregando código...',
+    error: 'Erro ao carregar código',
+  },
+  postModal: {
+    zoomBack: 'Reduzir zoom',
+    previousImage: 'Imagem anterior',
+    nextImage: 'Imagem seguinte',
+    previous: 'Anterior',
+    next: 'Seguinte',
+  },
+  pageMeta: {
+    created: 'Criado',
+    updated: 'Atualizado',
+    author: 'Autor:',
+    timeLabel: 'Hora:',
+  },
+  editThisPage: {
+    label: 'Editar no Github / Gitlab ↵',
+  },
+  tablePagination: {
+    itemsPerPage: 'itens',
+    previous: 'Anterior',
+    next: 'Seguinte',
+  },
+};
+
 export const TRANSLATIONS: Partial<Record<Locale, I18nStrings>> = {
   en: EN_STRINGS,
   zh: ZH_STRINGS,
+  es: ES_STRINGS,
+  fr: FR_STRINGS,
+  de: DE_STRINGS,
+  ja: JA_STRINGS,
+  ko: KO_STRINGS,
+  ru: RU_STRINGS,
+  pt: PT_STRINGS,
 };
 
 export const DATE_FORMATS: Partial<Record<Locale, Intl.DateTimeFormatOptions>> = {
@@ -388,6 +1090,53 @@ export const DATE_FORMATS: Partial<Record<Locale, Intl.DateTimeFormatOptions>> =
     month: 'long',
     day: 'numeric',
   },
+  es: {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  },
+  fr: {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  },
+  de: {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  },
+  ja: {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  },
+  ko: {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  },
+  ru: {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  },
+  pt: {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  },
+};
+
+const LOCALE_STRING_MAP: Record<Locale, string> = {
+  en: 'en-US',
+  zh: 'zh-CN',
+  es: 'es-ES',
+  fr: 'fr-FR',
+  de: 'de-DE',
+  ja: 'ja-JP',
+  ko: 'ko-KR',
+  ru: 'ru-RU',
+  pt: 'pt-BR',
 };
 
 export function getStrings(locale: Locale = DEFAULT_LOCALE): I18nStrings {
@@ -396,7 +1145,7 @@ export function getStrings(locale: Locale = DEFAULT_LOCALE): I18nStrings {
 
 export function formatDate(date: Date, locale: Locale = DEFAULT_LOCALE): string {
   const formatOptions = DATE_FORMATS[locale] || DATE_FORMATS[DEFAULT_LOCALE] || { year: 'numeric', month: 'short', day: 'numeric' };
-  const localeString = locale === 'zh' ? 'zh-CN' : 'en-US';
+  const localeString = LOCALE_STRING_MAP[locale] || LOCALE_STRING_MAP[DEFAULT_LOCALE] || 'en-US';
   return date.toLocaleDateString(localeString, formatOptions);
 }
 
@@ -406,3 +1155,23 @@ export function interpolateString(
 ): string {
   return template.replace(/\{(\w+)\}/g, (match, key) => values[key] || match);
 }
+
+// ----------------------------------------------------------------------------
+// SITE TITLE
+// ----------------------------------------------------------------------------
+export const SITE_TITLE_BASE = 'v0plex';
+
+export function getPageTitle(articleTitle?: string): string {
+  return articleTitle ? `${articleTitle} | ${SITE_TITLE_BASE}` : SITE_TITLE_BASE;
+}
+
+// ----------------------------------------------------------------------------
+// SITE METADATA - For Next.js metadata and SEO
+// ----------------------------------------------------------------------------
+
+export const SITE_METADATA = {
+  title: SITE_TITLE_BASE,
+  icons: {
+    icon: '/v0plex_avatar.svg',
+  },
+} as const;

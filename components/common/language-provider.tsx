@@ -66,6 +66,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       const savedLocale = localStorage.getItem(LOCALE_STORAGE_KEY)
       if (savedLocale && isValidLocale(savedLocale)) {
         setLocaleState(savedLocale)
+      } else if (savedLocale && !isValidLocale(savedLocale)) {
+        // Saved locale is no longer enabled, clear it and use default
+        localStorage.removeItem(LOCALE_STORAGE_KEY)
+        // DEFAULT_LOCALE might also be disabled, so use first enabled
+        if (AVAILABLE_LANGUAGES.length > 0) {
+          setLocaleState(AVAILABLE_LANGUAGES[0].code)
+        }
       }
     } catch {
       // Ignore localStorage errors

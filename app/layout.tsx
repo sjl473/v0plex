@@ -1,6 +1,7 @@
 import type {Metadata, Viewport} from 'next'
 import './globals.css'
 import ClientLayout from './client-layout'
+import { SITE_METADATA } from '@/config/site.config'
 
 export const viewport: Viewport = {
     width: 'device-width',
@@ -9,9 +10,8 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-    title: 'v0plex', description: 'Commercial Loan Platform Management Handbooks', icons: {
-        icon: '/v0plex_avatar.svg', // Eximbank logo as favicon
-    },
+    title: SITE_METADATA.title,
+    icons: SITE_METADATA.icons,
 }
 
 export default function RootLayout({

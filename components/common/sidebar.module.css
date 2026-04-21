@@ -383,7 +383,7 @@ html[v0plex-theme="g100"] .directoryStructureContent::-webkit-scrollbar-thumb:ho
 
 .navItem {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     padding: 0.07rem 0.5rem;
     cursor: pointer;
     font-size: 0.48125rem;
@@ -433,7 +433,7 @@ html[v0plex-theme="g100"] .directoryStructureContent::-webkit-scrollbar-thumb:ho
 
 .navItemButton {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     width: 100%;
     background: transparent;
     border: none;
@@ -453,13 +453,14 @@ html[v0plex-theme="g100"] .directoryStructureContent::-webkit-scrollbar-thumb:ho
 
 .navItemText {
     flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow: visible;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .navItemChevron {
     margin-left: 0.25rem;
+    margin-top: 0.1rem;
     display: flex;
     align-items: center;
     justify-content: center;
