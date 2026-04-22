@@ -46,13 +46,13 @@
 
 /* Logo on the left */
 .logo {
-    font-family: 'IBM Plex Mono', monospace;
+    font-family: 'IBM Plex Sans', "Helvetica Neue", Arial, sans-serif;
     font-weight: 600;
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     color: var(--text-primary, #f4f4f4);
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
     flex-shrink: 0;
-    line-height: 1.5;
+    line-height: 1.25;
 }
 
 /* Right side content - all meta rows stacked */
@@ -66,9 +66,9 @@
 
 /* Each meta row */
 .metaRow {
-    font-family: "IBM Plex Mono", monospace;
-    font-size: 0.5rem;
-    line-height: 1.5;
+    font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.75rem;
+    line-height: 1.25;
 }
 
 .metaItem {
@@ -83,15 +83,20 @@
 @media (max-width: 600px) {
     .main {
         padding: 1rem 1rem 1rem var(--content-left-offset-mobile);
+        box-sizing: border-box;
     }
 
     .container {
         flex-direction: column;
         gap: 0.75rem;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .rightContent {
         align-items: flex-start;
         text-align: left;
+        width: 100%;
+        box-sizing: border-box;
     }
 }

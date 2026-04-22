@@ -407,7 +407,7 @@ export default function Sidebar({isMobileOpen, onCloseMobile, width, onResize}: 
                 >
                     <span className={styles.navItemText}>{item.title}</span>
                     <span className={styles.navItemChevron}>
-                {isExpanded ? <ChevronDown size={8}/> : <ChevronRight size={8}/>}
+                {isExpanded ? <ChevronDown size={12}/> : <ChevronRight size={12}/>}
               </span>
                 </button>) : item.path ? (
                     <Link href={`${SITE_CONFIG.URL_PREFIX}${item.path}`} className={styles.navItemLink} onClick={onCloseMobile}>

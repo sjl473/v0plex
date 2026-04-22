@@ -1,78 +1,94 @@
 .header {
-    font-family: 'IBM Plex Sans', sans-serif;
-    font-weight: 400 !important;
-    margin-top: 1.4rem;
-    margin-bottom: 0.7rem;
-    line-height: 1.15;
+    font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 400;
+    margin-top: 0;
+    margin-bottom: 0;
+    line-height: 1.199;
 }
 
-/* H1: Moderate size, responsive */
+/* H1: productive-heading-07 */
 .h1 {
-    font-size: 1.5rem;
-    font-weight: 400 !important;
-    color: #262626;
-    margin-bottom: 1.5rem;
+    font-size: 2.625rem;
+    font-weight: 300;
+    color: #161616;
+    line-height: 1.199;
+    margin: 0 0 1.5rem 0;
+    letter-spacing: 0;
 }
 
 @media (max-width: 1024px) {
     .h1 {
-        font-size: 1.25rem;
+        font-size: 2rem;
     }
 }
 
 @media (max-width: 600px) {
     .h1 {
-        font-size: 1.125rem;
+        font-size: 1.75rem;
     }
 }
 
+/* H2: productive-heading-05 */
 .h2 {
-    font-size: 0.85rem;
-    font-weight: 400 !important;
-    margin-top: 2.5rem;
-    margin-bottom: 1.25rem;
-}
-
-.h3 {
-    font-size: 0.75rem;
-    font-weight: 400 !important;
+    font-size: 1.25rem;
+    font-weight: 400;
     margin-top: 2rem;
     margin-bottom: 1rem;
+    line-height: 1.4;
+    letter-spacing: 0;
 }
 
-.h4 {
-    font-size: 0.65rem;
-    font-weight: 400 !important;
-    margin-top: 1.75rem;
-    margin-bottom: 0.875rem;
-}
-
-.h5 {
-    font-size: 0.6rem;
-    font-weight: 400 !important;
+/* H3: productive-heading-04 */
+.h3 {
+    font-size: 1rem;
+    font-weight: 400;
     margin-top: 1.5rem;
     margin-bottom: 0.75rem;
+    line-height: 1.375;
+    letter-spacing: 0;
 }
 
-.h6 {
-    font-size: 0.55rem;
-    font-weight: 400 !important;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+/* H4: productive-heading-02 */
+.h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
     margin-top: 1.25rem;
-    margin-bottom: 0.625rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.28572;
+    letter-spacing: 0;
 }
 
-/* Section icon for headers h2-h6 */
+/* H5: productive-heading-01 */
+.h5 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.125;
+    letter-spacing: 0;
+}
+
+/* H6: label-01 */
+.h6 {
+    font-size: 0.75rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.32px;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.33333;
+}
+
+/* Section icon for headers h2-h6 — IBM Blue accent */
 .sectionIcon {
-    display: inline-flex;
-    align-items: center;
-    margin-right: 0.5rem;
-    color: var(--v0plex-text-secondary);
-    opacity: 0.6;
-    vertical-align: baseline;
-    position: relative;
-    top: 0.15em;
+    display: inline-flex !important;
+    align-items: center !important;
+    margin-right: 0.5rem !important;
+    color: var(--v0plex-link-primary) !important;
+    opacity: 0.9 !important;
+    vertical-align: baseline !important;
+    position: relative !important;
+    top: 0.15em !important;
 }
 
 .anchorIcon {
@@ -88,18 +104,6 @@
     color: var(--v0plex-link-primary);
 }
 
-/* h2-h6 use IBM Blue */
-.h2, .h3, .h4, .h5, .h6 {
-    color: #002d9c;
-}
-
-:global([v0plex-theme="g100"]) .h2,
-:global([v0plex-theme="g100"]) .h3,
-:global([v0plex-theme="g100"]) .h4,
-:global([v0plex-theme="g100"]) .h5,
-:global([v0plex-theme="g100"]) .h6 {
-    color: #78a9ff;
-}
 
 .navItem.active:not(.hasChildren) {
     background: var(--v0plex-background-active);
@@ -114,17 +118,33 @@ div.navItem.active:not(.hasChildren) {
     border-left-color: var(--v0plex-link-primary) !important;
 }
 
-/* Header colors */
+/* Header colors — IBM Blue for both themes */
 .headerColor0,
 .headerColor1,
 .headerColor2,
 .headerColor3 {
-    color: #262626 !important;
+    color: var(--v0plex-link-primary) !important;
 }
 
 :global([v0plex-theme="g100"]) .headerColor0,
 :global([v0plex-theme="g100"]) .headerColor1,
 :global([v0plex-theme="g100"]) .headerColor2,
 :global([v0plex-theme="g100"]) .headerColor3 {
-    color: #ffffff !important;
+    color: var(--v0plex-link-primary) !important;
+}
+
+/* IBM deep blue (#002d9c Blue 70) in light, readable blue (#a6c8ff Blue 30) in dark — all bold */
+.h1, .h2, .h3, .h4, .h5, .h6 {
+    color: #002d9c !important;
+    font-weight: 600 !important;
+}
+
+:global([v0plex-theme="g100"]) .h1,
+:global([v0plex-theme="g100"]) .h2,
+:global([v0plex-theme="g100"]) .h3,
+:global([v0plex-theme="g100"]) .h4,
+:global([v0plex-theme="g100"]) .h5,
+:global([v0plex-theme="g100"]) .h6 {
+    color: #a6c8ff !important;
+    font-weight: 600 !important;
 }

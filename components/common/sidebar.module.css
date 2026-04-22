@@ -13,7 +13,7 @@
     padding-bottom: env(safe-area-inset-bottom, 0);
     border-top: none;
     box-sizing: border-box;
-    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
     height: calc(100vh - 32px);
@@ -101,8 +101,8 @@ html[v0plex-theme="g100"] .sidebar {
     color: var(--v0plex-icon-secondary);
     z-index: 2;
     pointer-events: none;
-    width: 0.625rem;
-    height: 0.625rem;
+    width: 1rem;
+    height: 1rem;
 }
 
 .searchIcon svg {
@@ -111,14 +111,14 @@ html[v0plex-theme="g100"] .sidebar {
 
 .searchInput {
     width: 100%;
-    height: 1.25rem;
+    height: 1.75rem;
     background: var(--sidebar-search-input-bg);
     border: 1px solid var(--sidebar-search-border);
     color: var(--v0plex-text-primary);
-    padding: 0 1.5rem 0 1.5rem;
-    font-size: 0.5rem;
+    padding: 0 1.75rem 0 1.75rem;
+    font-size: 0.875rem;
     line-height: 1.25rem;
-    font-family: "IBM Plex Mono", "Courier New", monospace;
+    font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
     outline: none;
     border-radius: 0;
     transition: border-color 70ms cubic-bezier(0.2, 0, 0.38, 0.9), background-color 70ms cubic-bezier(0.2, 0, 0.38, 0.9);
@@ -127,13 +127,14 @@ html[v0plex-theme="g100"] .sidebar {
 }
 
 .searchInput::placeholder {
-    font-size: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--v0plex-text-secondary);
 }
 
 .searchInput:focus {
     outline: none;
     background: var(--sidebar-search-input-bg);
-    padding: 0 calc(1.5rem - 1px) 0 calc(1.5rem - 1px);
+    padding: 0 calc(1.75rem - 1px) 0 calc(1.75rem - 1px);
     border: #0f62fe 2px solid;
 }
 
@@ -144,7 +145,7 @@ html[v0plex-theme="g100"] .sidebar {
 
 .searchClearButton {
     position: absolute;
-    right: 0.5rem;
+    right: 0.375rem;
     top: 50%;
     transform: translateY(-50%);
     background: transparent;
@@ -152,12 +153,8 @@ html[v0plex-theme="g100"] .sidebar {
     cursor: pointer;
     color: var(--v0plex-icon-secondary);
     padding: 0.125rem;
-    width: 0.625rem;
-    height: 0.625rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 0.75rem;
+    width: 1rem;
+    height: 1rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -237,14 +234,14 @@ html[v0plex-theme="g100"] .searchResultsList::-webkit-scrollbar-thumb:hover {
 }
 
 .searchResultsHeader {
-    padding: 0.105rem 0.75rem 0.105rem 0.5rem;
-    font-size: 0.48125rem;
-    font-weight: 400;
+    padding: 0.375rem 0.5rem 0.375rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
     color: var(--v0plex-text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.32px;
     border-bottom: 1px solid var(--v0plex-border-subtle);
-    line-height: 0.7rem;
+    line-height: 1rem;
     background: var(--sidebar-header-bg);
     margin: 0;
     flex-shrink: 0;
@@ -252,23 +249,25 @@ html[v0plex-theme="g100"] .searchResultsList::-webkit-scrollbar-thumb:hover {
     position: sticky;
     top: 0;
     z-index: 10;
+    font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
 }
 
 .searchResultItem {
     display: flex;
     align-items: center;
-    padding: 0.07rem 0.5rem;
+    padding: 0.375rem 0.5rem;
     cursor: pointer;
-    font-size: 0.4375rem;
+    font-size: 0.875rem;
     transition: all 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
-    min-height: 0.9625rem;
+    min-height: 1.75rem;
     background: transparent;
     color: var(--v0plex-text-primary);
     border-left: 3px solid transparent;
-    line-height: 0.7rem;
+    line-height: 1.25rem;
     word-break: break-word;
     overflow-wrap: break-word;
     box-sizing: border-box;
+    font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
 }
 
 .searchResultItem.active {
@@ -301,14 +300,14 @@ html[v0plex-theme="g100"] .searchResultsList::-webkit-scrollbar-thumb:hover {
 
 .searchHits {
     margin-left: 8px;
-    font-size: 0.455rem;
+    font-size: 0.75rem;
     color: var(--v0plex-text-secondary);
 }
 
 .searchResultPath {
-    font-size: 0.48125rem;
+    font-size: 0.75rem;
     color: var(--v0plex-text-secondary);
-    line-height: 0.6125rem;
+    line-height: 1rem;
     word-break: break-word;
     overflow-wrap: break-word;
     width: 100%;
@@ -362,16 +361,16 @@ html[v0plex-theme="g100"] .directoryStructureContent::-webkit-scrollbar-thumb:ho
 }
 
 .allArticlesHeader {
-    padding: 0.14rem 0.75rem 0.14rem 0.5rem;
-    font-size: 0.48125rem;
-    font-weight: 400;
+    padding: 0.375rem 0.5rem 0.375rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
     color: var(--v0plex-text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.32px;
     border-top: 1px solid var(--v0plex-border-subtle);
     border-bottom: 1px solid var(--v0plex-border-subtle);
     margin-bottom: 0;
-    line-height: 0.7rem;
+    line-height: 1rem;
     margin-top: 0;
     background: var(--sidebar-header-bg);
     flex-shrink: 0;
@@ -379,21 +378,23 @@ html[v0plex-theme="g100"] .directoryStructureContent::-webkit-scrollbar-thumb:ho
     position: sticky;
     top: 0;
     z-index: 10;
+    font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
 }
 
 .navItem {
     display: flex;
     align-items: flex-start;
-    padding: 0.07rem 0.5rem;
+    padding: 0.375rem 0.5rem;
     cursor: pointer;
-    font-size: 0.48125rem;
+    font-size: 0.875rem;
     transition: all 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
-    min-height: 0.9625rem;
+    min-height: 1.75rem;
     position: relative;
     background: transparent;
     color: var(--v0plex-text-primary);
     border-left: 3px solid transparent;
-    line-height: 0.7875rem;
+    line-height: 1.25rem;
+    font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
 }
 
 .navItem.active:not(.hasChildren) {
@@ -464,20 +465,21 @@ html[v0plex-theme="g100"] .directoryStructureContent::-webkit-scrollbar-thumb:ho
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 0.5rem;
-    height: 0.5rem;
+    width: 0.75rem;
+    height: 0.75rem;
     flex-shrink: 0;
 }
 
 .navChildren {
-    padding-left: 0.75rem;
+    padding-left: 1rem;
 }
 
 .noResults {
-    padding: 0.5rem;
+    padding: 1rem;
     color: var(--v0plex-text-secondary);
-    font-size: 0.4375rem;
+    font-size: 0.875rem;
     text-align: center;
+    font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
 }
 
 .resizeHandle {

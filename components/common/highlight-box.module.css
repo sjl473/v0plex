@@ -2,28 +2,28 @@
 
 .highlightBox {
   position: relative;
-  margin: 1rem 0;
-  padding: 2rem 1rem 0.75rem 0.75rem !important;
+  margin: 1.5rem 0;
+  padding: 2.5rem 1rem 1rem 1rem !important;
   border: 1px solid;
   border-left-width: 1px;
   font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
-  font-size: 0.625rem;
-  line-height: 1.4;
+  font-size: 0.875rem;
+  line-height: 1.42857;
 }
 
 /* Title positioned at top-left - vertically aligned with icon */
 .highlightTitle {
   position: absolute;
-  top: 0.5rem;
-  left: 0.75rem;
+  top: 0.75rem;
+  left: 1rem;
   font-weight: 600;
-  font-size: 0.625rem !important;
-  line-height: 1 !important;
+  font-size: 0.875rem !important;
+  line-height: 1.25 !important;
   margin: 0 !important;
   padding: 0 !important;
   text-transform: uppercase;
   letter-spacing: 0.02em;
-  height: 1rem;
+  height: 1.25rem;
   display: flex;
   align-items: center;
 }
@@ -129,23 +129,11 @@
   color: #161616;
 }
 
-:global(html[v0plex-theme="g100"]) .highlightBoxInfo {
-  background-color: rgba(15, 98, 254, 0.08);
-  border-color: #4589ff;
-  color: #f4f4f4;
-}
-
 /* Warning - Yellow */
 .highlightBoxWarning {
   background-color: #fcf4d6;
   border-color: #f1c21b;
   color: #161616;
-}
-
-:global(html[v0plex-theme="g100"]) .highlightBoxWarning {
-  background-color: rgba(241, 194, 27, 0.08);
-  border-color: #f1c21b;
-  color: #f4f4f4;
 }
 
 /* Success - Green */
@@ -155,12 +143,6 @@
   color: #161616;
 }
 
-:global(html[v0plex-theme="g100"]) .highlightBoxSuccess {
-  background-color: rgba(36, 161, 72, 0.08);
-  border-color: #42be65;
-  color: #f4f4f4;
-}
-
 /* Error - Red */
 .highlightBoxError {
   background-color: #fff1f1;
@@ -168,8 +150,30 @@
   color: #161616;
 }
 
+/* Dark theme Info — blue border */
+:global(html[v0plex-theme="g100"]) .highlightBoxInfo {
+  background-color: #262626;
+  border-color: #4589ff;
+  color: #f4f4f4;
+}
+
+/* Dark theme Warning — yellow border */
+:global(html[v0plex-theme="g100"]) .highlightBoxWarning {
+  background-color: #262626;
+  border-color: #f1c21b;
+  color: #f4f4f4;
+}
+
+/* Dark theme Success — green border */
+:global(html[v0plex-theme="g100"]) .highlightBoxSuccess {
+  background-color: #262626;
+  border-color: #42be65;
+  color: #f4f4f4;
+}
+
+/* Dark theme Error — red border */
 :global(html[v0plex-theme="g100"]) .highlightBoxError {
-  background-color: rgba(218, 30, 40, 0.08);
+  background-color: #262626;
   border-color: #fa4d56;
   color: #f4f4f4;
 }

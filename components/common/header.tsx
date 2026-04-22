@@ -5,7 +5,7 @@ import Link from "next/link"
 import {useTheme} from "./theme-provider"
 import {useLanguage} from "./language-provider"
 import {getLanguageConfig} from "@/config/site.config"
-import {Asleep, Light, Translate, LogoGithub, RightPanelOpen, RightPanelClose} from "@carbon/icons-react"
+import {Asleep, Light, Translate, RightPanelOpen, RightPanelClose} from "@carbon/icons-react"
 import styles from "./header.module.css"
 
 interface CarbonHeaderProps {
@@ -40,9 +40,6 @@ export default function Header({onToggleSidebar, onToggleRightSidebar, isRightSi
                 <button className={styles.themeToggle}>
                     <Asleep size={16}/>
                 </button>
-                <a className={styles.gitLink}>
-                    <LogoGithub size={16}/>
-                </a>
                 <button className={styles.langToggle}>
                     <Translate size={16}/>
                 </button>
@@ -78,16 +75,6 @@ export default function Header({onToggleSidebar, onToggleRightSidebar, isRightSi
             >
                 {theme === "white" ? <Asleep size={16}/> : <Light size={16}/>}
             </button>
-            <a
-                href="https://github.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="GitHub"
-                title="GitHub"
-                className={styles.gitLink}
-            >
-                <LogoGithub size={16}/>
-            </a>
             <button
                 aria-label={`${currentLang.nativeName} → ${nextLang.nativeName}`}
                 title={`${currentLang.nativeName} → ${nextLang.nativeName}`}

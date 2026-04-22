@@ -191,13 +191,13 @@ export const CONTENT_SOURCE_CONFIG = {
 export type ContentSourceConfig = typeof CONTENT_SOURCE_CONFIG;
 
 export const LAYOUT_CONFIG = {
-  SIDEBAR_WIDTH: 300,
-  RIGHT_SIDEBAR_WIDTH: 300, // New right sidebar width
-  LEFT_CONTENT_OFFSET: {
-    pc: '1.25rem',      // PC layout (≥1025px)
-    tablet: '1rem',     // Tablet layout (601px-1024px)
-    mobile: '0.5rem'    // Mobile layout (≤600px) - matches header padding
-  }
+  SIDEBAR_WIDTH: 416,
+  RIGHT_SIDEBAR_WIDTH: 400,
+LEFT_CONTENT_OFFSET: {
+  pc: '1.25rem',      // PC layout (≥1025px)
+  tablet: '1rem',     // Tablet layout (601px-1024px)
+  mobile: '1rem'      // Mobile layout (≤600px) - aligned with hamburger button
+}
 } as const;
 
 export const SITE_CONFIG = {
@@ -1157,7 +1157,12 @@ export function interpolateString(
 }
 
 // ----------------------------------------------------------------------------
-// SITE TITLE
+// ‼️ EDIT THIS PAGE URL
+// ----------------------------------------------------------------------------
+export const EDIT_THIS_PAGE_URL = 'https://github.com/sjl473/v0plex-markdown';
+
+// ----------------------------------------------------------------------------
+// ‼️ SITE TITLE
 // ----------------------------------------------------------------------------
 export const SITE_TITLE_BASE = 'v0plex';
 

@@ -72,7 +72,7 @@ function IconButton({href, icon: Icon, title}: {href: string; icon: typeof Email
             className={styles.iconButton}
             title={title}
         >
-            <Icon size={8} />
+            <Icon size={12} />
         </a>
     )
 }

@@ -3,8 +3,9 @@
     text-align: left;
     margin-top: 2rem; /* Give it some space from content */
     margin-bottom: 0.5rem; /* Small space before pagination */
-    padding: 4px 0;
-    font-size: 11px;
+    padding: 0.5rem 0;
+    font-size: 0.875rem;
+    font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
 }
 .editThisPageLink a {
     display: inline-flex;

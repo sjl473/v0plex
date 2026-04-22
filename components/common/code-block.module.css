@@ -1,6 +1,6 @@
 @media (max-width: 1024px) {
     .syntaxHighlighter {
-        font-size: 0.4375rem !important;
+        font-size: 0.75rem !important;
         /* Ensure code block doesn't expand beyond container */
         max-width: 100% !important;
     }
@@ -14,11 +14,11 @@
 
 .syntaxHighlighter {
     margin: 0 !important;
-    padding: 0.5rem !important;
+    padding: 1rem !important;
     border-radius: 0 !important;
     font-family: "IBM Plex Mono", monospace !important;
-    font-size: 0.4375rem !important;
-    line-height: 1.15 !important;
+    font-size: 0.75rem !important;
+    line-height: 1.5 !important;
     border: none !important;
     display: block !important;
     overflow-x: auto !important;
@@ -75,6 +75,7 @@
 
 
 .codeBlockContainer {
+    margin-top: 1.25rem;
     margin-bottom: 0.7rem;
     position: relative;
     padding: 0;

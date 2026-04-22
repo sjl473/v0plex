@@ -75,7 +75,7 @@
 }
 
 .navLabel {
-    font-size: 0.625rem;
+    font-size: 0.75rem;
     color: #c6c6c6;
     margin-bottom: 0.5rem;
 }
@@ -113,10 +113,10 @@
 
     .navContainer {
         flex-direction: row;
-        /* Mobile: use full width */
         width: 100%;
         margin: 0;
         padding: 0;
+        box-sizing: border-box;
     }
 
     .navLink {
@@ -125,7 +125,6 @@
     }
 
     .navContainer > .navLink:first-child {
-        /* Mobile layout: match header padding */
         padding-left: var(--content-left-offset-mobile) !important;
         padding-top: 0.75rem;
         padding-bottom: 0.75rem;
@@ -133,9 +132,11 @@
     }
 
     .navContainer > .navLink:last-child {
-        padding-right: 1rem;
+        padding-right: 1rem !important;
         padding-left: 0.5rem;
         padding-top: 0.75rem;
         padding-bottom: 0.75rem;
+        text-align: right;
+        align-items: flex-end;
     }
 }

@@ -2,13 +2,13 @@
 
 .blockquote {
   position: relative;
-  margin: 1rem 0 !important;
-  padding: 0.5rem 1rem 0.5rem 0.5rem !important;
+  margin: 1.5rem 0 !important;
+  padding: 1rem 1rem 1rem 1rem !important;
   background-color: rgba(15, 98, 254, 0.04);
   border-left: 6px solid #0f62fe;
   font-family: 'IBM Plex Serif', Georgia, serif;
-  font-size: 0.625rem;
-  line-height: 1.4;
+  font-size: 0.875rem;
+  line-height: 1.42857;
   font-style: normal;
   color: var(--v0plex-text-primary);
   transition: background-color 0.15s ease;
