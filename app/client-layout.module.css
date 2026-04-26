@@ -137,3 +137,14 @@
         box-sizing: border-box;
     }
 }
+
+/* Lock body scroll when mobile sidebar is open */
+.lockScroll {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+.lockScroll .contentWrapper {
+    overflow-y: hidden !important;
+}

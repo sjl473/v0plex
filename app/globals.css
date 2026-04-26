@@ -50,7 +50,7 @@ body[v0plex-theme="white"] {
     --sidebar-results-bg: #e8e8e8;
     --sidebar-header-bg: #d8d8d8;
     --sidebar-item-hover: #e0e0e0;
-    --sidebar-nav-hover: #e8e8e8;
+    --sidebar-nav-hover: #d0d0d0;
     --sidebar-item-selected-bg: #e0e0e0;
     --sidebar-item-selected-border: #0f62fe;
     
@@ -98,7 +98,7 @@ body[v0plex-theme="g100"] {
     --sidebar-results-bg: #2d2d2d;
     --sidebar-header-bg: #333333;
     --sidebar-item-hover: #353535;
-    --sidebar-nav-hover: #2d2d2d;
+    --sidebar-nav-hover: #404040;
     --sidebar-item-selected-bg: #333333;
     --sidebar-item-selected-border: #0f62fe;
     

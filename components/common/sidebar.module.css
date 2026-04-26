@@ -182,6 +182,7 @@ html[v0plex-theme="g100"] .sidebar {
     display: flex;
     flex-direction: column;
     min-height: 0;
+    min-width: 0;
 }
 
 .searchResults {
@@ -194,6 +195,7 @@ html[v0plex-theme="g100"] .sidebar {
     overflow: hidden !important;
     position: relative;
     z-index: 20;
+    min-width: 0;
 }
 
 .searchResultsList {
@@ -206,6 +208,7 @@ html[v0plex-theme="g100"] .sidebar {
     position: relative;
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
 
 .searchResultsList::-webkit-scrollbar {
@@ -268,6 +271,7 @@ html[v0plex-theme="g100"] .searchResultsList::-webkit-scrollbar-thumb:hover {
     overflow-wrap: break-word;
     box-sizing: border-box;
     font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+    min-width: 0;
 }
 
 .searchResultItem.active {
@@ -287,6 +291,7 @@ html[v0plex-theme="g100"] .searchResultsList::-webkit-scrollbar-thumb:hover {
     display: block;
     width: 100%;
     box-sizing: border-box;
+    min-width: 0;
 }
 
 .searchResultTitle {
@@ -322,6 +327,7 @@ html[v0plex-theme="g100"] .searchResultsList::-webkit-scrollbar-thumb:hover {
     overflow: hidden !important;
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
 
 .directoryStructureContent {
@@ -333,6 +339,7 @@ html[v0plex-theme="g100"] .searchResultsList::-webkit-scrollbar-thumb:hover {
     position: relative;
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
 
 .directoryStructureContent::-webkit-scrollbar {
@@ -395,6 +402,7 @@ html[v0plex-theme="g100"] .directoryStructureContent::-webkit-scrollbar-thumb:ho
     border-left: 3px solid transparent;
     line-height: 1.25rem;
     font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+    min-width: 0;
 }
 
 .navItem.active:not(.hasChildren) {
@@ -406,7 +414,7 @@ html[v0plex-theme="g100"] .directoryStructureContent::-webkit-scrollbar-thumb:ho
 }
 
 .navItem.hasChildren {
-    font-weight: 400;
+    font-weight: 600;
     color: var(--v0plex-text-primary);
 }
 
@@ -430,6 +438,7 @@ html[v0plex-theme="g100"] .directoryStructureContent::-webkit-scrollbar-thumb:ho
     display: block;
     width: 100%;
     box-sizing: border-box;
+    min-width: 0;
 }
 
 .navItemButton {
@@ -446,6 +455,7 @@ html[v0plex-theme="g100"] .directoryStructureContent::-webkit-scrollbar-thumb:ho
     cursor: pointer;
     padding: 0;
     text-align: left;
+    min-width: 0;
 }
 
 .navItemButton:focus {
@@ -457,6 +467,7 @@ html[v0plex-theme="g100"] .directoryStructureContent::-webkit-scrollbar-thumb:ho
     overflow: visible;
     word-break: break-word;
     overflow-wrap: break-word;
+    min-width: 0;
 }
 
 .navItemChevron {
@@ -506,6 +517,9 @@ html[v0plex-theme="g100"] .directoryStructureContent::-webkit-scrollbar-thumb:ho
     .sidebar {
         transform: translateX(-100%);
         transition: transform 0.11s cubic-bezier(0.2, 0, 0.38, 0.9);
+        width: 100vw !important;
+        max-width: 100vw !important;
+        min-width: 0 !important;
     }
 
     .sidebar.mobileOpen {

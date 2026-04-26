@@ -104,7 +104,7 @@ export default function ClientLayout({
     return (<ThemeProvider>
         <LanguageProvider>
         <MathJaxProvider>
-            <div className={styles.container}>
+            <div className={`${styles.container} ${isMobileSidebarOpen ? styles.lockScroll : ''}`}>
                 <Header onToggleSidebar={toggleMobileSidebar} onToggleRightSidebar={toggleRightSidebar} isRightSidebarOpen={isRightSidebarOpen} isSidebarOpen={isMobileSidebarOpen}/>
                 <div className={styles.layout}>
                     <Sidebar

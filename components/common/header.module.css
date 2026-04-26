@@ -7,7 +7,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 1rem;
+    padding: 0 1rem 0 0.5rem;
     position: fixed;
     top: 0;
     left: 0;
@@ -207,6 +207,25 @@
         display: flex !important;
         /* Remove left padding to align icon with content */
         padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    .mobileMenuBtn .hamburgerLine {
+        left: 0;
+        transform: none;
+    }
+
+    .mobileMenuBtn.active .hamburgerLine:nth-child(1) {
+        transform: rotate(45deg);
+    }
+
+    .mobileMenuBtn.active .hamburgerLine:nth-child(2) {
+        opacity: 0;
+        transform: scaleX(0);
+    }
+
+    .mobileMenuBtn.active .hamburgerLine:nth-child(3) {
+        transform: rotate(-45deg);
     }
 
     .leftSection {
