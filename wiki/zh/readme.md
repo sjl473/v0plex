@@ -49,7 +49,6 @@
 | `pnpm test` | 启动 Vitest 交互式测试运行器（监视模式）。|
 | `pnpm test:ui` | 启动 Vitest 并打开图形化 UI 界面。|
 | `pnpm test:run` | 一次性运行所有测试并退出（适用于 CI 流水线）。|
-| `pnpm test:coverage` | 运行测试并生成代码覆盖率报告。|
 
 
 ## 常用命令速查

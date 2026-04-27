@@ -49,8 +49,6 @@ All commands are defined in [`package.json`](package.json) and executed with `pn
 | `pnpm test` | Starts the Vitest interactive test runner (watch mode). |
 | `pnpm test:ui` | Starts Vitest and opens the graphical UI. |
 | `pnpm test:run` | Runs all tests once and exits (suitable for CI pipelines). |
-| `pnpm test:coverage` | Runs tests and generates a code coverage report. |
-
 
 ## Common Commands Cheat Sheet
 
