@@ -249,6 +249,7 @@ export enum VmdErrorCode {
   BUILD_GIT_NOT_AVAILABLE = 'E6004',
   BUILD_INVALID_LANGUAGE_FOLDER = 'E6005',
   BUILD_I18N_PREFIX_MISMATCH = 'E6006',
+  BUILD_INVALID_PREFIX_FORMAT = 'E6007',
 
   // Filesystem operation errors (E7xxx)
   FS_CLEAN_FAILED = 'E7000',
@@ -373,6 +374,7 @@ export const ErrorMessages: Record<VmdErrorCode, (details?: Record<string, any>)
   [VmdErrorCode.BUILD_GIT_NOT_AVAILABLE]: (d) => `Git is not available. Please install git or remove the @git placeholder from frontmatter.`,
   [VmdErrorCode.BUILD_INVALID_LANGUAGE_FOLDER]: (d) => `Invalid language folder found: "${d?.invalidFolders}". Valid folders: ${d?.validFolders}`,
   [VmdErrorCode.BUILD_I18N_PREFIX_MISMATCH]: (d) => `i18n prefix mismatch: "${d?.prefixPath}" exists in [${d?.pageLocales}] but missing [${d?.missingLocales}]. Configured languages: [${d?.configuredLocales}]`,
+  [VmdErrorCode.BUILD_INVALID_PREFIX_FORMAT]: (d) => `Invalid file/folder name format: "${d?.name}". All markdown files and folders must use the "_NN_name" format with a leading underscore.`,
 
   // Filesystem operation errors
   [VmdErrorCode.FS_CLEAN_FAILED]: (d) => `Failed to clean directory: ${d?.error}`,
@@ -887,7 +889,7 @@ export class VmdUtil {
     return new Date().toISOString().split('T')[0];
   }
 
-  public resolveAuthor(value: string): string {
+  public resolveAuthor(value: string, filePath?: string): string {
     if (!value.includes('@git')) return value;
 
     // Remote mode: use .git in dev folder (downloaded repo)
@@ -897,9 +899,39 @@ export class VmdUtil {
     // Get Git user info
     let gitAuthorString = 'Unknown Author';
     try {
-      const name = execSync('git config user.name', { encoding: 'utf8', stdio: 'pipe', cwd: gitCwd }).trim();
-      const email = execSync('git config user.email', { encoding: 'utf8', stdio: 'pipe', cwd: gitCwd }).trim();
-      if (name && email) gitAuthorString = `${name}->${email}`;
+      if (filePath) {
+        const relativePath = path.relative(gitCwd, filePath);
+        const result = execSync(
+          `git log --follow --format="%an->%ae" -- "${relativePath}"`,
+          { encoding: 'utf8', stdio: 'pipe', cwd: gitCwd }
+        ).trim();
+
+        if (result) {
+          const lines = result.split('\n').filter(Boolean);
+          const seen = new Set<string>();
+          const uniqueAuthors: string[] = [];
+          for (const line of lines) {
+            const match = line.match(/^(.+)->(.+)$/);
+            if (match) {
+              const email = match[2].trim();
+              if (!seen.has(email)) {
+                seen.add(email);
+                uniqueAuthors.push(`${match[1].trim()}->${email}`);
+              }
+            }
+          }
+          if (uniqueAuthors.length > 0) {
+            gitAuthorString = uniqueAuthors.reverse().join(' | ');
+          }
+        }
+      }
+
+      // Fallback to git config user if no history found
+      if (gitAuthorString === 'Unknown Author') {
+        const name = execSync('git config user.name', { encoding: 'utf8', stdio: 'pipe', cwd: gitCwd }).trim();
+        const email = execSync('git config user.email', { encoding: 'utf8', stdio: 'pipe', cwd: gitCwd }).trim();
+        if (name && email) gitAuthorString = `${name}->${email}`;
+      }
     } catch { /* Git not available */ }
 
     // Pure @git direct replacement
@@ -1162,10 +1194,10 @@ export class VmdUtil {
     const validLocaleFolders = new Set(AVAILABLE_LANGUAGES.map(lang => lang.folder));
     // console.log(`[Build] Found items in ${dir}: ${items.join(', ')}`);
 
-    // Sort by number prefix (handle both _01_ and 01_ formats)
+    // Sort by number prefix (_NN_ format only)
     items.sort((a, b) => {
       const getNum = (s: string) => {
-        const m = s.match(/^_?(\d+)_/);
+        const m = s.match(/^_(\d+)_/);
         return m ? parseInt(m[1], 10) : null;
       };
       const numA = getNum(a), numB = getNum(b);
@@ -1200,12 +1232,19 @@ export class VmdUtil {
         }
         // Regular section (no number prefix)
         else {
-          // console.log(`[Build] Creating section: ${item}`);
-          const section: NavigationNode = { title: this.cleanTitle(item, true), type: 'section', locale: locale, children: [] };
-          navContainer.push(section);
-          this.traverseDirectory(srcPath, section.children, markdownCompiler, locale);
+          // Enforce _NN_ prefix for all non-language directories too
+          const location = { file: path.relative(this.projectRoot, srcPath) };
+          this.createError(VmdErrorCode.BUILD_INVALID_PREFIX_FORMAT, { name: item }, location, { report: true });
+          return;
         }
       } else if (stats.isFile()) {
+        // Enforce _NN_ prefix for all markdown and tsx files
+        const ext = path.extname(item).toLowerCase();
+        if ((ext === '.md' || ext === '.mdx' || ext === '.tsx') && !/^_\d+_/.test(item)) {
+          const location = { file: path.relative(this.projectRoot, srcPath) };
+          this.createError(VmdErrorCode.BUILD_INVALID_PREFIX_FORMAT, { name: item }, location, { report: true });
+          return;
+        }
         this.processFile(srcPath, navContainer, markdownCompiler, locale);
       }
     });
@@ -1247,7 +1286,7 @@ export class VmdUtil {
       const tags = this.parseTags(attributes.tags);
       const createdAt = this.resolveDate(attributes.created_at as string, srcPath, 'earliest');
       const lastUpdatedAt = this.resolveDate(attributes.last_updated_at as string, srcPath, 'latest');
-      const resolvedAuthor = this.resolveAuthor(attributes.author as string);
+      const resolvedAuthor = this.resolveAuthor(attributes.author as string, srcPath);
 
       let generatedFiles: string[] = [];
       let usedImages: { originalName: string; hashName: string }[] = [];
@@ -1341,10 +1380,10 @@ export class VmdUtil {
           // Extract number prefix from path
           const parts: string[] = [];
           node.mdPath.split(path.sep).forEach(part => {
-            const match = part.match(/^_?(\d+)/);
+            const match = part.match(/^_(\d+)/);
             if (match) parts.push(match[1]);
           });
-          const baseMatch = path.basename(node.mdPath).match(/^_?(\d+)/);
+          const baseMatch = path.basename(node.mdPath).match(/^_(\d+)/);
           if (baseMatch) {
             if (parts.length > 0 && !node.mdPath.endsWith(path.basename(node.mdPath))) parts.push(baseMatch[1]);
             result.push({ node, prefixPath: parts.join('_'), locale: node.locale || '' });

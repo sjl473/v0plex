@@ -23,8 +23,6 @@ pnpm run build
 pnpm run dev
 ```
 
-开发服务器支持热重载。当你修改 Markdown 文件后，需要重新运行 VMD 编译才能看到变化。修改 React 组件或样式则会自动更新。
-
 ## 在离线网环境下部署（未完待续）
 
 todo
