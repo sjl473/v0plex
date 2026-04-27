@@ -253,7 +253,7 @@ export const TAGS_CONFIG = {
 } as const;
 
 /**
- * DEFAULT_LOCALE - Default language when none is selected
+ * ‼️ DEFAULT_LOCALE - Default language when none is selected
  * Must be one of the ENABLED_LANGUAGES
  */
 export const DEFAULT_LOCALE: Locale = 'en';
@@ -1171,7 +1171,7 @@ export function getPageTitle(articleTitle?: string): string {
 }
 
 // ----------------------------------------------------------------------------
-// SITE METADATA - For Next.js metadata and SEO
+// ‼️ SITE METADATA - Avatar
 // ----------------------------------------------------------------------------
 
 export const SITE_METADATA = {
