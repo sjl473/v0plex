@@ -10,7 +10,7 @@
     "start": "next start",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:run": "vitest run",
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@carbon/charts": "latest",
