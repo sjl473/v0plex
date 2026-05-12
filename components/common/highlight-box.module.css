@@ -1,29 +1,32 @@
 /* Carbon Design System - Inline Notification Style */
 
 .highlightBox {
-  position: relative;
-  margin: 1.5rem 0;
-  padding: 2.5rem 1rem 1rem 1rem !important;
-  border: 1px solid;
-  border-left-width: 1px;
+  display: flex;
+  width: 100%;
+  margin: 1rem 0;
+  padding: 1rem !important;
+  border: none;
+  border-left: 3px solid;
   font-family: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
   font-size: 0.875rem;
   line-height: 1.42857;
+  border-radius: 0;
+}
+
+.highlightContentWrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 /* Title positioned at top-left - vertically aligned with icon */
 .highlightTitle {
-  position: absolute;
-  top: 0.75rem;
-  left: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.875rem !important;
   line-height: 1.25 !important;
-  margin: 0 !important;
+  margin: 0 0 0.25rem 0 !important;
   padding: 0 !important;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-  height: 1.25rem;
+  letter-spacing: 0.01em;
   display: flex;
   align-items: center;
 }
@@ -63,14 +66,12 @@
 
 /* Icon positioned at top-right - same vertical position as title */
 .iconWrapper {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  width: 1rem;
-  height: 1rem;
+  width: 1.25rem;
+  margin-right: 1rem;
+  padding-top: 0.125rem;
 }
 
 /* Icon colors */
@@ -108,10 +109,14 @@
 
 /* Content */
 .highlightContent {
-  font-weight: 400;
-  font-size: 0.625rem;
-  line-height: 1.4;
+  font-size: 0.875rem;
+  line-height: 1.42857;
   color: inherit;
+}
+
+.highlightContent strong,
+.highlightContent b {
+  font-weight: 700 !important;
 }
 
 .highlightContent p {
@@ -186,4 +191,17 @@
 /* Nested elements inherit background */
 .highlightBox * {
   background-color: transparent !important;
+}
+
+@media (max-width: 1024px) {
+  .highlightBox {
+    margin: 1rem 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .highlightBox {
+    margin: 1rem 0;
+    padding: 1rem 0.75rem !important;
+  }
 }

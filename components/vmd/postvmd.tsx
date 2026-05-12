@@ -2,7 +2,7 @@
 
 import React, { useState, Children, ReactElement, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { CaretLeft, CaretRight, ZoomOut } from '@carbon/icons-react';
+import { CaretLeft, CaretRight, CaretUp, CaretDown, Close, ZoomIn, ZoomOut, Reset } from '@carbon/icons-react';
 import { Button } from '@carbon/react';
 import styles from './postvmd.module.css';
 import { Pvmd } from './pvmd';
@@ -52,7 +52,60 @@ export function Rtvmd({ children }: { children: React.ReactNode }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
     const [useVerticalNav, setUseVerticalNav] = useState(false);
+    const [zoom, setZoom] = useState(1);
+    const [offset, setOffset] = useState({ x: 0, y: 0 });
+    const [isDragging, setIsDragging] = useState(false);
+    const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
     const imageWrapperRef = useRef<HTMLDivElement>(null);
+
+    const handleZoomIn = useCallback((e?: any) => {
+        e?.stopPropagation?.();
+        setZoom(prev => Math.min(prev + 0.5, 4));
+    }, []);
+
+    const handleZoomOut = useCallback((e?: any) => {
+        e?.stopPropagation?.();
+        setZoom(prev => {
+            const newZoom = Math.max(prev - 0.5, 1);
+            if (newZoom === 1) setOffset({ x: 0, y: 0 });
+            return newZoom;
+        });
+    }, []);
+
+    const handleResetZoom = useCallback((e?: any) => {
+        e?.stopPropagation?.();
+        setZoom(1);
+        setOffset({ x: 0, y: 0 });
+    }, []);
+
+    const handleMouseDown = (e: React.MouseEvent) => {
+        if (zoom > 1) {
+            setIsDragging(true);
+            setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
+        }
+    };
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (isDragging && zoom > 1) {
+            setOffset({
+                x: e.clientX - dragStart.x,
+                y: e.clientY - dragStart.y
+            });
+        }
+    };
+
+    const handleMouseUp = () => {
+        setIsDragging(false);
+    };
+
+    const handleWheel = (e: React.WheelEvent) => {
+        if (!isModalOpen) return;
+        if (e.deltaY < 0) {
+            handleZoomIn();
+        } else {
+            handleZoomOut();
+        }
+    };
 
     // Check if we need to use vertical navigation based on container width
     useEffect(() => {
@@ -81,6 +134,8 @@ export function Rtvmd({ children }: { children: React.ReactNode }) {
         e?.stopPropagation?.();
         if (hasMultiple) {
             setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+            setZoom(1);
+            setOffset({ x: 0, y: 0 });
         }
     }, [hasMultiple, images.length]);
 
@@ -88,6 +143,8 @@ export function Rtvmd({ children }: { children: React.ReactNode }) {
         e?.stopPropagation?.();
         if (hasMultiple) {
             setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+            setZoom(1);
+            setOffset({ x: 0, y: 0 });
         }
     }, [hasMultiple, images.length]);
 
@@ -103,12 +160,26 @@ export function Rtvmd({ children }: { children: React.ReactNode }) {
         e?.preventDefault?.();
         e?.stopPropagation?.();
         setIsModalOpen(false);
+        setZoom(1);
+        setOffset({ x: 0, y: 0 });
         // Restore body scroll
         document.body.style.overflow = '';
     }, []);
 
     useEffect(() => {
         setMounted(true);
+
+        // Preload next and previous images
+        if (hasMultiple) {
+            const nextIdx = (currentIndex + 1) % images.length;
+            const prevIdx = (currentIndex - 1 + images.length) % images.length;
+            
+            const imgNext = new Image();
+            imgNext.src = images[nextIdx].src;
+            
+            const imgPrev = new Image();
+            imgPrev.src = images[prevIdx].src;
+        }
 
         // Add keyboard navigation support for modal
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -125,47 +196,7 @@ export function Rtvmd({ children }: { children: React.ReactNode }) {
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isModalOpen, prevImage, nextImage, closeModal]);
-
-    const Modal = () => {
-        if (!isModalOpen || !mounted) return null;
-
-        return createPortal(
-            <div className={styles.modalOverlay} onClick={closeModal}>
-                <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-                    <Button className={styles.modalCloseBtn} onClick={closeModal} kind="ghost" size="lg">
-                        <ZoomOut size={32} />
-                    </Button>
-                    
-                    {hasMultiple && (
-                        <Button className={`${styles.modalNavBtn} ${styles.modalPrev}`} onClick={prevImage} kind="ghost" size="lg">
-                            <CaretLeft size={32} />
-                        </Button>
-                    )}
-
-                    <img
-                        src={currentImage.src}
-                        alt={currentImage.alt}
-                        className={styles.modalImage}
-                    />
-
-                    {hasMultiple && (
-                        <Button className={`${styles.modalNavBtn} ${styles.modalNext}`} onClick={nextImage} kind="ghost" size="lg">
-                            <CaretRight size={32} />
-                        </Button>
-                    )}
-                    
-                    <div className={styles.modalCaption}>
-                        {hasMultiple && <span className={styles.modalCounter}>{counterText}</span>}
-                        <div className={styles.modalCaptionText}>
-                            {currentImage.title || currentImage.alt}
-                        </div>
-                    </div>
-                </div>
-            </div>,
-            document.body
-        );
-    };
+    }, [isModalOpen, prevImage, nextImage, closeModal, currentIndex, images, hasMultiple]);
 
     return (
         <div className={styles.rightColumn}>
@@ -190,13 +221,21 @@ export function Rtvmd({ children }: { children: React.ReactNode }) {
                     <>
                         {useVerticalNav ? (
                             <>
-                                <div className={`${styles.navArrow} ${styles.navArrowUp}`} onClick={prevImage} />
-                                <div className={`${styles.navArrow} ${styles.navArrowDown}`} onClick={nextImage} />
+                                <div className={`${styles.navArrow} ${styles.navArrowUp}`} onClick={prevImage}>
+                                    <CaretUp size={24} />
+                                </div>
+                                <div className={`${styles.navArrow} ${styles.navArrowDown}`} onClick={nextImage}>
+                                    <CaretDown size={24} />
+                                </div>
                             </>
                         ) : (
                             <>
-                                <div className={`${styles.navArrow} ${styles.navArrowLeft}`} onClick={prevImage} />
-                                <div className={`${styles.navArrow} ${styles.navArrowRight}`} onClick={nextImage} />
+                                <div className={`${styles.navArrow} ${styles.navArrowLeft}`} onClick={prevImage}>
+                                    <CaretLeft size={24} />
+                                </div>
+                                <div className={`${styles.navArrow} ${styles.navArrowRight}`} onClick={nextImage}>
+                                    <CaretRight size={24} />
+                                </div>
                             </>
                         )}
                     </>
@@ -209,7 +248,64 @@ export function Rtvmd({ children }: { children: React.ReactNode }) {
                 </Pvmd>
             </div>
 
-            <Modal />
+            {isModalOpen && mounted && createPortal(
+                <div className={styles.modalOverlay} onClick={closeModal} onWheel={handleWheel}>
+                    <div className={styles.modalToolbar}>
+                        <Button className={styles.modalToolbarBtn} onClick={handleZoomIn} kind="ghost" size="lg" title="Zoom In">
+                            <ZoomIn size={24} />
+                        </Button>
+                        <Button className={styles.modalToolbarBtn} onClick={handleZoomOut} kind="ghost" size="lg" title="Zoom Out">
+                            <ZoomOut size={24} />
+                        </Button>
+                        <Button className={styles.modalToolbarBtn} onClick={handleResetZoom} kind="ghost" size="lg" title="Reset Zoom">
+                            <Reset size={24} />
+                        </Button>
+                        <Button className={`${styles.modalToolbarBtn} ${styles.modalCloseBtn}`} onClick={closeModal} kind="ghost" size="lg" title="Close">
+                            <Close size={24} />
+                        </Button>
+                    </div>
+
+                    <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+                        
+                        {hasMultiple && (
+                            <Button className={`${styles.modalNavBtn} ${styles.modalPrev}`} onClick={prevImage} kind="ghost" size="lg">
+                                <CaretLeft size={32} />
+                            </Button>
+                        )}
+
+                        <img
+                            src={currentImage.src}
+                            alt={currentImage.alt}
+                            className={styles.modalImage}
+                            style={{ 
+                                transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
+                                cursor: zoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default',
+                                transition: isDragging ? 'none' : 'transform 0.2s ease-out'
+                            }}
+                            onMouseDown={handleMouseDown}
+                            onMouseMove={handleMouseMove}
+                            onMouseUp={handleMouseUp}
+                            onMouseLeave={handleMouseUp}
+                            onDoubleClick={handleResetZoom}
+                            draggable={false}
+                        />
+
+                        {hasMultiple && (
+                            <Button className={`${styles.modalNavBtn} ${styles.modalNext}`} onClick={nextImage} kind="ghost" size="lg">
+                                <CaretRight size={32} />
+                            </Button>
+                        )}
+                        
+                        <div className={styles.modalCaption}>
+                            {hasMultiple && <span className={styles.modalCounter}>{counterText}</span>}
+                            <div className={styles.modalCaptionText}>
+                                {currentImage.title || currentImage.alt}
+                            </div>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
         </div>
     );
 }

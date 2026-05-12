@@ -1,48 +1,41 @@
-/* Modern Blockquote - Left Accent Line Style */
+/* IBM Carbon Design System inspired Blockquote */
 
 .blockquote {
   position: relative;
-  margin: 1.5rem 0 !important;
-  padding: 1rem 1rem 1rem 1rem !important;
-  background-color: rgba(15, 98, 254, 0.04);
-  border-left: 6px solid #0f62fe;
-  font-family: 'IBM Plex Serif', Georgia, serif;
+  margin: 2rem 0 !important;
+  padding: 1.25rem 2rem !important;
+  background-color: var(--v0plex-background-hover, #f4f4f4);
+  border-left: 4px solid #0f62fe;
+  font-family: 'IBM Plex Mono', 'Menlo', 'Courier', monospace !important;
   font-size: 0.875rem;
-  line-height: 1.42857;
-  font-style: normal;
+  line-height: 1.5;
+  font-style: normal !important;
+  font-weight: bold !important;
   color: var(--v0plex-text-primary);
-  transition: background-color 0.15s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
-.blockquote:hover {
-  background-color: rgba(15, 98, 254, 0.08);
-}
-
-/* Dark theme */
+/* Dark theme overrides */
 :global(html[v0plex-theme="g100"]) .blockquote {
-  background-color: rgba(69, 137, 255, 0.06);
+  background-color: #262626; /* Gray 90 */
   border-left-color: #4589ff;
 }
 
+.blockquote:hover {
+  background-color: var(--v0plex-background-active, #e0e0e0);
+}
+
 :global(html[v0plex-theme="g100"]) .blockquote:hover {
-  background-color: rgba(69, 137, 255, 0.1);
+  background-color: #333333;
 }
 
 /* Quote content */
 .blockquote p {
   margin: 0;
   display: block;
-  font-family: 'IBM Plex Serif', Georgia, serif;
-  font-style: normal !important;
-}
-
-/* Remove default quote marks */
-.blockquote::before {
-  content: none;
-}
-
-:global(html[v0plex-theme="g100"]) .blockquote::before {
-  content: none;
+  font-family: inherit !important;
+  font-style: inherit !important;
+  font-weight: inherit !important;
 }
 
 /* VMD color variations for the left border */
@@ -69,15 +62,16 @@
 :global(html[v0plex-theme="g100"]) .blockquote.color9 { border-left-color: #fddc69; }
 
 /* Reset nested styles */
-.blockquote * {
+.blockquote *,
+.blockquote em,
+.blockquote i {
   text-indent: 0 !important;
+  font-style: normal !important;
+  font-weight: bold !important;
 }
 
-/* Ensure all text in blockquote uses serif and normal style */
-.blockquote,
-.blockquote *,
-.blockquote p,
-.blockquote span {
-  font-family: 'IBM Plex Serif', Georgia, serif !important;
-  font-style: normal !important;
+/* Remove default quote marks */
+.blockquote::before,
+.blockquote::after {
+  content: none !important;
 }

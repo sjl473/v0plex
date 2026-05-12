@@ -17,7 +17,7 @@ export default function ResponsiveImage({
                                             src,
                                             alt,
                                             caption,
-                                            maxWidth = '100%',
+                                            maxWidth,
                                             aspectRatio = 'auto',
                                             className = '',
                                             priority = false
@@ -44,13 +44,13 @@ export default function ResponsiveImage({
 
     const {width, height} = getImageDimensions()
 
-    const containerClasses = [styles.container, styles[`theme-${theme}`], isHovering ? styles.hover : '', className].filter(Boolean).join(' ')
+    const containerClasses = [styles.container, styles[`theme-${theme}`], className].filter(Boolean).join(' ')
 
     const imageContainerClasses = [styles.imageContainer, styles[`aspect-${aspectRatio}`]].join(' ')
 
     return (<figure
         className={containerClasses}
-        style={{maxWidth}}
+        style={maxWidth ? {maxWidth} : {}}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
     >

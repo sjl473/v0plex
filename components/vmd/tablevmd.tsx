@@ -19,8 +19,8 @@ import styles from './tablevmd.module.css';
 export function Tablevmd({ children }: { children: ReactNode }) {
   const { theme } = useTheme();
   const { strings } = useLanguage();
+  const [pageSize, setPageSize] = useState(8);
   const [page, setPage] = useState(1);
-  const pageSize = 8;
   const tableRef = useRef<HTMLDivElement>(null);
   const paginationRef = useRef<HTMLDivElement>(null);
 
@@ -72,33 +72,39 @@ export function Tablevmd({ children }: { children: ReactNode }) {
   return (
     <div className={styles.tableContainer}>
       <Theme theme={theme}>
-        {/* Table scroll container */}
-        <div className={`${styles.tableResponsiveWrapper} table-responsive-wrapper`}>
-          <div className={`${styles.tablePaginatedContainer} table-paginated-container`} ref={tableRef}>
-            <Table size="xs" stickyHeader={false}>
-              {head}
-              <TableBody>
-                {paginatedRows}
-              </TableBody>
-            </Table>
+        {/* Table container with separate scrollable area and pagination */}
+        <div className={styles.tableOuterWrapper}>
+          <div className={`${styles.tableResponsiveWrapper} table-responsive-wrapper`}>
+            <div ref={tableRef}>
+              <Table size="xs" stickyHeader={false}>
+                {head}
+                <TableBody>
+                  {paginatedRows}
+                </TableBody>
+              </Table>
+            </div>
           </div>
+          {/* Pagination outside scroll container - does not scroll horizontally with table */}
+          {totalRows > 0 && (
+            <div className={styles.paginationWrapper} ref={paginationRef}>
+              <Pagination
+                page={page}
+                pageSize={pageSize}
+                pageSizes={[8, 16, 32, 64, 128]}
+                totalItems={totalRows}
+                onChange={({ page, pageSize }: { page: number; pageSize: number }) => {
+                  setPage(page);
+                  setPageSize(pageSize);
+                }}
+                itemsPerPageText={strings.tablePagination.itemsPerPage}
+                itemRangeText={(min, max, total) => `${min}-${max} / ${total}`}
+                pageRangeText={(current, total) => `${current} / ${total}`}
+                backwardText={strings.tablePagination.previous}
+                forwardText={strings.tablePagination.next}
+              />
+            </div>
+          )}
         </div>
-        {/* Pagination outside scroll container - fixed at bottom */}
-        {shouldPaginate && (
-          <div className={styles.paginationWrapper} ref={paginationRef}>
-            <Pagination
-              page={page}
-              pageSize={pageSize}
-              pageSizes={[pageSize]}
-              totalItems={totalRows}
-              onChange={({ page }: { page: number }) => setPage(page)}
-              itemsPerPageText={strings.tablePagination.itemsPerPage}
-              pageRangeText={() => ""}
-              backwardText={strings.tablePagination.previous}
-              forwardText={strings.tablePagination.next}
-            />
-          </div>
-        )}
       </Theme>
     </div>
   );

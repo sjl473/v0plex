@@ -119,6 +119,17 @@
         max-width: calc(100% - var(--sidebar-width) - var(--right-sidebar-width)) !important;
         box-sizing: border-box;
     }
+
+    .contentWrapper {
+        max-width: 100%; /* Default to full available width on PC */
+        margin-right: auto;
+    }
+}
+
+@media (min-width: 2500px) {
+    .contentWrapper {
+        max-width: 60%; /* Limit to 60% only for extreme zoom-out or ultra-wide screens */
+    }
 }
 
 @media (max-width: 600px) {

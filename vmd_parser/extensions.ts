@@ -472,7 +472,6 @@ export const createPostBlock = (assetProcessor?: any, imageWebPrefix?: string, f
         .map((img: any) => {
           let src = img.src;
           if (assetProcessor && imageWebPrefix) {
-            // 每次引用都处理图片并生成新的哈希文件名
             const hash = assetProcessor.processImageAndGetHash(img.src, filePath);
             if (hash) {
               const ext = path.extname(img.src).toLowerCase();
@@ -502,7 +501,7 @@ export const createCustomBlock = (name: string) => {
     name: name,
     level: 'block' as const,
     start(src: string) {
-      const pattern = new RegExp(`<${name}>`, 'g');
+      const pattern = new RegExp(`<${name}[^>]*>`, 'g');
       let match;
       while ((match = pattern.exec(src)) !== null) {
         const pos = match.index;
@@ -513,7 +512,7 @@ export const createCustomBlock = (name: string) => {
       return -1;
     },
     tokenizer(this: any, src: string, tokens: any[]) {
-      const pattern = new RegExp(`^<${name}>([\\s\\S]*?)<\\/${name}>`);
+      const pattern = new RegExp(`^<${name}([^>]*)>([\\s\\S]*?)<\\/${name}>`);
       const match = pattern.exec(src);
       if (match) {
         const location = getFileLocation(this);
@@ -542,7 +541,8 @@ export const createCustomBlock = (name: string) => {
           }
         }
 
-        const contentStr = match[1].trim();
+        const attrs = match[1] || '';
+        const contentStr = match[2].trim();
 
         if (!contentStr && !inCodeBlock) {
           let line = location.line || 1;
@@ -564,6 +564,7 @@ export const createCustomBlock = (name: string) => {
         return {
           type: name,
           raw: match[0],
+          attrs: attrs,
           tokens: contentTokens,
           text: contentStr
         };
@@ -573,7 +574,7 @@ export const createCustomBlock = (name: string) => {
     renderer(this: any, token: any) {
       const parsedContent = this.parser.parse(token.tokens);
       const componentName = capitalize(name) + 'vmd';
-      return `<${componentName}>${parsedContent}</${componentName}>\n`;
+      return `<${componentName}${token.attrs}>${parsedContent}</${componentName}>\n`;
     }
   };
 };
@@ -639,29 +640,9 @@ export const smallImageExtension = (assetProcessor: any, imageWebPrefix: string,
 // ============================================================================
 // Text Formatting Extensions
 // ============================================================================
-
-export const boldItalicExtension = {
-  name: 'bolditalic',
-  level: 'inline' as const,
-  start(src: string) {
-    return src.indexOf('***');
-  },
-  tokenizer(this: any, src: string, tokens: any[]) {
-    const rule = /^\*\*\*(.+?)\*\*\*/;
-    const match = rule.exec(src);
-    if (match) {
-      return {
-        type: 'bolditalic',
-        raw: match[0],
-        text: match[1]
-      };
-    }
-    return undefined;
-  },
-  renderer(token: any) {
-    return `<Bolditvmd>${escapeHtml(token.text)}</Bolditvmd>`;
-  }
-};
+// Note: Bold (**), italic (*), and bold+italic (***) are handled by marked's
+// built-in GFM parser. We only override the renderers in convert_to_vmd.ts
+// to output VMD component names (Boldvmd, Italicvmd, Bolditvmd).
 
 export const strikethroughExtension = {
   name: 'strikethrough',
@@ -676,13 +657,14 @@ export const strikethroughExtension = {
       return {
         type: 'strikethrough',
         raw: match[0],
-        text: match[1]
+        text: match[1],
+        tokens: this.lexer.inlineTokens(match[1])
       };
     }
     return undefined;
   },
-  renderer(token: any) {
-    return `<Strikevmd>${escapeHtml(token.text)}</Strikevmd>`;
+  renderer(this: any, token: any) {
+    return `<Strikevmd>${this.parser.parseInline(token.tokens)}</Strikevmd>`;
   }
 };
 
@@ -1025,13 +1007,27 @@ export const tableExtension = {
       };
 
       const parseInline = (text: string): string => {
-        let result = text
-          .replace(/\*\*\*(.+?)\*\*\*/g, '<bold><italic>$1</italic></bold>')
-          .replace(/\*\*(.+?)\*\*/g, '<bold>$1</bold>')
-          .replace(/\*(.+?)\*/g, '<italic>$1</italic>')
-          .replace(/~~(.+?)~~/g, '<strike>$1</strike>')
-          .replace(/`([^`]+)`/g, (match, code) => processInlineCode(code))
-          .replace(/\$([^$]+)\$/g, '<Inlinemathvmd formula="$1"></Inlinemathvmd>');
+        // Use simple regex replacements for inline formatting in tables
+        // Process in order: code, math, bold+italic, bold, italic, strikethrough
+        let result = text;
+
+        // Inline code
+        result = result.replace(/`([^`]+)`/g, (match, code) => processInlineCode(code));
+
+        // Inline math
+        result = result.replace(/\$([^$]+)\$/g, '<Inlinemathvmd formula="$1"></Inlinemathvmd>');
+
+        // Bold+italic (must come before bold and italic)
+        result = result.replace(/\*\*\*(.+?)\*\*\*/g, '<Bolditvmd>$1</Bolditvmd>');
+
+        // Bold
+        result = result.replace(/\*\*(.+?)\*\*/g, '<Boldvmd>$1</Boldvmd>');
+
+        // Italic
+        result = result.replace(/\*(.+?)\*/g, '<Italicvmd>$1</Italicvmd>');
+
+        // Strikethrough
+        result = result.replace(/~~(.+?)~~/g, '<Strikevmd>$1</Strikevmd>');
 
         return result;
       };

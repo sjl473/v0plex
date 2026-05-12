@@ -6,7 +6,7 @@ import React from 'react';
 
 export function Boldvmd({ children }: { children: React.ReactNode }) {
     return (
-        <strong className="font-bold">
+        <strong style={{ fontWeight: 700 }}>
             {children}
         </strong>
     );
@@ -14,7 +14,7 @@ export function Boldvmd({ children }: { children: React.ReactNode }) {
 
 export function Italicvmd({ children }: { children: React.ReactNode }) {
     return (
-        <em className="italic">
+        <em style={{ fontStyle: 'italic' }}>
             {children}
         </em>
     );
@@ -22,8 +22,10 @@ export function Italicvmd({ children }: { children: React.ReactNode }) {
 
 export function Bolditvmd({ children }: { children: React.ReactNode }) {
     return (
-        <strong className="font-bold italic">
-            <em>{children}</em>
+        <strong style={{ fontWeight: 700 }}>
+            <em style={{ fontStyle: 'italic' }}>
+                {children}
+            </em>
         </strong>
     );
 }

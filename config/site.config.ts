@@ -474,7 +474,7 @@ export const EN_STRINGS: I18nStrings = {
   },
   footer: {
     siteName: 'v0plex',
-    version: '1.0.0',
+    version: '0.2',
     versionLabel: 'Version',
     lastUpdated: '{date}',
     copyright: '2026 sjl473',
@@ -542,7 +542,7 @@ export const ZH_STRINGS: I18nStrings = {
   },
   footer: {
     siteName: 'v0plex',
-    version: '1.0.0',
+    version: '0.2',
     versionLabel: '版本',
     lastUpdated: '{date}',
     copyright: '2026 sjl473',
@@ -610,7 +610,7 @@ export const ES_STRINGS: I18nStrings = {
   },
   footer: {
     siteName: 'v0plex',
-    version: '1.0.0',
+    version: '0.2',
     versionLabel: 'Versión',
     lastUpdated: '{date}',
     copyright: '2026 sjl473',
@@ -678,7 +678,7 @@ export const FR_STRINGS: I18nStrings = {
   },
   footer: {
     siteName: 'v0plex',
-    version: '1.0.0',
+    version: '0.2',
     versionLabel: 'Version',
     lastUpdated: '{date}',
     copyright: '2026 sjl473',
@@ -746,7 +746,7 @@ export const DE_STRINGS: I18nStrings = {
   },
   footer: {
     siteName: 'v0plex',
-    version: '1.0.0',
+    version: '0.2',
     versionLabel: 'Version',
     lastUpdated: '{date}',
     copyright: '2026 sjl473',
@@ -814,7 +814,7 @@ export const JA_STRINGS: I18nStrings = {
   },
   footer: {
     siteName: 'v0plex',
-    version: '1.0.0',
+    version: '0.2',
     versionLabel: 'バージョン',
     lastUpdated: '{date}',
     copyright: '2026 sjl473',
@@ -882,7 +882,7 @@ export const KO_STRINGS: I18nStrings = {
   },
   footer: {
     siteName: 'v0plex',
-    version: '1.0.0',
+    version: '0.2',
     versionLabel: '버전',
     lastUpdated: '{date}',
     copyright: '2026 sjl473',
@@ -950,7 +950,7 @@ export const RU_STRINGS: I18nStrings = {
   },
   footer: {
     siteName: 'v0plex',
-    version: '1.0.0',
+    version: '0.2',
     versionLabel: 'Версия',
     lastUpdated: '{date}',
     copyright: '2026 sjl473',
@@ -1018,7 +1018,7 @@ export const PT_STRINGS: I18nStrings = {
   },
   footer: {
     siteName: 'v0plex',
-    version: '1.0.0',
+    version: '0.2',
     versionLabel: 'Versão',
     lastUpdated: '{date}',
     copyright: '2026 sjl473',

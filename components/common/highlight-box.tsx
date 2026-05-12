@@ -42,15 +42,19 @@ export function HighlightBox({title, children, type = "Info"}: HighlightBoxProps
     // Use default title from site config if not provided
     const displayTitle = title || strings.boxes[type === "Info" ? "infoDefault" : type === "Warning" ? "warningDefault" : type === "Success" ? "successDefault" : "errorDefault"]
 
-    return (<div className={`${styles.highlightBox} ${typeClass as string}`}>
-        <h4 className={`${styles.highlightTitle} ${titleClass}`}>
-            {displayTitle}
-        </h4>
-        <div className={styles.iconWrapper}>
-            <IconComponent size={16} className={iconClass} />
+    return (
+        <div className={`${styles.highlightBox} ${typeClass as string}`}>
+            <div className={styles.iconWrapper}>
+                <IconComponent size={20} className={iconClass} />
+            </div>
+            <div className={styles.highlightContentWrapper}>
+                <h4 className={`${styles.highlightTitle} ${titleClass}`}>
+                    {displayTitle}
+                </h4>
+                <div className={styles.highlightContent}>
+                    {children}
+                </div>
+            </div>
         </div>
-        <div className={styles.highlightContent}>
-            {children}
-        </div>
-    </div>)
+    )
 }

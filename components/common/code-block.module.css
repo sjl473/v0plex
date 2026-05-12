@@ -17,7 +17,7 @@
     padding: 1rem !important;
     border-radius: 0 !important;
     font-family: "IBM Plex Mono", monospace !important;
-    font-size: 0.75rem !important;
+    font-size: 0.875rem !important;
     line-height: 1.5 !important;
     border: none !important;
     display: block !important;
@@ -75,18 +75,30 @@
 
 
 .codeBlockContainer {
-    margin-top: 1.25rem;
-    margin-bottom: 0.7rem;
+    width: 100%;
+    margin: 1rem 0;
     position: relative;
     padding: 0;
     font-size: 0;
     line-height: 0;
 }
 
+@media (max-width: 1024px) {
+    .codeBlockContainer {
+        margin: 1rem 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .codeBlockContainer {
+        margin: 1rem 0;
+    }
+}
+
 .codeBlockWrapper {
     position: relative;
     overflow: hidden;
-    border-radius: 3px;
+    border-radius: 0;
     font-family: "IBM Plex Mono", monospace;
     font-size: 0;
     line-height: 0;
@@ -96,92 +108,94 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.12rem 0.35rem;
+    padding: 0 1rem;
+    height: 2rem;
+    box-sizing: border-box;
 }
 
 .codeBlockLanguage {
-    font-size: 0.4375rem;
-    font-weight: 600;
-    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.75rem;
+    font-weight: 400;
+    font-family: "IBM Plex Sans", sans-serif;
+    text-transform: capitalize;
 }
 
 .copyButton {
     background: transparent;
     border: none;
     cursor: pointer;
-    padding: 0.08rem;
+    padding: 0;
     display: flex;
     align-items: center;
-    transition: color 0.2s ease;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+    width: 2rem;
+    height: 2rem;
 }
 
 
 .lightTheme .codeBlockWrapper {
-    border: 1px solid #393939;
+    background: #161616;
 }
 
 .lightTheme .codeBlockHeader {
-    background: #21272a;
-    border-bottom: 1px solid #393939;
+    background: #393939;
+    color: #f4f4f4;
 }
 
 .lightTheme .codeBlockLanguage {
-    color: #c6c6c6;
+    color: #e0e0e0;
 }
 
 .lightTheme .copyButton {
-    color: #c6c6c6;
+    color: #f4f4f4;
 }
 
 .lightTheme .copyButton:hover {
-    color: #f4f4f4;
+    background-color: #4d4d4d;
 }
 
 .darkTheme .codeBlockWrapper {
-    border: 1px solid #393939;
+    background: #262626;
 }
 
 .darkTheme .codeBlockHeader {
-    background: #21272a;
-    border-bottom: 1px solid #393939;
-}
-
-.darkTheme .codeBlockLanguage {
-    color: #c6c6c6;
-}
-
-.darkTheme .copyButton {
-    color: #c6c6c6;
-}
-
-.darkTheme .copyButton:hover {
+    background: #393939;
     color: #f4f4f4;
 }
 
+.darkTheme .codeBlockLanguage {
+    color: #e0e0e0;
+}
+
+.darkTheme .copyButton {
+    color: #f4f4f4;
+}
+
+.darkTheme .copyButton:hover {
+    background-color: #353535;
+}
+
 .inlineCode {
-    padding: 0.04rem 0.2rem;
-    border-radius: 3px;
-    font-size: 0.415rem;
+    padding: 0.1rem 0.25rem;
+    border-radius: 2px;
+    font-size: 0.75rem;
     font-family: "IBM Plex Mono", monospace;
-    display: inline-flex;
-    align-items: center;
-    margin: 0 0.15rem;
-    line-height: 1;
-    min-height: 0.71875rem;
+    display: inline;
+    margin: 0;
+    line-height: inherit;
     box-sizing: border-box;
-    vertical-align: 18%;
+    vertical-align: baseline;
 }
 
 .lightTheme .inlineCode {
-    background: #21272a;
-    color: #ffffff;
-    border: 1px solid #393939;
+    background: #f4f4f4;
+    color: #161616;
 }
 
 .darkTheme .inlineCode {
-    background: #21272a;
-    color: #ffffff;
-    border: 1px solid #393939;
+    background: #262626;
+    color: #f4f4f4;
 }
 
 
@@ -213,7 +227,7 @@
 }
 
 .darkTheme .syntaxHighlighter {
-    background: #161616 !important;
+    background: #262626 !important;
 }
 
 .loadingContainer {
@@ -229,7 +243,6 @@
     padding: 0.5rem;
     background: #500;
     color: #f88;
-    border: 1px solid #800;
     border-radius: 3px;
     font-family: "IBM Plex Mono", monospace;
     font-style: normal;

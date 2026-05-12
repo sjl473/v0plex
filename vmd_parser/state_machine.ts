@@ -87,8 +87,7 @@ import {
   strikethroughExtension,
   createCustomBlock,
   createPostBlock,
-  smallImageExtension,
-  boldItalicExtension
+  smallImageExtension
 } from './extensions';
 import { createRenderer, transformHtml } from './convert_to_vmd.ts';
 import {
@@ -97,6 +96,28 @@ import {
   detectInvalidTagNesting,
   detectEmptyMarkup
 } from './syntax_validator.ts';
+
+/**
+ * Normalize emphasis markers by removing trailing spaces before closing delimiters
+ * Fixes common GFM syntax issues like "**text **" -> "**text**"
+ * Only matches within single lines to avoid interfering with block-level spacing
+ */
+function normalizeEmphasisSpaces(markdown: string): string {
+  // Fix bold+italic: ***text *** -> ***text***
+  // Use [^\*\n] to avoid matching across newlines
+  markdown = markdown.replace(/(\*\*\*)([^\*\n]+?)\s+(\*\*\*)/g, '$1$2$3');
+
+  // Fix bold: **text ** -> **text**
+  // Use [^\*\n] to avoid matching across newlines
+  markdown = markdown.replace(/(\*\*)([^\*\n]+?)\s+(\*\*)/g, '$1$2$3');
+
+  // Fix italic: *text * -> *text*
+  // Be careful not to match unintended asterisks
+  // Use [^\*\n] to avoid matching across newlines
+  markdown = markdown.replace(/(?<!\*)(\*)(?!\*)([^\*\n]+?)\s+(\*)(?!\*)/g, '$1$2$3');
+
+  return markdown;
+}
 
 export class MarkdownCompiler {
   private util: VmdUtil;
@@ -121,13 +142,16 @@ export class MarkdownCompiler {
 
   public compile(markdownBody: string, attributes: FrontMatterAttributes, filePath?: string, frontmatterLineCount?: number): ProcessedMarkdown {
     this.currentFile = filePath || '';
-    this.currentMarkdownBody = markdownBody;
     this.frontmatterLineOffset = frontmatterLineCount || 0;
     this.resetState();
 
     const location: ErrorLocation = filePath ? { file: filePath } : {};
 
     try {
+      // Preprocessing: normalize emphasis markers (fix trailing spaces)
+      markdownBody = normalizeEmphasisSpaces(markdownBody);
+      this.currentMarkdownBody = markdownBody;
+
       // Pre-validation: check for nested code blocks
       this.runValidation(detectNestedCodeBlocks, markdownBody);
 
@@ -220,7 +244,8 @@ export class MarkdownCompiler {
 
     marked.use({
       renderer,
-      gfm: false
+      gfm: true, // Enable GitHub Flavored Markdown for proper ** and * parsing
+      breaks: false // Disable automatic line breaks (require explicit <br>)
     });
 
     // Register custom block extensions (info, warning, success)
@@ -230,8 +255,8 @@ export class MarkdownCompiler {
         createCustomBlock('warning'),
         createCustomBlock('success'),
         createPostBlock(this.util, BUILD_CONFIG.IMAGE_WEB_PREFIX, this.currentFile),
-        smallImageExtension(this.util, BUILD_CONFIG.IMAGE_WEB_PREFIX, this.currentFile),
-        boldItalicExtension
+        smallImageExtension(this.util, BUILD_CONFIG.IMAGE_WEB_PREFIX, this.currentFile)
+        // Note: bold, italic, bold+italic are handled by marked's GFM parser
       ]
     });
 
@@ -315,13 +340,28 @@ export class MarkdownCompiler {
           };
 
           const parseInline = (text: string): string => {
-            let result = text
-              .replace(/\*\*\*(.+?)\*\*\*/g, '<bold><italic>$1</italic></bold>')
-              .replace(/\*\*(.+?)\*\*/g, '<bold>$1</bold>')
-              .replace(/\*(.+?)\*/g, '<italic>$1</italic>')
-              .replace(/~~(.+?)~~/g, '<strike>$1</strike>')
-              .replace(/`([^`]+)`/g, (match: string, code: string) => processInlineCode(code))
-              .replace(/\$([^$]+)\$/g, '<Inlinemathvmd formula="$1"></Inlinemathvmd>');
+            // Use simple regex replacements for inline formatting in tables
+            // Process in order: code, math, bold+italic, bold, italic, strikethrough
+            let result = text;
+
+            // Inline code
+            result = result.replace(/`([^`]+)`/g, (match: string, code: string) => processInlineCode(code));
+
+            // Inline math
+            result = result.replace(/\$([^$]+)\$/g, '<Inlinemathvmd formula="$1"></Inlinemathvmd>');
+
+            // Bold+italic (must come before bold and italic)
+            result = result.replace(/\*\*\*(.+?)\*\*\*/g, '<Bolditvmd>$1</Bolditvmd>');
+
+            // Bold
+            result = result.replace(/\*\*(.+?)\*\*/g, '<Boldvmd>$1</Boldvmd>');
+
+            // Italic
+            result = result.replace(/\*(.+?)\*/g, '<Italicvmd>$1</Italicvmd>');
+
+            // Strikethrough
+            result = result.replace(/~~(.+?)~~/g, '<Strikevmd>$1</Strikevmd>');
+
             return result;
           };
 

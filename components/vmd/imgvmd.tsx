@@ -15,7 +15,7 @@ export function Imgvmd({src, alt, title}: ImgvmdProps) {
             src={src}
             alt={alt}
             caption={title}
-            aspectRatio="16:9"
+            aspectRatio="auto"
         />
     );
 }

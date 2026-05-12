@@ -1,8 +1,16 @@
 /* Table styles */
 
 .tableContainer {
-    margin: 1rem 0;
+    margin: 2rem 0;
     width: 100%;
+}
+
+.tableOuterWrapper {
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
+    width: fit-content;
+    margin: 0 !important;
 }
 
 .tableResponsiveWrapper {
@@ -10,11 +18,7 @@
     width: 100%;
 }
 
-.tablePaginatedContainer {
-    min-width: fit-content;
-}
-
 .paginationWrapper {
-    margin-top: 0.5rem;
+    margin-top: 0;
     width: 100%;
 }

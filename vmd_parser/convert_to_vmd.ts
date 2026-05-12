@@ -230,6 +230,17 @@ export function unwrapInvalidNesting(html: string): string {
 }
 
 /**
+ * Convert nested bold+italic tags to combined Bolditvmd component
+ */
+function convertBoldItalic(html: string): string {
+  // Convert <Boldvmd><Italicvmd>...</Italicvmd></Boldvmd> to <Bolditvmd>...</Bolditvmd>
+  html = html.replace(/<Boldvmd><Italicvmd>(.*?)<\/Italicvmd><\/Boldvmd>/g, '<Bolditvmd>$1</Bolditvmd>');
+  // Convert <Italicvmd><Boldvmd>...</Boldvmd></Italicvmd> to <Bolditvmd>...</Bolditvmd>
+  html = html.replace(/<Italicvmd><Boldvmd>(.*?)<\/Boldvmd><\/Italicvmd>/g, '<Bolditvmd>$1</Bolditvmd>');
+  return html;
+}
+
+/**
  * Transform HTML to VMD format
  */
 export function transformHtml(
@@ -242,23 +253,8 @@ export function transformHtml(
   vmdHtml = fixLinkedImages(vmdHtml);
   // Then unwrap invalid nesting
   vmdHtml = unwrapInvalidNesting(vmdHtml);
-  // Convert <Smallimgvmd><Imgvmd src="..." alt="..."></Imgvmd></Smallimgvmd> to <Smallimgvmd src="..." alt="..."></Smallimgvmd>
-  // vmdHtml = vmdHtml.replace(/<Smallimgvmd><Imgvmd src="([^"]*)" alt="([^"]*)"><\/Imgvmd><\/Smallimgvmd>/g,
-  //   '<Smallimgvmd src="$1" alt="$2"></Smallimgvmd>');
-  
-  // // Convert <Smallimgvmd>![alt](src)</Smallimgvmd> to <Smallimgvmd src="hash" alt="alt"></Smallimgvmd>
-  // vmdHtml = vmdHtml.replace(/<Smallimgvmd>!\[([^\]]*)\]\(([^)]+)\)<\/Smallimgvmd>/g,
-  //   (match: string, alt: string, src: string) => {
-
-  //     const hash = util.processImageAndGetHash(src);
-  //     if (hash) {
-  //       const ext = path.extname(src).toLowerCase();
-  //       const hashName = `${hash}${ext}`;
-  //       usedImages.push({ originalName: path.basename(src), hashName });
-  //       return `<Smallimgvmd src="${BUILD_CONFIG.IMAGE_WEB_PREFIX}${hashName}" alt="${alt}"></Smallimgvmd>`;
-  //     }
-  //     return `<Smallimgvmd src="${src}" alt="${alt}"></Smallimgvmd>`;
-  //   });
+  // Convert nested bold+italic to combined component
+  vmdHtml = convertBoldItalic(vmdHtml);
   return vmdHtml;
 }
 
@@ -275,15 +271,15 @@ export function createRenderer(
 
   return {
     strong(this: any, token: any) {
-      return `<bold>${this.parser.parseInline(token.tokens)}</bold>`;
+      return `<Boldvmd>${this.parser.parseInline(token.tokens)}</Boldvmd>`;
     },
 
     em(this: any, token: any) {
-      return `<italic>${this.parser.parseInline(token.tokens)}</italic>`;
+      return `<Italicvmd>${this.parser.parseInline(token.tokens)}</Italicvmd>`;
     },
 
     del(this: any, token: any) {
-      return `<strike>${this.parser.parseInline(token.tokens)}</strike>`;
+      return `<Strikevmd>${this.parser.parseInline(token.tokens)}</Strikevmd>`;
     },
 
     image(this: any, token: any) {
