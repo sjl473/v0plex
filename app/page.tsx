@@ -57,7 +57,7 @@ export default function HomePage() {
                             }
                         </p>
 
-                        <h3>{isZh ? "核心开发命令" : "Core Development Commands"}</h3>
+                        <h3>{isZh ? "常用命令" : "Common Commands"}</h3>
                         <table className={styles.table}>
                             <thead>
                                 <tr>
@@ -96,7 +96,7 @@ export default function HomePage() {
                             </tbody>
                         </table>
 
-                        <h3>{isZh ? "VMD 内容生成" : "VMD Content Generation"}</h3>
+                        <h3>{isZh ? "Markdown 转 Tsx" : "Markdown to Tsx"}</h3>
                         <table className={styles.table}>
                             <thead>
                                 <tr>
@@ -117,7 +117,7 @@ export default function HomePage() {
                             </tbody>
                         </table>
 
-                        <h3>{isZh ? "搜索索引生成" : "Search Index Generation"}</h3>
+                        <h3>{isZh ? "全文搜索支持" : "Full-text Search Support"}</h3>
                         <table className={styles.table}>
                             <thead>
                                 <tr>
@@ -130,15 +130,15 @@ export default function HomePage() {
                                     <td><CodeBlock inline>{"pnpm lex:gen"}</CodeBlock></td>
                                     <td>
                                         {isZh
-                                            ? <>生成全文搜索所需的压缩词库。脚本会自动：检查并创建 Python 虚拟环境 <CodeBlock inline>{".venv"}</CodeBlock>、安装 <CodeBlock inline>{"jieba"}</CodeBlock> 分词库、运行 <CodeBlock inline>{"scripts/search-script/lex.py"}</CodeBlock> 生成索引，最后退出虚拟环境。注意：如果当前终端已在某个 Python venv 中，命令会报错并退出。</>
-                                            : <>Generates a compressed lexicon for full-text search. The script automatically: checks and creates a Python virtual environment <CodeBlock inline>{".venv"}</CodeBlock>, installs the <CodeBlock inline>{"jieba"}</CodeBlock> tokenization library, runs <CodeBlock inline>{"scripts/search-script/lex.py"}</CodeBlock> to generate the index, then exits the virtual environment. Note: If the current terminal is already in a Python venv, the command will error and exit.</>
+                                            ? <>生成全文搜索所需的压缩词库。脚本会自动：检查并创建 Python 虚拟环境 <CodeBlock inline>{".venv"}</CodeBlock>、安装 <CodeBlock inline>{"jieba"}</CodeBlock> 分词库、运行 <CodeBlock inline>{"scripts/search-script/lex.py"}</CodeBlock> 生成索引，最后退出虚拟环境。</>
+                                            : <>Generates a compressed lexicon for full-text search. The script automatically: checks and creates a Python virtual environment <CodeBlock inline>{".venv"}</CodeBlock>, installs the <CodeBlock inline>{"jieba"}</CodeBlock> tokenization library, runs <CodeBlock inline>{"scripts/search-script/lex.py"}</CodeBlock> to generate the index, then exits the virtual environment.</>
                                         }
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
 
-                        <h3>{isZh ? "测试命令" : "Test Commands"}</h3>
+                        <h3>{isZh ? "测试" : "Test"}</h3>
                         <table className={styles.table}>
                             <thead>
                                 <tr>
@@ -151,26 +151,8 @@ export default function HomePage() {
                                     <td><CodeBlock inline>{"pnpm test"}</CodeBlock></td>
                                     <td>
                                         {isZh
-                                            ? "启动 Vitest 交互式测试运行器（监视模式）。"
-                                            : "Starts the Vitest interactive test runner (watch mode)."
-                                        }
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><CodeBlock inline>{"pnpm test:ui"}</CodeBlock></td>
-                                    <td>
-                                        {isZh
-                                            ? "启动 Vitest 并打开图形化 UI 界面。"
-                                            : "Starts Vitest and opens the graphical UI."
-                                        }
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><CodeBlock inline>{"pnpm test:run"}</CodeBlock></td>
-                                    <td>
-                                        {isZh
-                                            ? "一次性运行所有测试并退出（适用于 CI 流水线）。"
-                                            : "Runs all tests once and exits (suitable for CI pipelines)."
+                                            ? "启动 Vitest。"
+                                            : "Starts Vitest."
                                         }
                                     </td>
                                 </tr>
@@ -218,23 +200,28 @@ pnpm test`
 }
                         </pre>
 
-                        <h2>{isZh ? "项目结构简介" : "Project Structure Overview"}</h2>
+                        <h2>{isZh ? "相关链接" : "Related Links"}</h2>
 
                         <ul>
-                            <li><CodeBlock inline>{"components/"}</CodeBlock> — {isZh ? "React 组件（含 VMD 渲染组件）" : "React components (including VMD rendering components)"}</li>
-                            <li><CodeBlock inline>{"config/"}</CodeBlock> — {isZh ? "站点配置" : "Site configuration"}</li>
-                            <li><CodeBlock inline>{"vmd_parser/"}</CodeBlock> — {isZh ? "VMD Markdown 解析与页面生成器" : "VMD Markdown parser and page generator"}</li>
-                            <li><CodeBlock inline>{"scripts/search-script/"}</CodeBlock> — {isZh ? "搜索索引生成 Python 脚本" : "Search index generation Python scripts"}</li>
-                            <li><CodeBlock inline>{"dev/"}</CodeBlock> — Markdown</li>
-                            <li><CodeBlock inline>{"public/"}</CodeBlock> — {isZh ? "静态资源（含 MathJax 字体等）" : "Static assets (including MathJax fonts, etc.)"}</li>
+                            <li>
+                                <a href="https://github.com/sjl473/v0plex" target="_blank" rel="noopener noreferrer">
+                                    github.com/sjl473/v0plex
+                                </a>
+                                {" "}— {isZh ? "v0plex 源代码仓库" : "v0plex source code repository"}
+                            </li>
+                            <li>
+                                <a href="https://github.com/sjl473/v0plex-markdown" target="_blank" rel="noopener noreferrer">
+                                    github.com/sjl473/v0plex-markdown
+                                </a>
+                                {" "}— {isZh ? "此网站文字 Markdown 内容仓库（由Kimi-k2.6随机生成）" : "Markdown contents of this site are randomly generated by Kimi-k2.6"}
+                            </li>
+                                                        <li>
+                                <a href="https://github.com/sjl473/v0plex/tree/main/wiki" target="_blank" rel="noopener noreferrer">
+                                    https://github.com/sjl473/v0plex/tree/main/wiki
+                                </a>
+                                {" "}— {isZh ? "v0plex 使用说明" : "v0plex wiki"}
+                            </li>
                         </ul>
-
-                        <hr className={styles.divider} />
-
-                        <p>
-                            <small>© 2026 sjl473</small>
-                        </p>
-
                         <br></br>
                         <br></br>
 

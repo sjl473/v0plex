@@ -31,3 +31,10 @@
     border-top: 1px solid var(--v0plex-border-subtle);
     margin: 2rem 0;
 }
+
+.license {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: #002d9c; /* IBM dark blue */
+    margin-top: 2rem;
+}

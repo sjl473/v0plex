@@ -62,6 +62,7 @@ async function main() {
   const success = util.run(inputPath);
 
   if (!success) {
+    util.getErrorStatus({ print: true });
     process.exit(1);
   }
 }

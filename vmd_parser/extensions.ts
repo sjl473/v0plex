@@ -295,7 +295,9 @@ export const createPostBlock = (assetProcessor?: any, imageWebPrefix?: string, f
           );
         }
 
-        const disallowedTags = ['post', 'lft', 'rt', 'info', 'warning', 'success', 'smallimg'];
+        // Allow <post> as plain text / inline mention inside <lft>; only block-level
+        // nesting is prevented by the tokenizer / PROTECTED_TAGS mechanism.
+        const disallowedTags = ['lft', 'rt', 'info', 'warning', 'success', 'smallimg'];
         const tagRegex = /<(\/?)([a-zA-Z][a-zA-Z0-9]*)[^>]*>/g;
         let tagMatch;
         while ((tagMatch = tagRegex.exec(lftContent)) !== null) {

@@ -1675,8 +1675,9 @@ export class VmdUtil {
       return false;
     }
 
-    // Check each language folder has files
-    for (const folder of folders) {
+    // Check each language folder has files (skip non-language folders like assets)
+    const languageFolders = folders.filter(f => supportedLanguageFolders.has(f.name));
+    for (const folder of languageFolders) {
       const folderPath = path.join(devFolderPath, folder.name);
       if (!this.checkForFilesRecursive(folderPath)) {
         this.createError(

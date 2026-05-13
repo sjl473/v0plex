@@ -27,13 +27,16 @@
     text-decoration: none;
     transition: background-color 0.2s ease;
     /* Each button is exactly 50% of the container width */
-    width: 50%;
+    flex: 0 1 50%;
     box-sizing: border-box;
     border: none;
     background-color: transparent;
     border-radius: 0;
     /* Default padding - left aligned with content */
     padding: 0.75rem 0;
+    /* Allow flex item to shrink below content size for text-overflow */
+    min-width: 0;
+    overflow: hidden;
 }
 
 .navLink:first-child {
@@ -86,22 +89,10 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    /* Max width is roughly half of footer content area minus padding */
-    max-width: calc(50vw - 180px);
-}
-
-/* Tablet: adjust for smaller viewport */
-@media (max-width: 1024px) and (min-width: 601px) {
-    .navTitle {
-        max-width: calc(50vw - 160px);
-    }
-}
-
-/* Mobile: simpler calc without sidebar */
-@media (max-width: 600px) {
-    .navTitle {
-        max-width: calc(50vw - 50px);
-    }
+    /* Fill the flex container so ellipsis works reliably */
+    width: 100%;
+    max-width: 100%;
+    display: block;
 }
 
 @media (max-width: 600px) {
@@ -120,8 +111,10 @@
     }
 
     .navLink {
-        width: 50%;
+        flex: 0 1 50%;
         box-sizing: border-box;
+        min-width: 0;
+        overflow: hidden;
     }
 
     .navContainer > .navLink:first-child {

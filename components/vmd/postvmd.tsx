@@ -298,7 +298,7 @@ export function Rtvmd({ children }: { children: React.ReactNode }) {
                             src={currentImage.src}
                             alt={currentImage.alt}
                             className={styles.modalImage}
-                            style={{ 
+                            style={{
                                 transform: `translate(${offset.x}px, ${offset.y}px) scale(${zoom})`,
                                 cursor: zoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default',
                                 transition: isDragging ? 'none' : 'transform 0.2s ease-out'
@@ -316,12 +316,12 @@ export function Rtvmd({ children }: { children: React.ReactNode }) {
                                 <CaretRight size={32} />
                             </Button>
                         )}
-                        
-                        <div className={styles.modalCaption}>
-                            {hasMultiple && <span className={styles.modalCounter}>{counterText}</span>}
-                            <div className={styles.modalCaptionText}>
-                                {currentImage.title || currentImage.alt}
-                            </div>
+                    </div>
+
+                    <div className={styles.modalCaption}>
+                        {hasMultiple && <span className={styles.modalCounter}>{counterText}</span>}
+                        <div className={styles.modalCaptionText}>
+                            {currentImage.title || currentImage.alt}
                         </div>
                     </div>
                 </div>,

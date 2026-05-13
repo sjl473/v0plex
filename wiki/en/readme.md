@@ -22,7 +22,7 @@ A documentation site generator built on Next.js + React + TypeScript + Carbon De
 
 All commands are defined in [`package.json`](package.json) and executed with `pnpm`.
 
-### Core Development Commands
+### Common Commands
 
 | Command | Purpose |
 |---------|---------|
@@ -30,25 +30,24 @@ All commands are defined in [`package.json`](package.json) and executed with `pn
 | `pnpm build` | **Production Build**: Runs `vmd:gen`, `lex:gen`, then runs `next build` to generate static / server-side output. |
 | `pnpm start` | **Start Production Server**: Runs the built Next.js app (requires `pnpm build` first). |
 
-### VMD Content Generation
+### Markdown to Tsx
 
 | Command | Purpose |
 |---------|---------|
 | `pnpm vmd:gen` | Runs the VMD parser ([`vmd_parser/main.ts`](vmd_parser/main.ts)), converting Markdown source files into Next.js pages, extracted code blocks, image assets, and site navigation JSON. Default input directory is `dev`. |
 
-### Search Index Generation
+### Full-text Search Support
 
 | Command | Purpose |
 |---------|---------|
-| `pnpm lex:gen` | Generates a compressed lexicon for full-text search. The script automatically: checks and creates a Python virtual environment `.venv`, installs the `jieba` tokenization library, runs [`scripts/search-script/lex.py`](scripts/search-script/lex.py) to generate the index, then exits the virtual environment. **Note**: If the current terminal is already in a Python venv, the command will error and exit. |
+| `pnpm lex:gen` | Generates a compressed lexicon for full-text search. The script automatically: checks and creates a Python virtual environment `.venv`, installs the `jieba` tokenization library, runs [`scripts/search-script/lex.py`](scripts/search-script/lex.py) to generate the index, then exits the virtual environment. |
 
-### Test Commands
+### Test
 
 | Command | Purpose |
 |---------|---------|
-| `pnpm test` | Starts the Vitest interactive test runner (watch mode). |
-| `pnpm test:ui` | Starts Vitest and opens the graphical UI. |
-| `pnpm test:run` | Runs all tests once and exits (suitable for CI pipelines). |
+| `pnpm test` | Starts Vitest. |
+
 
 ## Common Commands Cheat Sheet
 
@@ -72,16 +71,12 @@ pnpm lex:gen
 pnpm test
 ```
 
-## Project Structure Overview
 
-- `components/` — React components (including VMD rendering components)
-- `config/` — Site configuration
-- `vmd_parser/` — VMD Markdown parser and page generator
-- `scripts/search-script/` — Search index generation Python scripts
-- `dev/` — Markdown
-- `public/` — Static assets (including MathJax fonts, etc.)
+## GitHub Repositories
 
----
+- [v0plex](https://github.com/sjl473/v0plex) — Source code repository
+- [v0plex-markdown](https://github.com/sjl473/v0plex-markdown) — Markdown documentation source
+
 
 ## License
 

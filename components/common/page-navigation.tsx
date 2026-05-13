@@ -2,8 +2,8 @@
 
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import { useEffect, useRef, useState } from "react"
-import { SITE_CONFIG, getStrings } from "@/config/site.config"
+import { useEffect, useRef, useState, useCallback } from "react"
+import { SITE_CONFIG } from "@/config/site.config"
 import { useLanguage } from "@/components/common/language-provider"
 import styles from "./page-navigation.module.css"
 
@@ -42,10 +42,45 @@ const normalizePath = (path: string) => {
   return path.replace(/\/$/, "") || "/"
 }
 
-const truncateTitle = (title: string, maxLength: number = 30) => {
-  if (title.length <= maxLength) return title;
-  return title.substring(0, maxLength) + '...';
-};
+// Estimate text pixel width at 0.75rem (12px). CJK ≈ full width, ASCII ≈ 0.6 width.
+function estimateWidth(text: string, fontSize = 12): number {
+  let w = 0;
+  for (const char of text) {
+    w += /[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]/.test(char) ? fontSize : fontSize * 0.6;
+  }
+  return w;
+}
+
+// Truncate title so that (kept text + "...") fits into maxWidth.
+// If text already fits, return as-is.
+function truncateTitleByWidth(title: string, maxWidth: number): string {
+  if (!maxWidth || maxWidth <= 0) return title;
+  const ellipsisWidth = estimateWidth('...');
+  if (estimateWidth(title) + ellipsisWidth <= maxWidth) return title;
+
+  let low = 0;
+  let high = title.length;
+  while (low < high) {
+    const mid = Math.floor((low + high + 1) / 2);
+    if (estimateWidth(title.slice(0, mid)) + ellipsisWidth <= maxWidth) {
+      low = mid;
+    } else {
+      high = mid - 1;
+    }
+  }
+  return title.slice(0, low) + '...';
+}
+
+// Compute available width for a single nav button.
+// Each button is ~50vw. We subtract horizontal padding generously.
+function getButtonAvailableWidth(): number {
+  if (typeof window === 'undefined') return 200;
+  const vw = window.innerWidth;
+  // Each button is flex-basis 50%. Deduct padding (mobile: ~16px left + 8px right avg ≈ 30px).
+  // Use a slightly conservative padding so we never overflow.
+  const padding = vw <= 600 ? 36 : 60;
+  return Math.max(40, vw / 2 - padding);
+}
 
 export default function PageNavigation() {
   const pathname = usePathname()
@@ -54,9 +89,12 @@ export default function PageNavigation() {
   const { strings, locale } = useLanguage()
   const navRef = useRef<HTMLDivElement>(null)
 
+  // Truncated titles driven by actual viewport width
+  const [prevTruncated, setPrevTruncated] = useState<string>('')
+  const [nextTruncated, setNextTruncated] = useState<string>('')
+
   // Set CSS variable for max-width on both navigation divs
   useEffect(() => {
-    // Small delay to ensure DOM is ready
     const timer = setTimeout(() => {
       if (navRef.current) {
         navRef.current.style.setProperty('--page-nav-max-width', `${CONTENT_MAX_WIDTH}px`)
@@ -69,7 +107,6 @@ export default function PageNavigation() {
     fetch('/vmdjson/site-data.json')
       .then(response => response.json())
       .then((data: SiteData) => {
-        // Flatten navigation to pages for current locale only
         const flatPages = flattenPagesByLocale(data.navigation, locale);
         setPages(flatPages)
       })
@@ -78,31 +115,11 @@ export default function PageNavigation() {
       })
   }, [locale])
 
-  if (pages.length === 0) {
-    return (
-      <div ref={navRef} className={styles.navigation}>
-        <div className={styles.navContainer}>
-          <div className={`${styles.navLink} ${styles.disabled}`}>
-            <div className={styles.navLabel}>{strings.pageNav.previousPage}</div>
-            <div className={styles.navTitle}>...</div>
-          </div>
-          <div className={`${styles.navLink} ${styles.disabled}`}>
-            <div className={styles.navLabel}>{strings.pageNav.nextPage}</div>
-            <div className={styles.navTitle}>...</div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   const isRoot = normalizedPath === '/' || normalizedPath === '';
 
   let currentIndex = -1;
-
   if (!isRoot) {
-    currentIndex = pages.findIndex(page => {
-      return normalizedPath.endsWith(page.path);
-    })
+    currentIndex = pages.findIndex(page => normalizedPath.endsWith(page.path))
   }
 
   let prevPage: SiteNode | null = null;
@@ -130,36 +147,45 @@ export default function PageNavigation() {
     return `${SITE_CONFIG.URL_PREFIX}${page.path}`;
   };
 
-  const prevTitle = prevPage ? prevPage.title : strings.pageNav.none
-  const nextTitle = nextPage ? nextPage.title : strings.pageNav.none
+  const prevTitleRaw = prevPage ? prevPage.title : strings.pageNav.none
+  const nextTitleRaw = nextPage ? nextPage.title : strings.pageNav.none
 
-  const truncatedPrevTitle = truncateTitle(prevTitle);
-  const truncatedNextTitle = truncateTitle(nextTitle);
+  const recalcTruncation = useCallback(() => {
+    const available = getButtonAvailableWidth();
+    setPrevTruncated(truncateTitleByWidth(prevTitleRaw, available));
+    setNextTruncated(truncateTitleByWidth(nextTitleRaw, available));
+  }, [prevTitleRaw, nextTitleRaw]);
+
+  useEffect(() => {
+    recalcTruncation();
+    window.addEventListener('resize', recalcTruncation);
+    return () => window.removeEventListener('resize', recalcTruncation);
+  }, [recalcTruncation]);
 
   return (
     <div ref={navRef} className={styles.navigation}>
       <div className={styles.navContainer}>
         {prevPage ? (
-          <Link href={getNavHref(prevPage)} className={styles.navLink} title={prevTitle}>
+          <Link href={getNavHref(prevPage)} className={styles.navLink} title={prevTitleRaw}>
             <div className={styles.navLabel}>{strings.pageNav.previousPage}</div>
-            <div className={styles.navTitle}>{truncatedPrevTitle}</div>
+            <div className={styles.navTitle}>{prevTruncated}</div>
           </Link>
         ) : (
           <div className={`${styles.navLink} ${styles.disabled}`}>
             <div className={styles.navLabel}>{strings.pageNav.previousPage}</div>
-            <div className={styles.navTitle}>{strings.pageNav.none}</div>
+            <div className={styles.navTitle}>{prevTruncated}</div>
           </div>
         )}
 
         {nextPage ? (
-          <Link href={getNavHref(nextPage)} className={`${styles.navLink} ${styles.nextLink}`} title={nextTitle}>
+          <Link href={getNavHref(nextPage)} className={`${styles.navLink} ${styles.nextLink}`} title={nextTitleRaw}>
             <div className={styles.navLabel}>{strings.pageNav.nextPage}</div>
-            <div className={styles.navTitle}>{truncatedNextTitle}</div>
+            <div className={styles.navTitle}>{nextTruncated}</div>
           </Link>
         ) : (
           <div className={`${styles.navLink} ${styles.disabled}`}>
             <div className={styles.navLabel}>{strings.pageNav.nextPage}</div>
-            <div className={styles.navTitle}>{strings.pageNav.none}</div>
+            <div className={styles.navTitle}>{nextTruncated}</div>
           </div>
         )}
       </div>
