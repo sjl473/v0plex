@@ -36,3 +36,4 @@ coverage/
 .cache/
 
 dev/
+scripts/deploy-to-gh-pages.sh

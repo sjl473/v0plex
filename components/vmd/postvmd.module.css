@@ -136,6 +136,8 @@
     left: 0;
     width: 100vw;
     height: 100vh;
+    height: -webkit-fill-available;
+    height: 100dvh;
     background-color: #161616;
     z-index: 9000;
     display: flex;
