@@ -1,0 +1,33 @@
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+    font-size: 0.875rem;
+    line-height: 1.42857;
+}
+
+.table th,
+.table td {
+    padding: 0.5rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--v0plex-border-subtle);
+}
+
+.table th {
+    font-weight: 600;
+    background: var(--v0plex-background-hover);
+}
+
+.table code {
+    font-size: 0.75rem !important;
+}
+
+.cheatSheet {
+    margin: 1rem 0;
+}
+
+.divider {
+    border: none;
+    border-top: 1px solid var(--v0plex-border-subtle);
+    margin: 2rem 0;
+}

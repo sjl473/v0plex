@@ -143,6 +143,8 @@
     align-items: center;
     justify-content: center;
     animation: fadeIn 0.15s ease-out;
+    touch-action: none;
+    overscroll-behavior: none;
 }
 
 .modalContent {
@@ -155,6 +157,8 @@
     padding: 4rem 6rem;
     box-sizing: border-box;
     overflow: hidden;
+    touch-action: none;
+    overscroll-behavior: none;
 }
 
 .modalImage {
@@ -317,6 +321,6 @@
     }
 
     .modalContent {
-        padding: 3.5rem 1rem 6.5rem 1rem;
+        padding: 3.5rem 1rem 3.5rem 1rem;
     }
 }

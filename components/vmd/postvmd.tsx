@@ -8,6 +8,28 @@ import styles from './postvmd.module.css';
 import { Pvmd } from './pvmd';
 import {useLanguage} from '@/components/common/language-provider';
 
+// Utility to lock/unlock body scroll on mobile (iOS Safari compatible)
+function lockBodyScroll() {
+    const scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.left = '0';
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+    document.body.style.touchAction = 'none';
+    return scrollY;
+}
+
+function unlockBodyScroll(scrollY: number) {
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.width = '';
+    document.body.style.overflow = '';
+    document.body.style.touchAction = '';
+    window.scrollTo(0, scrollY);
+}
+
 export function Postvmd({ children }: { children: React.ReactNode }) {
     return (
         <div className={styles.container}>
@@ -57,6 +79,7 @@ export function Rtvmd({ children }: { children: React.ReactNode }) {
     const [isDragging, setIsDragging] = useState(false);
     const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
     const imageWrapperRef = useRef<HTMLDivElement>(null);
+    const scrollYRef = useRef(0);
 
     const handleZoomIn = useCallback((e?: any) => {
         e?.stopPropagation?.();
@@ -151,9 +174,8 @@ export function Rtvmd({ children }: { children: React.ReactNode }) {
     const openModal = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
+        scrollYRef.current = lockBodyScroll();
         setIsModalOpen(true);
-        // Prevent body scroll when modal is open
-        document.body.style.overflow = 'hidden';
     };
 
     const closeModal = useCallback((e?: any) => {
@@ -162,8 +184,7 @@ export function Rtvmd({ children }: { children: React.ReactNode }) {
         setIsModalOpen(false);
         setZoom(1);
         setOffset({ x: 0, y: 0 });
-        // Restore body scroll
-        document.body.style.overflow = '';
+        unlockBodyScroll(scrollYRef.current);
     }, []);
 
     useEffect(() => {
