@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react"
 import { usePathname } from "next/navigation"
 import { Toggle } from "@carbon/react"
+import { useLanguage } from "@/components/common/language-provider"
 import styles from "./right-sidebar.module.css"
 
 interface TocItem {
@@ -32,6 +33,7 @@ function slugify(text: string): string {
 }
 
 export default function RightSidebar() {
+  const { strings } = useLanguage()
   const pathname = usePathname()
   const [items, setItems] = useState<TocItem[]>([])
   const [activeId, setActiveId] = useState<string>("")
@@ -224,7 +226,7 @@ export default function RightSidebar() {
   return (
     <aside className={styles.sidebar} aria-label="Table of contents">
       <div className={styles.tocHeaderRow}>
-        <span className={styles.tocHeaderLabel}>On this page</span>
+        <span className={styles.tocHeaderLabel}>{strings.toc.onThisPage}</span>
         <Toggle
           id="toc-autoscroll-toggle"
           size="sm"
@@ -239,7 +241,7 @@ export default function RightSidebar() {
       <div ref={setContentRef} className={styles.content}>
         <nav className={styles.tocNav}>
           {items.length === 0 && (
-            <span className={styles.tocEmpty}>No headings found</span>
+            <span className={styles.tocEmpty}>{strings.toc.noHeadings}</span>
           )}
           {items.map((item, index) => (
             <button

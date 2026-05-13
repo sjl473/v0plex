@@ -418,6 +418,10 @@ export interface I18nStrings {
     nextPage: string;
     none: string;
   };
+  toc: {
+    onThisPage: string;
+    noHeadings: string;
+  };
   codeBlock: {
     copyCode: string;
     from: string;
@@ -485,6 +489,10 @@ export const EN_STRINGS: I18nStrings = {
     previousPage: 'Previous Page',
     nextPage: 'Next Page',
     none: 'None',
+  },
+  toc: {
+    onThisPage: 'On this page',
+    noHeadings: 'No headings found',
   },
   codeBlock: {
     copyCode: 'Copy Code',
@@ -554,6 +562,10 @@ export const ZH_STRINGS: I18nStrings = {
     nextPage: '下一页',
     none: '无',
   },
+  toc: {
+    onThisPage: '本页目录',
+    noHeadings: '无标题',
+  },
   codeBlock: {
     copyCode: '复制代码',
     from: '来源',
@@ -621,6 +633,10 @@ export const ES_STRINGS: I18nStrings = {
     previousPage: 'Página anterior',
     nextPage: 'Página siguiente',
     none: 'Ninguna',
+  },
+  toc: {
+    onThisPage: 'En esta página',
+    noHeadings: 'No se encontraron encabezados',
   },
   codeBlock: {
     copyCode: 'Copiar código',
@@ -690,6 +706,10 @@ export const FR_STRINGS: I18nStrings = {
     nextPage: 'Page suivante',
     none: 'Aucun',
   },
+  toc: {
+    onThisPage: 'Sur cette page',
+    noHeadings: 'Aucun titre trouvé',
+  },
   codeBlock: {
     copyCode: 'Copier le code',
     from: 'de',
@@ -757,6 +777,10 @@ export const DE_STRINGS: I18nStrings = {
     previousPage: 'Vorherige Seite',
     nextPage: 'Nächste Seite',
     none: 'Keine',
+  },
+  toc: {
+    onThisPage: 'Auf dieser Seite',
+    noHeadings: 'Keine Überschriften gefunden',
   },
   codeBlock: {
     copyCode: 'Code kopieren',
@@ -826,6 +850,10 @@ export const JA_STRINGS: I18nStrings = {
     nextPage: '次のページ',
     none: 'なし',
   },
+  toc: {
+    onThisPage: 'このページの目次',
+    noHeadings: '見出しが見つかりません',
+  },
   codeBlock: {
     copyCode: 'コードをコピー',
     from: '出典',
@@ -893,6 +921,10 @@ export const KO_STRINGS: I18nStrings = {
     previousPage: '이전 페이지',
     nextPage: '다음 페이지',
     none: '없음',
+  },
+  toc: {
+    onThisPage: '이 페이지에서',
+    noHeadings: '제목을 찾을 수 없습니다',
   },
   codeBlock: {
     copyCode: '코드 복사',
@@ -962,6 +994,10 @@ export const RU_STRINGS: I18nStrings = {
     nextPage: 'Следующая страница',
     none: 'Нет',
   },
+  toc: {
+    onThisPage: 'На этой странице',
+    noHeadings: 'Заголовки не найдены',
+  },
   codeBlock: {
     copyCode: 'Копировать код',
     from: 'из',
@@ -1029,6 +1065,10 @@ export const PT_STRINGS: I18nStrings = {
     previousPage: 'Página anterior',
     nextPage: 'Página seguinte',
     none: 'Nenhuma',
+  },
+  toc: {
+    onThisPage: 'Nesta página',
+    noHeadings: 'Nenhum título encontrado',
   },
   codeBlock: {
     copyCode: 'Copiar código',
