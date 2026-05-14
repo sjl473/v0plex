@@ -133,7 +133,6 @@ div.navItem.active:not(.hasChildren) {
     color: var(--v0plex-link-primary) !important;
 }
 
-/* IBM deep blue (#002d9c Blue 70) in light, readable blue (#a6c8ff Blue 30) in dark — all bold */
 .h1, .h2, .h3, .h4, .h5, .h6 {
     color: #002d9c !important;
     font-weight: 600 !important;

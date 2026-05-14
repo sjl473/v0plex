@@ -82,6 +82,7 @@ import {
   setTableExtensionContext,
   clearTableExtensionContext,
   tableExtension,
+  tablegridExtension,
   blockMathExtension,
   inlineMathExtension,
   strikethroughExtension,
@@ -386,6 +387,131 @@ export class MarkdownCompiler {
           bodyHtml += '</Tablebodyvmd>';
 
           return `<Tablevmd>\n${headerHtml}\n${bodyHtml}\n</Tablevmd>\n`;
+        }
+      }]
+    } as any);
+
+    // Register tablegrid extension with renderer
+    marked.use({
+      extensions: [{
+        name: 'vmd_tablegrid',
+        level: 'block' as const,
+        start(src: string) {
+          const pattern = /\n<tablegrid>\n\n/;
+          const match = src.match(pattern);
+          if (match && match.index !== undefined) {
+            return match.index;
+          }
+          return -1;
+        },
+        tokenizer(this: any, src: string, tokens: any[]) {
+          const tablePattern = /^<tablegrid>\n\n([\s\S]*?)\n\n<\/tablegrid>/;
+          const match = src.match(tablePattern);
+          if (!match) return undefined;
+
+          const tableContent = match[1];
+          const lines = tableContent.split('\n').filter(line => line.trim().length > 0);
+          if (lines.length < 2) return undefined;
+
+          const parseTableRow = (row: string): string[] => {
+            return row.split('|').slice(1, -1).map(cell => cell.trim());
+          };
+
+          const isSeparatorRow = (row: string): boolean => {
+            return /^\s*\|?(\s*:?-+:?\s*\|)*\s*:?-+:?\s*\|?\s*$/.test(row);
+          };
+
+          const headers = parseTableRow(lines[0]);
+          if (!isSeparatorRow(lines[1])) return undefined;
+
+          const alignments = parseTableRow(lines[1]).map(cell => {
+            const trimmed = cell.trim();
+            if (trimmed.startsWith(':') && trimmed.endsWith(':')) return 'center';
+            if (trimmed.endsWith(':')) return 'right';
+            if (trimmed.startsWith(':')) return 'left';
+            return null;
+          });
+
+          const rows: string[][] = [];
+          for (let i = 2; i < lines.length; i++) {
+            const rowCells = parseTableRow(lines[i]);
+            while (rowCells.length < headers.length) rowCells.push('');
+            rows.push(rowCells.slice(0, headers.length));
+          }
+
+          return {
+            type: 'vmd_tablegrid',
+            raw: match[0],
+            text: tableContent,
+            headers,
+            alignments,
+            rows,
+            line: 0
+          };
+        },
+        renderer: (token: any) => {
+          const { headers, alignments, rows } = token;
+          const util = this.util;
+          const generatedFiles = this.generatedFiles;
+
+          const processInlineCode = (code: string): string => {
+            try {
+              const hash = crypto.createHash('sha256').update(code).digest('hex');
+              util.writeCodeFile(code, hash);
+              generatedFiles.push(`${hash}.txt`);
+              return `<Inlinecodevmd filePath="${hash}"></Inlinecodevmd>`;
+            } catch (err) {
+              return `<code>${code}</code>`;
+            }
+          };
+
+          const parseInline = (text: string): string => {
+            // Use simple regex replacements for inline formatting in tables
+            // Process in order: code, math, bold+italic, bold, italic, strikethrough
+            let result = text;
+
+            // Inline code
+            result = result.replace(/`([^`]+)`/g, (match: string, code: string) => processInlineCode(code));
+
+            // Inline math
+            result = result.replace(/\$([^$]+)\$/g, '<Inlinemathvmd formula="$1"></Inlinemathvmd>');
+
+            // Bold+italic (must come before bold and italic)
+            result = result.replace(/\*\*\*(.+?)\*\*\*/g, '<Bolditvmd>$1</Bolditvmd>');
+
+            // Bold
+            result = result.replace(/\*\*(.+?)\*\*/g, '<Boldvmd>$1</Boldvmd>');
+
+            // Italic
+            result = result.replace(/\*(.+?)\*/g, '<Italicvmd>$1</Italicvmd>');
+
+            // Strikethrough
+            result = result.replace(/~~(.+?)~~/g, '<Strikevmd>$1</Strikevmd>');
+
+            return result;
+          };
+
+          let headerHtml = '<Tablegridheadvmd><Tablegridrowvmd>';
+          for (let i = 0; i < headers.length; i++) {
+            const align = alignments[i] ? ` align="${alignments[i]}"` : '';
+            const headerContent = parseInline(headers[i]);
+            headerHtml += `<Tablegridcellvmd header="true"${align}>${headerContent}</Tablegridcellvmd>`;
+          }
+          headerHtml += '</Tablegridrowvmd></Tablegridheadvmd>';
+
+          let bodyHtml = '<Tablegridbodyvmd>';
+          for (const row of rows) {
+            bodyHtml += '<Tablegridrowvmd>';
+            for (let i = 0; i < row.length; i++) {
+              const align = alignments[i] ? ` align="${alignments[i]}"` : '';
+              const cellContent = parseInline(row[i]);
+              bodyHtml += `<Tablegridcellvmd${align}>${cellContent}</Tablegridcellvmd>`;
+            }
+            bodyHtml += '</Tablegridrowvmd>';
+          }
+          bodyHtml += '</Tablegridbodyvmd>';
+
+          return `<Tablegridvmd>\n${headerHtml}\n${bodyHtml}\n</Tablegridvmd>\n`;
         }
       }]
     } as any);

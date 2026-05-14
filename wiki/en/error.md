@@ -370,9 +370,11 @@
 
 ## Table Errors (E41xx)
 
+> **Note:** `<tablegrid>` shares the same error codes and validation rules as `<table>`. The following error codes apply to both.
+
 | Error Code | Description | Cause and Solution |
 |------------|-------------|--------------------|
-| `E4100` | Invalid table content | The overall structure of the table cannot be parsed correctly. Check if the content wrapped by `<table>` is complete. |
+| `E4100` | Invalid table content | The overall structure of the table cannot be parsed correctly. Check if the content wrapped by `<table>` or `<tablegrid>` is complete. |
 | `E4101` | Block element in table | Block-level HTML tags such as `<div>`, `<p>`, `<h1>` are not allowed inside table cells. Use only inline formatting. |
 | `E4102` | Image in table | Images `![alt](src)` are not allowed inside table cells. Please remove images from cells. |
 | `E4103` | List in table | List items starting with `-`, `*`, `+`, or `1.` are not allowed inside table cells. |

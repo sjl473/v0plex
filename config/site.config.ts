@@ -178,7 +178,7 @@ export const VMD_JSON_PATH = `/${VMD_JSON_DIR_NAME}/`;
 export const SITE_DATA_FILENAME = 'site-data.json';
 
 // ----------------------------------------------------------------------------
-// CONTENT SOURCE CONFIGURATION
+// ‼️ CONTENT SOURCE CONFIGURATION, if USE_LOCAL_MARKDOWN is true, Markdown contents will not be pulled from remote Git
 // ----------------------------------------------------------------------------
 export const CONTENT_SOURCE_CONFIG = {
   USE_LOCAL_MARKDOWN: false,

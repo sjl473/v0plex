@@ -1058,3 +1058,151 @@ export const tableExtension = {
     }
   }
 };
+
+// ============================================================================
+// TableGrid Extension
+// ============================================================================
+
+export const tablegridExtension = {
+  name: 'vmd_tablegrid',
+  level: 'block' as const,
+
+  start(src: string) {
+    const pattern = /\n<tablegrid>\n\n/;
+    const match = src.match(pattern);
+    if (match && match.index !== undefined) {
+      return match.index;
+    }
+    return -1;
+  },
+
+  tokenizer(this: any, src: string, tokens: any[]) {
+    const tablePattern = /^<tablegrid>\n\n([\s\S]*?)\n\n<\/tablegrid>/;
+    const match = src.match(tablePattern);
+
+    if (!match) {
+      return undefined;
+    }
+
+    const raw = match[0];
+    const tableContent = match[1];
+
+    const lines = tableContent.split('\n').filter(line => line.trim().length > 0);
+
+    if (lines.length < 2) {
+      return undefined;
+    }
+
+    const tableData = extractTableContent(lines);
+    if (!tableData) {
+      return undefined;
+    }
+
+    const location = getFileLocation(this);
+    let line = location.line || 1;
+
+    const fullSource = location.file ? getMarkdownSource(location.file) : undefined;
+    if (fullSource) {
+      const matchPos = fullSource.indexOf(raw);
+      if (matchPos !== -1) {
+        line = getLineAtPosition(fullSource, matchPos, location.file);
+      }
+    }
+
+    let currentLine = line + 2;
+
+    for (let i = 0; i < tableData.headers.length; i++) {
+      const error = validateTableCellContent(tableData.headers[i], currentLine, location);
+      if (error) {
+        throw createVmdError(error.code, { ...error.details, line: currentLine }, { ...location, line: currentLine });
+      }
+    }
+    currentLine++;
+
+    for (let r = 0; r < tableData.rows.length; r++) {
+      currentLine++;
+      for (let c = 0; c < tableData.rows[r].length; c++) {
+        const error = validateTableCellContent(tableData.rows[r][c], currentLine, location);
+        if (error) {
+          throw createVmdError(error.code, { ...error.details, line: currentLine }, { ...location, line: currentLine });
+        }
+      }
+    }
+
+    return {
+      type: 'vmd_tablegrid',
+      raw: raw,
+      text: tableContent,
+      headers: tableData.headers,
+      alignments: tableData.alignments,
+      rows: tableData.rows,
+      line: line
+    };
+  },
+
+  renderer: {
+    vmd_tablegrid(token: any) {
+      const { headers, alignments, rows } = token;
+
+      const processInlineCode = (code: string): string => {
+        if (!utilInstance) {
+          return `<code>${code}</code>`;
+        }
+        try {
+          const hash = crypto.createHash('sha256').update(code).digest('hex');
+          utilInstance.writeCodeFile(code, hash);
+          generatedFilesInstance.push(`${hash}.txt`);
+          return `<Inlinecodevmd filePath="${hash}"></Inlinecodevmd>`;
+        } catch (err) {
+          return `<code>${code}</code>`;
+        }
+      };
+
+      const parseInline = (text: string): string => {
+        let result = text;
+
+        // Inline code
+        result = result.replace(/`([^`]+)`/g, (match, code) => processInlineCode(code));
+
+        // Inline math
+        result = result.replace(/\$([^$]+)\$/g, '<Inlinemathvmd formula="$1"></Inlinemathvmd>');
+
+        // Bold+italic (must come before bold and italic)
+        result = result.replace(/\*\*\*(.+?)\*\*\*/g, '<Bolditvmd>$1</Bolditvmd>');
+
+        // Bold
+        result = result.replace(/\*\*(.+?)\*\*/g, '<Boldvmd>$1</Boldvmd>');
+
+        // Italic
+        result = result.replace(/\*(.+?)\*/g, '<Italicvmd>$1</Italicvmd>');
+
+        // Strikethrough
+        result = result.replace(/~~(.+?)~~/g, '<Strikevmd>$1</Strikevmd>');
+
+        return result;
+      };
+
+      let headerHtml = '<Tablegridheadvmd><Tablegridrowvmd>';
+      for (let i = 0; i < headers.length; i++) {
+        const align = alignments[i] ? ` align="${alignments[i]}"` : '';
+        const headerContent = parseInline(headers[i]);
+        headerHtml += `<Tablegridcellvmd header="true"${align}>${headerContent}</Tablegridcellvmd>`;
+      }
+      headerHtml += '</Tablegridrowvmd></Tablegridheadvmd>';
+
+      let bodyHtml = '<Tablegridbodyvmd>';
+      for (const row of rows) {
+        bodyHtml += '<Tablegridrowvmd>';
+        for (let i = 0; i < row.length; i++) {
+          const align = alignments[i] ? ` align="${alignments[i]}"` : '';
+          const cellContent = parseInline(row[i]);
+          bodyHtml += `<Tablegridcellvmd${align}>${cellContent}</Tablegridcellvmd>`;
+        }
+        bodyHtml += '</Tablegridrowvmd>';
+      }
+      bodyHtml += '</Tablegridbodyvmd>';
+
+      return `<Tablegridvmd>\n${headerHtml}\n${bodyHtml}\n</Tablegridvmd>\n`;
+    }
+  }
+};

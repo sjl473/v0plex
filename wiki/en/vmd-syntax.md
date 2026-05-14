@@ -177,6 +177,24 @@ Table cells support inline formatting, including bold, italic, inline code, inli
 
 Table cells **do not allow** the following block-level elements: code blocks, block-level math formulas, images, blockquotes, lists, and other block-level HTML tags.
 
+## Grid Tables
+
+`<tablegrid>` has the exact same syntax and validation rules as `<table>`. The only difference is the rendering method: `<tablegrid>` uses CSS Grid layout to render a card-style table, suitable for showcasing feature comparisons, capability matrices, and similar scenarios.
+
+```markdown
+<tablegrid>
+
+| Feature | Plan A | Plan B |
+|---------|--------|--------|
+| Performance | `O(n)` | `O(log n)` |
+| Compatibility | Supported | **Not supported** |
+| Cost | $100 | $200 |
+
+</tablegrid>
+```
+
+`<tablegrid>` and `</tablegrid>` must each be on their own line, with blank lines separating them from the table content. Allowed and disallowed content inside cells is identical to `<table>`.
+
 ## Standard Markdown Support
 
 In addition to the extensions above, VMD fully supports standard Markdown syntax.

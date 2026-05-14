@@ -30,6 +30,9 @@ import {Lftvmd, Postvmd, Rtvmd} from './postvmd';
 // 8. Table
 import {Tablevmd, Tableheadvmd, Tablebodyvmd, Tablerowvmd, Tablecellvmd} from './tablevmd';
 
+// 9. TableGrid
+import {Tablegridvmd, Tablegridheadvmd, Tablegridbodyvmd, Tablegridrowvmd, Tablegridcellvmd} from './tablegridvmd';
+
 // Export all individually
 export {
     H1vmd,
@@ -67,7 +70,12 @@ export {
     Tableheadvmd,
     Tablebodyvmd,
     Tablerowvmd,
-    Tablecellvmd
+    Tablecellvmd,
+    Tablegridvmd,
+    Tablegridheadvmd,
+    Tablegridbodyvmd,
+    Tablegridrowvmd,
+    Tablegridcellvmd
 };
 
 const VmdComponents = {
@@ -106,7 +114,12 @@ const VmdComponents = {
     Tableheadvmd,
     Tablebodyvmd,
     Tablerowvmd,
-    Tablecellvmd
+    Tablecellvmd,
+    Tablegridvmd,
+    Tablegridheadvmd,
+    Tablegridbodyvmd,
+    Tablegridrowvmd,
+    Tablegridcellvmd
 };
 
 export default VmdComponents;

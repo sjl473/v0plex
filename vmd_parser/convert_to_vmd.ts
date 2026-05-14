@@ -98,7 +98,7 @@ export function addVmdSuffix(
 ): string {
   const voidTags = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'];
   // Custom VMD tags that already have vmd suffix or are special
-  const customTagsWithSuffix = ['blockcodevmd', 'inlinecodevmd', 'blockmathvmd', 'inlinemathvmd', 'imgvmd', 'infovmd', 'warningvmd', 'successvmd', 'postvmd', 'lftvmd', 'rtvmd', 'tablevmd', 'tableheadvmd', 'tablebodyvmd', 'tablerowvmd', 'tablecellvmd'];
+  const customTagsWithSuffix = ['blockcodevmd', 'inlinecodevmd', 'blockmathvmd', 'inlinemathvmd', 'imgvmd', 'infovmd', 'warningvmd', 'successvmd', 'postvmd', 'lftvmd', 'rtvmd', 'tablevmd', 'tableheadvmd', 'tablebodyvmd', 'tablerowvmd', 'tablecellvmd', 'tablegridvmd', 'tablegridheadvmd', 'tablegridbodyvmd', 'tablegridrowvmd', 'tablegridcellvmd'];
   // Custom block tags without vmd suffix (these come from extensions like <info>, <warning>, etc.)
   const customBlockTags = ['info', 'warning', 'success', 'post', 'lft', 'rt'];
 
@@ -208,7 +208,7 @@ export function unwrapInvalidNesting(html: string): string {
   // }
 
   // Now handle block elements that are inside paragraphs
-  const allBlockTags = [...blockTags, 'Imgvmd', 'Ulvmd', 'Olvmd', 'Blockcodevmd', 'Blockmathvmd', 'Lftvmd', 'Rtvmd', 'Tablevmd'];
+  const allBlockTags = [...blockTags, 'Imgvmd', 'Ulvmd', 'Olvmd', 'Blockcodevmd', 'Blockmathvmd', 'Lftvmd', 'Rtvmd', 'Tablevmd', 'Tablegridvmd'];
   const blockPattern = allBlockTags.join('|');
   const pvmdRegex = /<Pvmd>([\s\S]*?)<\/Pvmd>/g;
 
@@ -365,7 +365,7 @@ export function createRenderer(
       const text = (typeof token === 'string') ? token : this.parser.parseInline(token.tokens);
       // Check for block-level VMD components that should not be wrapped in <p>
       // Note: Custom blocks like <info> are processed by extensions and output <Infovmd>
-      const blockTags = ['Imgvmd', 'Ulvmd', 'Olvmd', 'Blockcodevmd', 'Blockmathvmd', 'Blockquotevmd', 'Infovmd', 'Warningvmd', 'Successvmd', 'Postvmd', 'Lftvmd', 'Rtvmd', 'Tablevmd'];
+      const blockTags = ['Imgvmd', 'Ulvmd', 'Olvmd', 'Blockcodevmd', 'Blockmathvmd', 'Blockquotevmd', 'Infovmd', 'Warningvmd', 'Successvmd', 'Postvmd', 'Lftvmd', 'Rtvmd', 'Tablevmd', 'Tablegridvmd'];
       const blockTagPattern = blockTags.join('|');
       const blockRegex = new RegExp(`^\\s*<(${blockTagPattern})\\b[^>]*>`, 'i');
 
